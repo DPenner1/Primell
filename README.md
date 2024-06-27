@@ -4,7 +4,7 @@ Primell is a language that likes prime numbers. So much in fact, that it is the 
 
  - Symbols are allowed in source code.
  - All numbers are permitted to be computed, though only primes may exist in source code.
- - Because humans almost universally use base 10, that is the default though but all bases up to 64 are allowed.
+ - Because humans almost universally use base 10, that is the default though all bases up to 64 are allowed.
  - Lists are allowed. Primell in fact quite likes lists because it allows more storage of prime numbers
 
 # Why? 
