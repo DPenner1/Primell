@@ -18,7 +18,7 @@ namespace dpenner1.Primell
                 WriteLine("Welcome to Prime. Enter ? for help.");
 
                 while (true){
-                    var input = ReadLine().Trim();
+                    var input = ReadLine()?.Trim();
 
                     if (string.IsNullOrEmpty(input)) continue; // as many blank lines as they want
 
