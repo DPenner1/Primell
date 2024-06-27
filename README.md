@@ -89,10 +89,8 @@ For example, included example programs can be run with the following (Linux file
 
 Don't look at it. It's painful. If you choose not to heed that warning, read on. Though I guess that was implicit.
 
-Based on having originally used Antlr 4.7 and .NET Framework 4.x, I think I originally coded this project in 2017. In order to work on my current Linux .NET Core set-up, I had to upgrade both Antlr and .NET. But irritatingly, I lost the grammar file and had to reconstruct it by looking at the generated code. There might be some rough edges, but at least that meant I refamiliarized myself with the solution and am actually motivated to clean up the rough edges.
-
-The "PL" prefix used everywhere stands for "Primell Language". The PLNumber class was adapted from a BigRational class I had previously developed. However, it did not support infinity, NaN or negative zero like PLNumber does, so there may be bugs in there.
-
-On naming, I had originally simply called the language Prime, and that is evident in source code. Last minute change to avoid potential trademark issue with HP Prime. Primell was derived as Prime List Language.
-
-The infinite lists were coded in a hurry. There was probably a framework class that could have helped.
+- Based on having originally used Antlr 4.7 and .NET Framework 4.x, I think I originally coded this project in 2017. In order to work on my current Linux .NET Core set-up, I had to upgrade both Antlr and .NET. But irritatingly, I lost the grammar file and had to reconstruct it by looking at the generated code. There might be some rough edges, but at least that meant I refamiliarized myself with the solution and am actually motivated to clean up the rough edges.
+- The "PL" prefix used everywhere stands for "Primell Language". The PLNumber class was adapted from a BigRational class I had previously developed. However, it did not support infinity, NaN or negative zero like PLNumber does, so there may be bugs in there.
+- On naming, I had originally simply called the language Prime, and that is evident in source code. Last minute change to avoid potential trademark issue with HP Prime. Primell was derived as Prime List Language.
+- The infinite lists were coded in a hurry. There was probably a framework class that could have helped.
+- I opted not to add the Antlr4 generated files to the `.gitignore` to allow for users to run the project without self-generating the files.
