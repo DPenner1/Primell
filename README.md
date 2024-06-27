@@ -40,7 +40,7 @@ Since Primell is not very familiar with how operators work, Primell for the most
 
 - Parentheses may be used naturally like in math.
 - Square brackets also group similar to parentheses, but have the semantic meaning of specifying a for-each loop.
-- The $ symbol acts like in Haskell, that is, executes everything to the right of it first. This is mainly syntactic sugar to avoid too many nested parentheses.
+- The `$` symbol acts like in Haskell, that is, executes everything to the right of it first. This is mainly syntactic sugar to avoid too many nested parentheses.
 - The "default" operator is concatenation. Placing multiple lists/numbers next to each other creates a single list containing those elements. This is the lowest priority operation.
 
 Operators may only take up to two arguments. Though all operators are able to work on both numbers and lists, it is convenient to define them in terms of one or the other. See wiki for a list of the operators.
