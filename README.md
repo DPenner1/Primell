@@ -1,6 +1,6 @@
 # Premise
 
-Primell is a language that likes prime numbers. So much in fact, that it is the only thing Primell would like to allow. Unfortunately, this turned out to be too inconvenient, so Prime llhas relented in the following ways:
+Primell is a language that likes prime numbers. So much in fact, that it is the only thing Primell would like to allow. Unfortunately, this turned out to be too inconvenient, so Primell has relented in the following ways:
 
  - Symbols are allowed in source code.
  - All numbers are permitted to be computed, though only primes may exist in source code.
