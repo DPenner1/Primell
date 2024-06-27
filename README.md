@@ -19,8 +19,7 @@ Primell has but two data types:
 - "Lists" of these two datatypes
 	
 Other familiar data types are only simulated with these. For example:
-
-- Boolean: A non-empty list consisting of only prime numbers is considered true. Anything else is false.
+- Boolean: A non-empty list consisting of only prime numbers is considered true. Anything else is false. (This is the truest truth, but alternative truths are configurable.)
 - There aren't really others yet.
 
 Primell's lists are not really lists but they are more like dynamic arrays. Here are its properties:
