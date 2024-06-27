@@ -8,7 +8,7 @@ namespace dpenner1.Primell
         public static PLObject Empty => new PLObject();
 
         List<PLObject> Values;
-        PLGenerator gen;
+        PLGenerator? gen;
 
         public PLNumber? Atom { get; private set; }
 
