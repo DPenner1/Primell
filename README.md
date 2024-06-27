@@ -15,20 +15,20 @@ Primell was created as an experiment. I had intended on creating a more serious 
 
 Primell has but two data types:
 
-	- Numbers (arbitrary precision rational, IEEE 754-like support of infinity and NaN)
-	- "Lists" of these two datatypes
+- Numbers (arbitrary precision rational, IEEE 754-like support of infinity and NaN)
+- "Lists" of these two datatypes
 	
 Other familiar data types are only simulated with these. For example:
 
-	- Boolean: A non-empty list consisting of only prime numbers is considered true. Anything else is false.
-	- There aren't really others yet.
+- Boolean: A non-empty list consisting of only prime numbers is considered true. Anything else is false.
+- There aren't really others yet.
 
 Primell's lists are not really lists but they are more like dynamic arrays. Here are its properties:
 
-	- 0-indexed
-	- Can be infinite
-	- Attempting to access an index not yet set implicitly fills the list up to that point with empty lists
-	- A 1-element list is not distinguishable from its containing element
+- 0-indexed
+- Can be infinite
+- Attempting to access an index not yet set implicitly fills the list up to that point with empty lists
+- A 1-element list is not distinguishable from its containing element
 
 A corollary of that last point is that a number can be treated as a one-element list in every context.
 
@@ -38,10 +38,10 @@ With most allowed characters being used for numbers, operators are completely ma
 
 Since Primell is not very familiar with how operators work, Primell for the most part executes them in strict left-to-right order. There are 4 exceptions: 
 
-    - Parentheses may be used naturally like in math.
-	- Square brackets also group similar to parentheses, but have the semantic meaning of specifying a for-each loop.
-    - The $ symbol acts like in Haskell, that is, executes everything to the right of it first. This is mainly syntactic sugar to avoid too many nested parentheses.
-    - The "default" operator is concatenation. Placing multiple lists/numbers next to each other creates a single list containing those elements. This is the lowest priority operation.
+- Parentheses may be used naturally like in math.
+  - Square brackets also group similar to parentheses, but have the semantic meaning of specifying a for-each loop.
+- The $ symbol acts like in Haskell, that is, executes everything to the right of it first. This is mainly syntactic sugar to avoid too many nested parentheses.
+- The "default" operator is concatenation. Placing multiple lists/numbers next to each other creates a single list containing those elements. This is the lowest priority operation.
 
 Operators may only take up to two arguments. Though all operators are able to work on both numbers and lists, it is convenient to define them in terms of one or the other. See wiki for a list of the operators.
 
