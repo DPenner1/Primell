@@ -93,6 +93,6 @@ Based on having originally used Antlr 4.7 and .NET Framework 4.x, I think I orig
 
 The "PL" prefix used everywhere stands for "Primell Language". The PLNumber class was adapted from a BigRational class I had previously developed. However, it did not support infinity, NaN or negative zero like PLNumber does, so there may be bugs in there.
 
-On naming, I had originally simply called the language Prime, and that is evident in source code. Last minute change to avoid potential rademark issue with HP Prime. Primell was derived as Prime List Language.
+On naming, I had originally simply called the language Prime, and that is evident in source code. Last minute change to avoid potential trademark issue with HP Prime. Primell was derived as Prime List Language.
 
 The infinite lists were coded in a hurry. There was probably a framework class that could have helped.
