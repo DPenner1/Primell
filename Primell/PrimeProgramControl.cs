@@ -14,7 +14,7 @@ namespace dpenner1.Primell
 
         public bool LastOperationWasAssignment { get; set; }
 
-        private List<PrimeParser.LineContext> LineContexts { get; }
+        private List<PrimellParser.LineContext> LineContexts { get; }
 
         public int CurrentLine { get; private set; }
 
@@ -116,7 +116,7 @@ namespace dpenner1.Primell
             }
         }
 
-        public PrimeProgramControl(List<PrimeParser.LineContext> lineContexts, PLProgramSettings settings)
+        public PrimeProgramControl(List<PrimellParser.LineContext> lineContexts, PLProgramSettings settings)
         {
             EmptyVariable = new PLObject();
             InfEmptyVariable = new PLObject(new ConstantPLGenerator(PLObject.Empty, PLNumber.PositiveInfinity));

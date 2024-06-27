@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generated from /home/darrell/Projects/Prime/Antlr4Generation/Prime.g4 by ANTLR 4.13.1
+// Generated from /home/darrell/Projects/Prime/Antlr4Generation/Primell.g4 by ANTLR 4.13.1
 
 // Unreachable code detected
 #pragma warning disable 0162
@@ -32,7 +32,7 @@ using DFA = Antlr4.Runtime.Dfa.DFA;
 
 [System.CodeDom.Compiler.GeneratedCode("ANTLR", "4.13.1")]
 [System.CLSCompliant(false)]
-public partial class PrimeParser : Parser {
+public partial class PrimellParser : Parser {
 	protected static DFA[] decisionToDFA;
 	protected static PredictionContextCache sharedContextCache = new PredictionContextCache();
 	public const int
@@ -94,38 +94,38 @@ public partial class PrimeParser : Parser {
 		}
 	}
 
-	public override string GrammarFileName { get { return "Prime.g4"; } }
+	public override string GrammarFileName { get { return "Primell.g4"; } }
 
 	public override string[] RuleNames { get { return ruleNames; } }
 
 	public override int[] SerializedAtn { get { return _serializedATN; } }
 
-	static PrimeParser() {
+	static PrimellParser() {
 		decisionToDFA = new DFA[_ATN.NumberOfDecisions];
 		for (int i = 0; i < _ATN.NumberOfDecisions; i++) {
 			decisionToDFA[i] = new DFA(_ATN.GetDecisionState(i), i);
 		}
 	}
 
-		public PrimeParser(ITokenStream input) : this(input, Console.Out, Console.Error) { }
+		public PrimellParser(ITokenStream input) : this(input, Console.Out, Console.Error) { }
 
-		public PrimeParser(ITokenStream input, TextWriter output, TextWriter errorOutput)
+		public PrimellParser(ITokenStream input, TextWriter output, TextWriter errorOutput)
 		: base(input, output, errorOutput)
 	{
 		Interpreter = new ParserATNSimulator(this, _ATN, decisionToDFA, sharedContextCache);
 	}
 
 	public partial class ProgramContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode Eof() { return GetToken(PrimeParser.Eof, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode Eof() { return GetToken(PrimellParser.Eof, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public LineContext[] line() {
 			return GetRuleContexts<LineContext>();
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public LineContext line(int i) {
 			return GetRuleContext<LineContext>(i);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] NL() { return GetTokens(PrimeParser.NL); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] NL() { return GetTokens(PrimellParser.NL); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode NL(int i) {
-			return GetToken(PrimeParser.NL, i);
+			return GetToken(PrimellParser.NL, i);
 		}
 		public ProgramContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
@@ -134,7 +134,7 @@ public partial class PrimeParser : Parser {
 		public override int RuleIndex { get { return RULE_program; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitProgram(this);
 			else return visitor.VisitChildren(this);
 		}
@@ -215,7 +215,7 @@ public partial class PrimeParser : Parser {
 		public override int RuleIndex { get { return RULE_line; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitLine(this);
 			else return visitor.VisitChildren(this);
 		}
@@ -268,7 +268,7 @@ public partial class PrimeParser : Parser {
 		public override int RuleIndex { get { return RULE_termSeq; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitTermSeq(this);
 			else return visitor.VisitChildren(this);
 		}
@@ -337,7 +337,7 @@ public partial class PrimeParser : Parser {
 		public ListUnaryOperationContext(MulTermContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitListUnaryOperation(this);
 			else return visitor.VisitChildren(this);
 		}
@@ -352,7 +352,7 @@ public partial class PrimeParser : Parser {
 		public ForEachLeftTermContext(MulTermContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitForEachLeftTerm(this);
 			else return visitor.VisitChildren(this);
 		}
@@ -370,7 +370,7 @@ public partial class PrimeParser : Parser {
 		public ForEachRightTermContext(MulTermContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitForEachRightTerm(this);
 			else return visitor.VisitChildren(this);
 		}
@@ -385,14 +385,14 @@ public partial class PrimeParser : Parser {
 		[System.Diagnostics.DebuggerNonUserCode] public AtomTermContext atomTerm() {
 			return GetRuleContext<AtomTermContext>(0);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode RTL() { return GetToken(PrimeParser.RTL, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode RTL() { return GetToken(PrimellParser.RTL, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public TermSeqContext termSeq() {
 			return GetRuleContext<TermSeqContext>(0);
 		}
 		public BinaryOperationContext(MulTermContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitBinaryOperation(this);
 			else return visitor.VisitChildren(this);
 		}
@@ -404,7 +404,7 @@ public partial class PrimeParser : Parser {
 		public AtomContext(MulTermContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitAtom(this);
 			else return visitor.VisitChildren(this);
 		}
@@ -419,7 +419,7 @@ public partial class PrimeParser : Parser {
 		public NumericUnaryOperationContext(MulTermContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitNumericUnaryOperation(this);
 			else return visitor.VisitChildren(this);
 		}
@@ -585,7 +585,7 @@ public partial class PrimeParser : Parser {
 		public NullaryOperationContext(AtomTermContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitNullaryOperation(this);
 			else return visitor.VisitChildren(this);
 		}
@@ -597,7 +597,7 @@ public partial class PrimeParser : Parser {
 		public ParensContext(AtomTermContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitParens(this);
 			else return visitor.VisitChildren(this);
 		}
@@ -606,17 +606,17 @@ public partial class PrimeParser : Parser {
 		public PositiveInfinityContext(AtomTermContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitPositiveInfinity(this);
 			else return visitor.VisitChildren(this);
 		}
 	}
 	public partial class IntegerContext : AtomTermContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode INT() { return GetToken(PrimeParser.INT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode INT() { return GetToken(PrimellParser.INT, 0); }
 		public IntegerContext(AtomTermContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitInteger(this);
 			else return visitor.VisitChildren(this);
 		}
@@ -625,7 +625,7 @@ public partial class PrimeParser : Parser {
 		public NegativeInfinityContext(AtomTermContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitNegativeInfinity(this);
 			else return visitor.VisitChildren(this);
 		}
@@ -722,7 +722,7 @@ public partial class PrimeParser : Parser {
 		public override int RuleIndex { get { return RULE_forEachBlock; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitForEachBlock(this);
 			else return visitor.VisitChildren(this);
 		}
@@ -773,7 +773,7 @@ public partial class PrimeParser : Parser {
 		public ForEachNumericUnaryContext(ForEachOperationContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitForEachNumericUnary(this);
 			else return visitor.VisitChildren(this);
 		}
@@ -785,14 +785,14 @@ public partial class PrimeParser : Parser {
 		[System.Diagnostics.DebuggerNonUserCode] public AtomTermContext atomTerm() {
 			return GetRuleContext<AtomTermContext>(0);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode RTL() { return GetToken(PrimeParser.RTL, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode RTL() { return GetToken(PrimellParser.RTL, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public TermSeqContext termSeq() {
 			return GetRuleContext<TermSeqContext>(0);
 		}
 		public ForEachBinaryContext(ForEachOperationContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitForEachBinary(this);
 			else return visitor.VisitChildren(this);
 		}
@@ -804,7 +804,7 @@ public partial class PrimeParser : Parser {
 		public ForEachListUnaryContext(ForEachOperationContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitForEachListUnary(this);
 			else return visitor.VisitChildren(this);
 		}
@@ -924,11 +924,11 @@ public partial class PrimeParser : Parser {
 	}
 
 	public partial class BaseNullaryOpContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_VAR1() { return GetToken(PrimeParser.OP_VAR1, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_VAR2() { return GetToken(PrimeParser.OP_VAR2, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_VAR3() { return GetToken(PrimeParser.OP_VAR3, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_READ_LIST() { return GetToken(PrimeParser.OP_READ_LIST, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_READ_STR() { return GetToken(PrimeParser.OP_READ_STR, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_VAR1() { return GetToken(PrimellParser.OP_VAR1, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_VAR2() { return GetToken(PrimellParser.OP_VAR2, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_VAR3() { return GetToken(PrimellParser.OP_VAR3, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_READ_LIST() { return GetToken(PrimellParser.OP_READ_LIST, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_READ_STR() { return GetToken(PrimellParser.OP_READ_STR, 0); }
 		public BaseNullaryOpContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -936,7 +936,7 @@ public partial class PrimeParser : Parser {
 		public override int RuleIndex { get { return RULE_baseNullaryOp; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitBaseNullaryOp(this);
 			else return visitor.VisitChildren(this);
 		}
@@ -973,11 +973,11 @@ public partial class PrimeParser : Parser {
 	}
 
 	public partial class BaseNumUnaryOpContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_FACT() { return GetToken(PrimeParser.OP_FACT, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_NEXT() { return GetToken(PrimeParser.OP_NEXT, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_PREV() { return GetToken(PrimeParser.OP_PREV, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_ROUND() { return GetToken(PrimeParser.OP_ROUND, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_NEGATE() { return GetToken(PrimeParser.OP_NEGATE, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_FACT() { return GetToken(PrimellParser.OP_FACT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_NEXT() { return GetToken(PrimellParser.OP_NEXT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_PREV() { return GetToken(PrimellParser.OP_PREV, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_ROUND() { return GetToken(PrimellParser.OP_ROUND, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_NEGATE() { return GetToken(PrimellParser.OP_NEGATE, 0); }
 		public BaseNumUnaryOpContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -985,7 +985,7 @@ public partial class PrimeParser : Parser {
 		public override int RuleIndex { get { return RULE_baseNumUnaryOp; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitBaseNumUnaryOp(this);
 			else return visitor.VisitChildren(this);
 		}
@@ -1022,20 +1022,20 @@ public partial class PrimeParser : Parser {
 	}
 
 	public partial class BaseNumBinaryOpContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_ADD() { return GetToken(PrimeParser.OP_ADD, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_SUB() { return GetToken(PrimeParser.OP_SUB, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_MUL() { return GetToken(PrimeParser.OP_MUL, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_DIV() { return GetToken(PrimeParser.OP_DIV, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_MOD() { return GetToken(PrimeParser.OP_MOD, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_POW() { return GetToken(PrimeParser.OP_POW, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_LOG() { return GetToken(PrimeParser.OP_LOG, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_SMALL() { return GetToken(PrimeParser.OP_SMALL, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_BIG() { return GetToken(PrimeParser.OP_BIG, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_INC_RANGE() { return GetToken(PrimeParser.OP_INC_RANGE, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_RANGE() { return GetToken(PrimeParser.OP_RANGE, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_BIN_AND() { return GetToken(PrimeParser.OP_BIN_AND, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_BIN_OR() { return GetToken(PrimeParser.OP_BIN_OR, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_BIN_XOR() { return GetToken(PrimeParser.OP_BIN_XOR, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_ADD() { return GetToken(PrimellParser.OP_ADD, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_SUB() { return GetToken(PrimellParser.OP_SUB, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_MUL() { return GetToken(PrimellParser.OP_MUL, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_DIV() { return GetToken(PrimellParser.OP_DIV, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_MOD() { return GetToken(PrimellParser.OP_MOD, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_POW() { return GetToken(PrimellParser.OP_POW, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_LOG() { return GetToken(PrimellParser.OP_LOG, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_SMALL() { return GetToken(PrimellParser.OP_SMALL, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_BIG() { return GetToken(PrimellParser.OP_BIG, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_INC_RANGE() { return GetToken(PrimellParser.OP_INC_RANGE, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_RANGE() { return GetToken(PrimellParser.OP_RANGE, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_BIN_AND() { return GetToken(PrimellParser.OP_BIN_AND, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_BIN_OR() { return GetToken(PrimellParser.OP_BIN_OR, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_BIN_XOR() { return GetToken(PrimellParser.OP_BIN_XOR, 0); }
 		public BaseNumBinaryOpContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -1043,7 +1043,7 @@ public partial class PrimeParser : Parser {
 		public override int RuleIndex { get { return RULE_baseNumBinaryOp; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitBaseNumBinaryOp(this);
 			else return visitor.VisitChildren(this);
 		}
@@ -1080,12 +1080,12 @@ public partial class PrimeParser : Parser {
 	}
 
 	public partial class BaseListUnaryOpContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_HEAD() { return GetToken(PrimeParser.OP_HEAD, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_TAIL() { return GetToken(PrimeParser.OP_TAIL, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_DISTINCT() { return GetToken(PrimeParser.OP_DISTINCT, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_REV() { return GetToken(PrimeParser.OP_REV, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_FLATTEN() { return GetToken(PrimeParser.OP_FLATTEN, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_SORT() { return GetToken(PrimeParser.OP_SORT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_HEAD() { return GetToken(PrimellParser.OP_HEAD, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_TAIL() { return GetToken(PrimellParser.OP_TAIL, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_DISTINCT() { return GetToken(PrimellParser.OP_DISTINCT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_REV() { return GetToken(PrimellParser.OP_REV, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_FLATTEN() { return GetToken(PrimellParser.OP_FLATTEN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_SORT() { return GetToken(PrimellParser.OP_SORT, 0); }
 		public BaseListUnaryOpContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -1093,7 +1093,7 @@ public partial class PrimeParser : Parser {
 		public override int RuleIndex { get { return RULE_baseListUnaryOp; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitBaseListUnaryOp(this);
 			else return visitor.VisitChildren(this);
 		}
@@ -1130,21 +1130,21 @@ public partial class PrimeParser : Parser {
 	}
 
 	public partial class BaseListBinaryOpContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_COND() { return GetToken(PrimeParser.OP_COND, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_NEG_COND() { return GetToken(PrimeParser.OP_NEG_COND, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_INDEX() { return GetToken(PrimeParser.OP_INDEX, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_INDEX_END() { return GetToken(PrimeParser.OP_INDEX_END, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_INDEX_OF() { return GetToken(PrimeParser.OP_INDEX_OF, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_JUMP() { return GetToken(PrimeParser.OP_JUMP, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_JUMP_BACK() { return GetToken(PrimeParser.OP_JUMP_BACK, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_NEG_JUMP() { return GetToken(PrimeParser.OP_NEG_JUMP, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_NEG_JUMP_BACK() { return GetToken(PrimeParser.OP_NEG_JUMP_BACK, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_LSHIFT() { return GetToken(PrimeParser.OP_LSHIFT, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_RSHIFT() { return GetToken(PrimeParser.OP_RSHIFT, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_LROTATE() { return GetToken(PrimeParser.OP_LROTATE, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_RROTATE() { return GetToken(PrimeParser.OP_RROTATE, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_LIST_DIFF() { return GetToken(PrimeParser.OP_LIST_DIFF, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_INTERSECT() { return GetToken(PrimeParser.OP_INTERSECT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_COND() { return GetToken(PrimellParser.OP_COND, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_NEG_COND() { return GetToken(PrimellParser.OP_NEG_COND, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_INDEX() { return GetToken(PrimellParser.OP_INDEX, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_INDEX_END() { return GetToken(PrimellParser.OP_INDEX_END, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_INDEX_OF() { return GetToken(PrimellParser.OP_INDEX_OF, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_JUMP() { return GetToken(PrimellParser.OP_JUMP, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_JUMP_BACK() { return GetToken(PrimellParser.OP_JUMP_BACK, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_NEG_JUMP() { return GetToken(PrimellParser.OP_NEG_JUMP, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_NEG_JUMP_BACK() { return GetToken(PrimellParser.OP_NEG_JUMP_BACK, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_LSHIFT() { return GetToken(PrimellParser.OP_LSHIFT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_RSHIFT() { return GetToken(PrimellParser.OP_RSHIFT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_LROTATE() { return GetToken(PrimellParser.OP_LROTATE, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_RROTATE() { return GetToken(PrimellParser.OP_RROTATE, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_LIST_DIFF() { return GetToken(PrimellParser.OP_LIST_DIFF, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_INTERSECT() { return GetToken(PrimellParser.OP_INTERSECT, 0); }
 		public BaseListBinaryOpContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -1152,7 +1152,7 @@ public partial class PrimeParser : Parser {
 		public override int RuleIndex { get { return RULE_baseListBinaryOp; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitBaseListBinaryOp(this);
 			else return visitor.VisitChildren(this);
 		}
@@ -1189,8 +1189,8 @@ public partial class PrimeParser : Parser {
 	}
 
 	public partial class OpModsContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPMOD_CUT() { return GetToken(PrimeParser.OPMOD_CUT, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPMOD_POW() { return GetToken(PrimeParser.OPMOD_POW, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPMOD_CUT() { return GetToken(PrimellParser.OPMOD_CUT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPMOD_POW() { return GetToken(PrimellParser.OPMOD_POW, 0); }
 		public OpModsContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -1198,7 +1198,7 @@ public partial class PrimeParser : Parser {
 		public override int RuleIndex { get { return RULE_opMods; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitOpMods(this);
 			else return visitor.VisitChildren(this);
 		}
@@ -1243,8 +1243,8 @@ public partial class PrimeParser : Parser {
 	}
 
 	public partial class AssignModsContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPMOD_CUT() { return GetToken(PrimeParser.OPMOD_CUT, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPMOD_POW() { return GetToken(PrimeParser.OPMOD_POW, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPMOD_CUT() { return GetToken(PrimellParser.OPMOD_CUT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPMOD_POW() { return GetToken(PrimellParser.OPMOD_POW, 0); }
 		public AssignModsContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -1252,7 +1252,7 @@ public partial class PrimeParser : Parser {
 		public override int RuleIndex { get { return RULE_assignMods; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitAssignMods(this);
 			else return visitor.VisitChildren(this);
 		}
@@ -1310,7 +1310,7 @@ public partial class PrimeParser : Parser {
 		public override int RuleIndex { get { return RULE_nullaryOp; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitNullaryOp(this);
 			else return visitor.VisitChildren(this);
 		}
@@ -1354,7 +1354,7 @@ public partial class PrimeParser : Parser {
 		public override int RuleIndex { get { return RULE_numUnaryOp; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitNumUnaryOp(this);
 			else return visitor.VisitChildren(this);
 		}
@@ -1398,7 +1398,7 @@ public partial class PrimeParser : Parser {
 		public override int RuleIndex { get { return RULE_listUnaryOp; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitListUnaryOp(this);
 			else return visitor.VisitChildren(this);
 		}
@@ -1429,7 +1429,7 @@ public partial class PrimeParser : Parser {
 	}
 
 	public partial class BinaryOpContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ASSIGN() { return GetToken(PrimeParser.ASSIGN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ASSIGN() { return GetToken(PrimellParser.ASSIGN, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public AssignModsContext assignMods() {
 			return GetRuleContext<AssignModsContext>(0);
 		}
@@ -1449,7 +1449,7 @@ public partial class PrimeParser : Parser {
 		public override int RuleIndex { get { return RULE_binaryOp; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitBinaryOp(this);
 			else return visitor.VisitChildren(this);
 		}
@@ -1558,9 +1558,9 @@ public partial class PrimeParser : Parser {
 	}
 
 	public partial class OutMethodContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OUT_INV() { return GetToken(PrimeParser.OUT_INV, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OUT_DEF() { return GetToken(PrimeParser.OUT_DEF, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OUT_STR() { return GetToken(PrimeParser.OUT_STR, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OUT_INV() { return GetToken(PrimellParser.OUT_INV, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OUT_DEF() { return GetToken(PrimellParser.OUT_DEF, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OUT_STR() { return GetToken(PrimellParser.OUT_STR, 0); }
 		public OutMethodContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -1568,7 +1568,7 @@ public partial class PrimeParser : Parser {
 		public override int RuleIndex { get { return RULE_outMethod; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimeVisitor<TResult> typedVisitor = visitor as IPrimeVisitor<TResult>;
+			IPrimellVisitor<TResult> typedVisitor = visitor as IPrimellVisitor<TResult>;
 			if (typedVisitor != null) return typedVisitor.VisitOutMethod(this);
 			else return visitor.VisitChildren(this);
 		}

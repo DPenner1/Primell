@@ -141,12 +141,12 @@ namespace dpenner1.Primell
         public void Run(string program, PLProgramSettings settings)
         {
             AntlrInputStream stream = new AntlrInputStream(program);
-            ITokenSource lexer = new PrimeLexer(stream);
+            ITokenSource lexer = new PrimellLexer(stream);
             ITokenStream tokens = new CommonTokenStream(lexer);
-            PrimeParser parser = new PrimeParser(tokens);
+            PrimellParser parser = new PrimellParser(tokens);
             parser.BuildParseTree = true;
 
-            var allLineContexts = new List<PrimeParser.LineContext>();
+            var allLineContexts = new List<PrimellParser.LineContext>();
             foreach (var lineContext in parser.program().line())
             {
                 allLineContexts.Add(lineContext);

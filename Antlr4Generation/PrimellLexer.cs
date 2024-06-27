@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generated from /home/darrell/Projects/Prime/Antlr4Generation/Prime.g4 by ANTLR 4.13.1
+// Generated from /home/darrell/Projects/Prime/Antlr4Generation/Primell.g4 by ANTLR 4.13.1
 
 // Unreachable code detected
 #pragma warning disable 0162
@@ -29,7 +29,7 @@ using DFA = Antlr4.Runtime.Dfa.DFA;
 
 [System.CodeDom.Compiler.GeneratedCode("ANTLR", "4.13.1")]
 [System.CLSCompliant(false)]
-public partial class PrimeLexer : Lexer {
+public partial class PrimellLexer : Lexer {
 	protected static DFA[] decisionToDFA;
 	protected static PredictionContextCache sharedContextCache = new PredictionContextCache();
 	public const int
@@ -68,10 +68,10 @@ public partial class PrimeLexer : Lexer {
 	};
 
 
-	public PrimeLexer(ICharStream input)
+	public PrimellLexer(ICharStream input)
 	: this(input, Console.Out, Console.Error) { }
 
-	public PrimeLexer(ICharStream input, TextWriter output, TextWriter errorOutput)
+	public PrimellLexer(ICharStream input, TextWriter output, TextWriter errorOutput)
 	: base(input, output, errorOutput)
 	{
 		Interpreter = new LexerATNSimulator(this, _ATN, decisionToDFA, sharedContextCache);
@@ -110,7 +110,7 @@ public partial class PrimeLexer : Lexer {
 		}
 	}
 
-	public override string GrammarFileName { get { return "Prime.g4"; } }
+	public override string GrammarFileName { get { return "Primell.g4"; } }
 
 	public override string[] RuleNames { get { return ruleNames; } }
 
@@ -120,7 +120,7 @@ public partial class PrimeLexer : Lexer {
 
 	public override int[] SerializedAtn { get { return _serializedATN; } }
 
-	static PrimeLexer() {
+	static PrimellLexer() {
 		decisionToDFA = new DFA[_ATN.NumberOfDecisions];
 		for (int i = 0; i < _ATN.NumberOfDecisions; i++) {
 			decisionToDFA[i] = new DFA(_ATN.GetDecisionState(i), i);

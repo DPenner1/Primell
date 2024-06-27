@@ -2,7 +2,7 @@
 
 namespace dpenner1.Primell
 {
-    class PrimeTermSequenceVisitor : PrimeBaseVisitor<PLObject>
+    class PrimeTermSequenceVisitor : PrimellBaseVisitor<PLObject>
     {
         private PrimeProgramControl control;
         private Stack<PLObject> placeholders;
@@ -17,12 +17,12 @@ namespace dpenner1.Primell
             incorporate = new Stack<bool>();
         }
 
-        public override PLObject VisitLine([NotNull] PrimeParser.LineContext context)
+        public override PLObject VisitLine([NotNull] PrimellParser.LineContext context)
         {
             return Visit(context.termSeq());
         }
 
-        public override PLObject VisitParens([NotNull] PrimeParser.ParensContext context)
+        public override PLObject VisitParens([NotNull] PrimellParser.ParensContext context)
         {
             incorporate.Pop();
             incorporate.Push(false);
@@ -31,7 +31,7 @@ namespace dpenner1.Primell
             return Visit(context.termSeq());
         }
 
-        public override PLObject VisitTermSeq([NotNull] PrimeParser.TermSeqContext context)
+        public override PLObject VisitTermSeq([NotNull] PrimellParser.TermSeqContext context)
         {
             // There was a hack here to fix list initialization.
             // We use the incorporate stack to see if the object should be incorporated directly in
@@ -54,7 +54,7 @@ namespace dpenner1.Primell
             return terms.Reduce();
         }
 
-        public override PLObject VisitInteger([NotNull] PrimeParser.IntegerContext context)
+        public override PLObject VisitInteger([NotNull] PrimellParser.IntegerContext context)
         {
             var number = ParseLib.ParseInteger(context.GetText(), control.Settings.SourceBase);
             if (!control.Settings.FreeSource && !PrimeLib.IsPrime(number))
@@ -63,7 +63,7 @@ namespace dpenner1.Primell
             return number;
         }
 
-        public override PLObject VisitPositiveInfinity([NotNull] PrimeParser.PositiveInfinityContext context)
+        public override PLObject VisitPositiveInfinity([NotNull] PrimellParser.PositiveInfinityContext context)
         {
             return PLNumber.PositiveInfinity;
         }
@@ -77,7 +77,7 @@ namespace dpenner1.Primell
             return placeholders.Peek();
         }*/
 
-        public override PLObject VisitNullaryOp([NotNull] PrimeParser.NullaryOpContext context)
+        public override PLObject VisitNullaryOp([NotNull] PrimellParser.NullaryOpContext context)
         {
             switch (context.baseNullaryOp().GetText())
             {
@@ -95,7 +95,7 @@ namespace dpenner1.Primell
             }
         }
 
-        public override PLObject VisitNumericUnaryOperation([NotNull] PrimeParser.NumericUnaryOperationContext context)
+        public override PLObject VisitNumericUnaryOperation([NotNull] PrimellParser.NumericUnaryOperationContext context)
         {
             Func<PLNumber, PLObject> operation = 
                 x => new PLObject(NumUnaryOps[context.numUnaryOp().baseNumUnaryOp().GetText()].Invoke(x));
@@ -106,12 +106,12 @@ namespace dpenner1.Primell
         }
         
 
-        public override PLObject VisitListUnaryOperation([NotNull] PrimeParser.ListUnaryOperationContext context)
+        public override PLObject VisitListUnaryOperation([NotNull] PrimellParser.ListUnaryOperationContext context)
         {
             return ExecuteListUnaryOperation(Visit(context.mulTerm()), context.listUnaryOp());
         }
 
-        public override PLObject VisitBinaryOperation([NotNull] PrimeParser.BinaryOperationContext context)
+        public override PLObject VisitBinaryOperation([NotNull] PrimellParser.BinaryOperationContext context)
         {
             var left = Visit(context.mulTerm());
             placeholders.Push(left.DeepCopy());
@@ -170,14 +170,14 @@ namespace dpenner1.Primell
             }
         }
 
-        public override PLObject VisitForEachLeftTerm([NotNull] PrimeParser.ForEachLeftTermContext context)
+        public override PLObject VisitForEachLeftTerm([NotNull] PrimellParser.ForEachLeftTermContext context)
         {
             currentForEach.Push(Visit(context.mulTerm()));
             Visit(context.forEachBlock());
             return currentForEach.Pop();
         }
 
-        public override PLObject VisitForEachRightTerm([NotNull] PrimeParser.ForEachRightTermContext context)
+        public override PLObject VisitForEachRightTerm([NotNull] PrimellParser.ForEachRightTermContext context)
         {
             var retval = new List<PLObject>();
             var left = Visit(context.mulTerm());
@@ -192,7 +192,7 @@ namespace dpenner1.Primell
             return new PLObject(retval);
         }
 
-        public override PLObject VisitForEachBinary([NotNull] PrimeParser.ForEachBinaryContext context)
+        public override PLObject VisitForEachBinary([NotNull] PrimellParser.ForEachBinaryContext context)
         {
             var values = new List<PLObject>();
             foreach (var plobj in currentForEach.Pop())
@@ -213,7 +213,7 @@ namespace dpenner1.Primell
             return retval;
         }
 
-        public override PLObject VisitForEachNumericUnary([NotNull] PrimeParser.ForEachNumericUnaryContext context)
+        public override PLObject VisitForEachNumericUnary([NotNull] PrimellParser.ForEachNumericUnaryContext context)
         {
             // TODO - copied  from VisitNumericUnary
             Func<PLNumber, PLObject> operation =
@@ -228,7 +228,7 @@ namespace dpenner1.Primell
             return retval;
         }
 
-        public override PLObject VisitForEachListUnary([NotNull] PrimeParser.ForEachListUnaryContext context)
+        public override PLObject VisitForEachListUnary([NotNull] PrimellParser.ForEachListUnaryContext context)
         {
             // TODO - copied  from VisitListUnary
             var values = new List<PLObject>();
@@ -242,7 +242,7 @@ namespace dpenner1.Primell
             return retval;
         }
 
-        private PLObject ExecuteListUnaryOperation(PLObject plobj, PrimeParser.ListUnaryOpContext context)
+        private PLObject ExecuteListUnaryOperation(PLObject plobj, PrimellParser.ListUnaryOpContext context)
         {
             var options = ParseLib.ParseOptions(context.opMods()?.GetText());
 
@@ -260,7 +260,7 @@ namespace dpenner1.Primell
             }
         }
 
-        private PLObject ExecuteBinaryOperation(PLObject left, PLObject right, PrimeParser.BinaryOpContext context)
+        private PLObject ExecuteBinaryOperation(PLObject left, PLObject right, PrimellParser.BinaryOpContext context)
         {
             bool isAssign = context.ASSIGN() != null;
             var assignOptions = ParseLib.ParseOptions(context.assignMods()?.GetText());

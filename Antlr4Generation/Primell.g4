@@ -1,4 +1,4 @@
-grammar Prime;
+grammar Primell;
 
 program : line? (NL+ line)* EOF;   // there was probably a simpler way to write this grammar rule
 
