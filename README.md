@@ -39,7 +39,7 @@ With most allowed characters being used for numbers, operators are completely ma
 Since Primell is not very familiar with how operators work, Primell for the most part executes them in strict left-to-right order. There are 4 exceptions: 
 
 - Parentheses may be used naturally like in math.
-  - Square brackets also group similar to parentheses, but have the semantic meaning of specifying a for-each loop.
+- Square brackets also group similar to parentheses, but have the semantic meaning of specifying a for-each loop.
 - The $ symbol acts like in Haskell, that is, executes everything to the right of it first. This is mainly syntactic sugar to avoid too many nested parentheses.
 - The "default" operator is concatenation. Placing multiple lists/numbers next to each other creates a single list containing those elements. This is the lowest priority operation.
 
