@@ -30,7 +30,7 @@ forEachOperation : binaryOp (atomTerm | RTL termSeq)  #forEachBinary
 
 baseNullaryOp : OP_VAR1 | OP_VAR2 | OP_VAR3 | OP_READ_LIST | OP_READ_STR ;
 
-baseNumUnaryOp : OP_FACT | OP_NEXT | OP_PREV | OP_ROUND | OP_NEGATE ;
+baseNumUnaryOp : OP_FACT | OP_NEXT | OP_PREV | OP_ROUND | OP_NEGATE | OP_BIN_NOT;
 
 baseNumBinaryOp : OP_ADD | OP_SUB | OP_MUL | OP_DIV | OP_MOD | OP_POW | OP_LOG | OP_SMALL | OP_BIG
          | OP_INC_RANGE | OP_RANGE | OP_BIN_AND | OP_BIN_OR | OP_BIN_XOR ;
