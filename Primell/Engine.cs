@@ -77,7 +77,7 @@ namespace dpenner1.Primell
                     }
                     else
                     {
-                        WriteLine("Unrecognized input");
+                        new Engine().Run(input, settings);
                     }
                 }
             }

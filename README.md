@@ -66,7 +66,7 @@ Programs may have multiple lines and the lines are executed from top to bottom i
 
 # Running Primell #
 
-At the moment, the interpreter engine only supports running code from a file and does not yet support a REPL mode (an unforgivable sin for an interpreted language).
+At the moment, the interpreter engine supports running code from a file and a limited REPL mode (single line input, no memory maintained).
 
 Interpreter commands are prefixed with `?`, which on its own pulls up the help menu. To run a file, use:
 
