@@ -11,27 +11,22 @@ Primell is a language that likes prime numbers. So much in fact, that it is the 
 
 Primell was created as an experiment. I had intended on creating a more serious language down the road and Primell was a learning step. Also, it was amusing to create a programming language that doesn't allow 0 or 1 in its code.
 
-# Data types
+# Overview
+
+_This overview presents high-level highlights of Primell, see the [wiki](https://github.com/DPenner1/Primell/wiki) for details._
+ 
+## Data types
 
 Primell has but two data types:
 
 - Numbers (arbitrary precision rational, IEEE 754-like support of infinity and NaN)
-- "Lists" of these two datatypes
+- "Lists" of these two datatypes (including infinite length lists)
 	
 Other familiar data types are only simulated with these. For example:
 - Boolean: A non-empty list consisting of only prime numbers is considered true. Anything else is false. (This is the truest truth, but alternative truths are configurable.)
 - There aren't really others yet.
 
-Primell's lists are not really lists but they are more like dynamic arrays. Here are its properties:
-
-- 0-indexed
-- Can be infinite
-- Attempting to access an index not yet set implicitly fills the list up to that point with empty lists
-- A 1-element list is not distinguishable from its containing element
-
-A corollary of that last point is that a number can be treated as a one-element list in every context.
-
-# Operators
+## Operators
 
 With most allowed characters being used for numbers, operators are completely made of symbols. Most of them are intuitive though. Really. Especially with stretches of imagination.
 
@@ -44,7 +39,7 @@ Since Primell is not very familiar with how operators work, Primell for the most
 
 Operators may only take up to two arguments. Though all operators are able to work on both numbers and lists, it is convenient to define them in terms of one or the other. See wiki for a list of the operators.
 
-# Program Flow #
+## Program Flow 
 
 Every program must start with a number or a list so that Primell has something to work with. Then, a sequence of operations are applied to get new values. Here is an single-line example:
 
@@ -62,7 +57,7 @@ You'll note that the parentheses were not printed to the screen. The outermost p
 
 Note that spaces aren't usually necessary, `(2 3 5)+2_~_>*3` would have been an identical program.
 
-Programs may have multiple lines and the lines are executed from top to bottom in the same manner. Primell doesn't quite have traditional control-flow like other programming languages, but instead does have the capability to incorporate lines of code within another line. Check out the conditional branch operator `?/`. This is actually sufficient for simulating a Turing machine (see the Examples.md file for details).
+Programs may have multiple lines and the lines are executed from top to bottom in the same manner. Primell doesn't quite have traditional control-flow like other programming languages, but instead does have the capability to incorporate lines of code within another line. Check out the conditional branch operator `?/`. This is actually sufficient for simulating a Turing machine (see the [Examples.md](https://github.com/DPenner1/Primell/blob/main/Examples/Examples.md) file for details).
 
 # Running Primell #
 
