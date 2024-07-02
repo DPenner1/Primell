@@ -5,7 +5,11 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Antlr4Generation", "Antlr4Generation\Antlr4Generation.csproj", "{CD0B1AC8-9BC5-402D-ACD1-62DA4582BAEC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Prime", "Primell\Prime.csproj", "{F5CE8364-255D-4C4E-B26C-B977B7B8573A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Prime", "PrimellCs\Prime.csproj", "{F5CE8364-255D-4C4E-B26C-B977B7B8573A}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Primell", "Primell\Primell.fsproj", "{30F2AC8A-6B32-4A8F-851F-28F8002A711A}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Primell.Tests", "Primell.Tests\Primell.Tests.fsproj", "{07E187E4-2E9E-4ECF-ABA6-67DE2E164AAF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,5 +28,13 @@ Global
 		{F5CE8364-255D-4C4E-B26C-B977B7B8573A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F5CE8364-255D-4C4E-B26C-B977B7B8573A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F5CE8364-255D-4C4E-B26C-B977B7B8573A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30F2AC8A-6B32-4A8F-851F-28F8002A711A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30F2AC8A-6B32-4A8F-851F-28F8002A711A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30F2AC8A-6B32-4A8F-851F-28F8002A711A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30F2AC8A-6B32-4A8F-851F-28F8002A711A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07E187E4-2E9E-4ECF-ABA6-67DE2E164AAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07E187E4-2E9E-4ECF-ABA6-67DE2E164AAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07E187E4-2E9E-4ECF-ABA6-67DE2E164AAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07E187E4-2E9E-4ECF-ABA6-67DE2E164AAF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
