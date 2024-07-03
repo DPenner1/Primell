@@ -10,7 +10,7 @@ type Infinity =
          | Negative -> "-∞"
 
 // In terms of Infinity, NaN, signed zero, this type follows IEEE-754 wherever possible
-// Otherwise, we try to mimic BigInteger as much as possible
+// If IEEE754 is silent, try to mimic BigInteger API
 [<Struct>]
 type PNumber = 
   | Rational of bigint * bigint  // Sign on denominator so that positive/negative zero can work
@@ -86,7 +86,12 @@ type PNumber =
           | Infinity Positive, Infinity Negative | Infinity Negative, Infinity Positive -> NaN
           | Infinity _ as x', _ -> x'
           | _, (Infinity _ as y') -> y'
-          | Rational(n1, d1), Rational(n2, d2) -> Rational(n1*d2 + n2*d1, d1*d2) |> PNumber.Normalize
+          | Rational(n1, d1), Rational(n2, d2) -> 
+              let r = PNumber.Normalize <| Rational(n1*d2 + n2*d1, d1*d2) 
+              if r.IsZero then // fun IEEE-754 compliance
+                if d1.Sign = -1 && d2.Sign = -1 then PNumber.NegativeZero else PNumber.Zero
+              else 
+                r  
 
         static member (-) (x, y) = x + (-y)
 
@@ -106,7 +111,7 @@ type PNumber =
           | Rational(n1, d1), Rational(n2, d2) -> Rational(n1*n2, d1*d2) |> PNumber.Normalize
           | _ -> failwith "Shouldn't be possible"
 
-        static member Reciprocal(x: PNumber) =
+        static member Reciprocal x =
           match x with
           | NaN -> NaN
           | Infinity Positive -> PNumber.Zero
@@ -168,9 +173,8 @@ type PNumber =
               else Rational(q + bigint.One, bigint.One)
           | _ -> x
 
-        static member Floor x = PNumber.Ceiling(x) - PNumber.One
+        static member Floor x = PNumber.Ceiling x - PNumber.One
 
-        // TODO verify round to even
         static member Round x =
           match x with
           | NaN -> NaN
@@ -178,17 +182,15 @@ type PNumber =
           | Rational(_,_) as r when r.IsInteger -> r 
           | Rational(n, d) -> 
               let q, rem = bigint.DivRem(n, d) // In normalized form (sign on d), rem will always be positive
-              if rem * 2I >= bigint.Abs d then 
-                Rational(q + bigint d.Sign |> bigint.Abs, bigint d.Sign) 
-              else 
-                Rational(bigint.Abs q, bigint d.Sign)
               
-              (*
-              match n.Sign, bigint.Abs rem * 2I >= bigint.Abs d with
-              | 1, true -> Rational(q + 1I, 1I)
-              | 1, false -> Rational(q, 1I)
-              | -1, true -> Rational(q - 1I, -1I)
-              | -1, false -> Rational(q, -1I)
-              | _ -> failwith "This shouldn't be possible"*)
-
+              if rem * 2I > bigint.Abs d then 
+                Rational(q + bigint d.Sign |> bigint.Abs, bigint d.Sign) 
+              elif rem * 2I < bigint.Abs d then
+                Rational(bigint.Abs q, bigint d.Sign)
+              else   // 0.5 remainder, round to even
+                Rational(q + (if q.IsEven then 0I else bigint d.Sign) |> bigint.Abs, bigint d.Sign)
+              
         
+        static member Range left right =
+          failwith "not implemented"
+          

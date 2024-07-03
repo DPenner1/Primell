@@ -46,7 +46,7 @@ module PrimeLib =
   // Note: this is the deterministic (assuming ERH) Miller test, not the more common probabilitic Miller-Rabin
   // Because I plan on going to BPSW, I don't want to put in the effort to code the random trials required for Miller-Rabin
   // https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test#Miller_test
-  let private Miller(n: bigint) =
+  let private Miller n =
     let limit = 2.0 * bigint.Log n ** 2 |> ceil
     (* note, this is a bit different than Wikipedia's limit of min(n - 2, floor( 2ln(n)^2 ))
        based on Wolfram Alpha, n-2 is greater when n >= 20, so I can ignore this as I'm not calling it with n < 20
@@ -61,14 +61,14 @@ module PrimeLib =
     |> not
 
   // Miller test for now to get things going, plan on going to BPSW
-  let private IsPrime'(n: bigint) =
+  let private IsPrime' n =
       if primes.Contains n   // we've already seen this prime
         then true
       elif List.exists (fun p -> (n % p).IsZero) smallPrimes  // checking small divisors is more efficient
         then false
       else Miller n
 
-  let IsPrime(x: PNumber) = 
+  let IsPrime x = 
     match x with
     | Rational(n, d) as r when n > 1I && d.IsOne -> 
         let isPrime = IsPrime' n
@@ -76,7 +76,7 @@ module PrimeLib =
         isPrime      
     | _ -> false
 
-  let rec NextPrime'(x:bigint) =
+  let rec private NextPrime' x =
     let nextInt = x + 1I
     if IsPrime' nextInt then nextInt else NextPrime' nextInt
 
