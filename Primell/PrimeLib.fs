@@ -70,9 +70,9 @@ module PrimeLib =
 
   let IsPrime x = 
     match x with
-    | Rational(n, d) as r when n > 1I && d.IsOne -> 
-        let isPrime = IsPrime' n
-        if isPrime then primes.Add n |> ignore // memoize
+    | Rational r when r.IsInteger && r.Numerator > 1I -> 
+        let isPrime = IsPrime' r.Numerator
+        if isPrime then primes.Add r.Numerator |> ignore // memoize
         isPrime      
     | _ -> false
 
@@ -85,9 +85,5 @@ module PrimeLib =
     | NaN -> NaN
     | Infinity Positive -> Infinity Positive
     | Infinity Negative -> PNumber.Two
-    | Rational(_,_) as r when r.Sign.IsMinusOne -> PNumber.Two
-    | Rational(n,d) as r ->   // the PNumber type is really awkward here 
-                              // (I don't want to expose a Numerator:bigint as that has no meaning for NaN/Infinity)
-        match PNumber.Floor(r) with
-        | Rational(n', d') -> Rational(NextPrime' n', d')
-        | _ -> failwith "Shouldn't be possible"
+    | Rational r when r.Sign < 1 -> PNumber.Two
+    | Rational r -> Rational <| R(NextPrime' ((floor r).Numerator), 1)

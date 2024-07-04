@@ -5,7 +5,7 @@ open dpenner1.PrimellF
 
 let TestRange(range, primes) =
   range |> List.iter(fun i ->
-    Assert.Equal(List.contains i primes, PrimeLib.IsPrime(Rational(i, 1I)))
+    Assert.Equal(List.contains i primes, PrimeLib.IsPrime(Rational <| R(i, 1I)))
   )
 
 [<Fact>]
@@ -26,10 +26,10 @@ let ``Test Is Prime Special Cases`` () =
   Assert.False <| PrimeLib.IsPrime(Infinity Positive)
   Assert.False <| PrimeLib.IsPrime(Infinity Negative)
   
-  Assert.False <| PrimeLib.IsPrime(Rational(1I, -1I))
-  Assert.False <| PrimeLib.IsPrime(Rational(0I, 1I))
-  Assert.False <| PrimeLib.IsPrime(Rational(1I, 1I))
+  Assert.False <| PrimeLib.IsPrime(Rational <| R(1I, -1I))
+  Assert.False <| PrimeLib.IsPrime(Rational <| R(0I, 1I))
+  Assert.False <| PrimeLib.IsPrime(Rational <| R(1I, 1I))
 
-  Assert.True <| PrimeLib.IsPrime(Rational(2I, 1I))
+  Assert.True <| PrimeLib.IsPrime(Rational <| R(2I, 1I))
 
-  Assert.False <| PrimeLib.IsPrime(Rational(5I, 2I))
+  Assert.False <| PrimeLib.IsPrime(Rational <| R(5I, 2I))

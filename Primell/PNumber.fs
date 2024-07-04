@@ -1,6 +1,8 @@
 namespace dpenner1.PrimellF
 
-[<Struct>]
+open System.Runtime.CompilerServices
+
+[<Struct; IsReadOnly>]
 type Infinity =
   | Positive
   | Negative
@@ -9,106 +11,167 @@ type Infinity =
          | Positive -> "∞"
          | Negative -> "-∞"
 
+// I switched to F# for typing / functional-based approach better matching what I need for Primell
+// but minor irritant here is that I can't override the default parameterless struct constructor here to prevent 0/0
+// while C# added that ability in C# 10...
+// TODO: generic math?
+[<Struct; IsReadOnly>]
+type R =
+
+  val Numerator: bigint
+  val Denominator: bigint
+  
+  // Couldn't figure out in F# how to avoid calculating gcd twice in constructor, so pass it in pre-calculated
+  // (ideally would be reduce: bool) Some methods will pass in 1, knowing the fraction is already reduced
+  private new(numerator: bigint, denominator: bigint, gcd: bigint) = 
+    { 
+      // sign always on denominator (for signed zero purposes)
+      Numerator = if numerator.IsZero then 0I else bigint.Abs numerator / gcd
+      Denominator = if denominator.IsZero then failwith "Divide by zero!" 
+                    elif numerator.IsZero then bigint denominator.Sign  // signed zero
+                    else denominator / gcd * bigint numerator.Sign
+      // TODO use .NET DivideByZeroException
+    }
+  new(numerator: bigint, denominator: bigint) = R(numerator, denominator, bigint.GreatestCommonDivisor(numerator, denominator))
+
+  member this.IsInteger = this.Denominator = 1I || this.Denominator = -1I
+
+  member this.IsZero = this.Numerator.IsZero
+
+  member this.IsOne = this.Numerator.IsOne && this.Denominator.IsOne
+
+  member this.Sign = this.Denominator.Sign
+  
+  //if this.Numerator.IsZero then this else R(1I, bigint this.Denominator.Sign, 1)   // negative zero possible
+  
+  static member (~-) (r: R) = R(r.Numerator, -r.Denominator, 1)
+
+  static member Reciprocal (r: R) = R(bigint.Abs r.Denominator, r.Numerator * bigint r.Denominator.Sign, 1)
+
+  static member (+) (left: R, right: R) = R(left.Numerator*right.Denominator + right.Numerator*left.Denominator, left.Denominator*right.Denominator)
+
+  static member (-) (left: R, right: R) = left + (-right)
+
+  static member ( * ) (left: R, right: R) = R(left.Numerator*right.Numerator, left.Denominator*right.Denominator)
+
+  static member ( / ) (left: R, right: R) = left * R.Reciprocal(right)
+
+  static member Abs (r: R) = R(r.Numerator, bigint.Abs r.Denominator, 1)
+
+  static member Ceiling (r: R) =
+    if r.IsInteger then 
+      r 
+    else
+      let q, rem = bigint.DivRem(r.Numerator, r.Denominator)
+      if r.Sign = 1 then 
+        R(q + 1I, 1, 1)
+      else
+        R(-q, -1, 1)
+
+  static member Floor (r: R) =
+    if r.IsInteger then 
+      r 
+    else
+      let q, rem = bigint.DivRem(r.Numerator, r.Denominator)
+      if r.Sign = 1 then 
+        R(q, 1, 1)
+      else
+        R(-q - 1I, bigint q.Sign, 1)
+
+  static member Round (r: R) = 
+    let q, rem = bigint.DivRem(r.Numerator, r.Denominator) // In normalized form (sign on denom), rem will always be positive
+              
+    if rem * 2I > bigint.Abs r.Denominator then 
+      R(q + bigint r.Denominator.Sign |> bigint.Abs, bigint r.Denominator.Sign, 1) 
+    elif rem * 2I < bigint.Abs r.Denominator then
+      R(bigint.Abs q, bigint r.Denominator.Sign, 1)
+    else   // 0.5 remainder, round to even
+      R(q + (if q.IsEven then 0I else bigint r.Denominator.Sign) |> bigint.Abs, bigint r.Denominator.Sign, 1)
+
+   (*       TODO - figure out the compiler error here
+  override this.ToString() =
+    String.concat "" [if this.Denominator.Sign = -1 then "-" else ""
+                      this.Numerator.ToString()
+                      if this.IsInteger then "" else "/" + this.Denominator.ToString()]
+                      *)
+
+  
 // In terms of Infinity, NaN, signed zero, this type follows IEEE-754 wherever possible
 // If IEEE754 is silent, try to mimic BigInteger API
-[<Struct>]
+[<Struct; IsReadOnly>]
 type PNumber = 
-  | Rational of bigint * bigint  // Sign on denominator so that positive/negative zero can work
-  | Infinity of Infinity         // thought of having Sign as a discriminated union, but I think that would be annoying
+  | Rational of R: R          // not naming R type gave compiler error 3204. 
+                              // Originally went for "of bigint * bigint", but couldn't reduce the fraction on construction,
+  | Infinity of Infinity      // Benefit: Pattern matching was actually cumbersome here. Downside: construction is now Rational <| R(n, d)
   | NaN
   with override this.ToString() =
          match this with 
          | NaN -> "NaN"
          | Infinity x -> x.ToString()
-         | Rational(n, d) -> String.concat "" [if d.Sign = -1 then "-" else ""; 
-                                               n.ToString(); 
-                                               if d = 1I || d = -1I then "" else "/" + d.ToString()]
+         | Rational r -> r.ToString()
                                                                 
-        static member One = Rational(1I, 1I)
-        static member MinusOne = Rational(1I, -1I)
-        static member Zero = Rational(0I, 1I)
-        static member NegativeZero = Rational(0I, -1I)
-        static member Two = Rational(2I, 1I)  // lowest Prime
+        static member One = Rational <| R(1I, 1I)
+        static member MinusOne = Rational <| R(1I, -1I)
+        static member Zero = Rational <| R(0I, 1I)
+        static member NegativeZero = Rational <| R(0I, -1I)
+        static member Two = Rational <| R(2I, 1I)  // lowest Prime
         
         
         member this.IsZero =
           match this with
-          | Rational(n, d) -> n.IsZero
+          | Rational _ -> this = PNumber.Zero
           | _ -> false
 
         member this.IsOne =
           match this with
-          | Rational(n, d) -> n.IsOne && d.IsOne
+          | Rational _ -> this = PNumber.One
           | _ -> false
 
         member this.IsMinusOne =
           match this with
-          | Rational(n, d) ->  n.IsOne && (-d).IsOne
+          | Rational _ -> this = PNumber.MinusOne
           | _ -> false
 
         member this.IsInteger =
           match this with
-          | Rational(_, d) -> d = 1I || d = -1I
+          | Rational r -> r.IsInteger
           | _ -> false
-
-        // ideally, would call this on construction, though it appears thats not possible in F# discriminated unions
-        static member private Normalize x =
-          match x with
-          | Rational(n, d) when n.IsZero && d.IsZero -> NaN
-          | Rational(n, d) when n.IsZero && d.Sign = 1 -> Rational(bigint.Zero, bigint.One)
-          | Rational(n, d) when n.IsZero && d.Sign = -1 -> Rational(bigint.Zero, bigint.MinusOne)
-          | Rational(n, d) when d.IsZero && n.Sign = 1 -> Infinity Positive
-          | Rational(n, d) when d.IsZero && n.Sign = -1 -> Infinity Negative
-          | Rational(n, d) -> let gcd = bigint.GreatestCommonDivisor(n, d)
-                              Rational(bigint.Abs n/gcd, d / gcd * bigint n.Sign)
-          | _ -> x        
 
         member this.Sign =
           match this with
           | NaN -> NaN  // .Net double.Sign crashes, I would like not to crash
           | Infinity Negative -> PNumber.MinusOne
           | Infinity Positive -> PNumber.One
-          | Rational(n, d) when n.IsZero && d.Sign = 1  -> PNumber.Zero
-          | Rational(n, d) when n.IsZero && d.Sign = -1 -> PNumber.NegativeZero  // this may trip people up and that's amazing (until I get hit with it)
-          | Rational(n, d) -> Rational(bigint.One, bigint d.Sign)
+          | Rational r -> Rational <| R(1, bigint r.Sign)
 
         static member (~-) x =
           match x with
           | NaN -> NaN
           | Infinity Positive -> Infinity Negative
           | Infinity Negative -> Infinity Positive
-          | Rational(n, d) -> Rational(n, -d)
+          | Rational r -> Rational -r
 
-        // TODO - see if you can figure out an F# way to not care about matching order
-        static member (+) (x, y) =
-          match x, y with
+        static member (+) (left, right) =
+          match left, right with
           | NaN, _ | _, NaN -> NaN
           | Infinity Positive, Infinity Negative | Infinity Negative, Infinity Positive -> NaN
-          | Infinity _ as x', _ -> x'
-          | _, (Infinity _ as y') -> y'
-          | Rational(n1, d1), Rational(n2, d2) -> 
-              let r = PNumber.Normalize <| Rational(n1*d2 + n2*d1, d1*d2) 
-              if r.IsZero then // fun IEEE-754 compliance
-                if d1.Sign = -1 && d2.Sign = -1 then PNumber.NegativeZero else PNumber.Zero
-              else 
-                r  
+          | Infinity _ as left', _ -> left'
+          | _, (Infinity _ as right') -> right'
+          | Rational left', Rational right' -> Rational (left' + right')
 
-        static member (-) (x, y) = x + (-y)
+        static member (-) (left: PNumber, right: PNumber): PNumber = left + (-right)
 
         // TODO
         //static member (~++)
-
-        // TODO - see if you can figure out an F# way to not care about matching order
-        static member ( * ) (x, y) =
-          match x, y with
+        static member ( * ) (left, right) =
+          match left, right with
           | NaN, _ | _, NaN -> NaN
-          | Infinity _, Rational(n, d) when n.IsZero -> NaN
-          | Rational(n, d), Infinity _ when n.IsZero -> NaN
-          | Infinity Positive, _ when y.Sign.IsMinusOne -> Infinity Negative
-          | Infinity Positive, _ when y.Sign.IsOne-> Infinity Positive
-          | Infinity Negative, _ when y.Sign.IsMinusOne -> Infinity Positive
-          | Infinity Negative, _ when y.Sign.IsOne -> Infinity Negative
-          | Rational(n1, d1), Rational(n2, d2) -> Rational(n1*n2, d1*d2) |> PNumber.Normalize
+          | Infinity _, Rational r | Rational r, Infinity _ when r.IsZero -> NaN
+          | Infinity Positive, _ when right.Sign.IsMinusOne -> Infinity Negative
+          | Infinity Positive, _ when right.Sign.IsOne-> Infinity Positive
+          | Infinity Negative, _ when right.Sign.IsMinusOne -> Infinity Positive
+          | Infinity Negative, _ when right.Sign.IsOne -> Infinity Negative
+          | Rational left', Rational right' -> Rational <| left' * right'
           | _ -> failwith "Shouldn't be possible"
 
         static member Reciprocal x =
@@ -116,24 +179,22 @@ type PNumber =
           | NaN -> NaN
           | Infinity Positive -> PNumber.Zero
           | Infinity Negative -> PNumber.NegativeZero
-          | Rational(n, d) when n.IsZero && d.Sign = 1 -> Infinity Positive
-          | Rational(n, d) when n.IsZero && d.Sign = -1 -> Infinity Negative
-          | Rational(n, d) when d.Sign = 1 -> Rational(d, n)
-          | Rational(n, d) when d.Sign = -1 -> Rational(-d, -n)
-          | _ -> failwith "Shouldn't be possible"
+          | Rational r when r.IsZero && r.Denominator.Sign = -1 -> Infinity Negative 
+          | Rational r when r.IsZero && r.Denominator.Sign = 1 -> Infinity Positive
+          | Rational r -> Rational <| R.Reciprocal r
 
-        static member (/) (x, y) = x * PNumber.Reciprocal y
+        static member (/) (left, right) = left * PNumber.Reciprocal right
 
         static member Abs x = 
           match x with
           | NaN -> NaN
           | Infinity _ -> Infinity Positive
-          | Rational(n, d) -> Rational(n, bigint.Abs d)
+          | Rational r -> Rational <| R.Abs r
 
         
 
          // TODO: compiler warnings on < > operators 
-
+   (*
         static member (<) (x, y) =
           match x, y with
           | NaN, _ | _, NaN -> false
@@ -162,35 +223,24 @@ type PNumber =
           | _, Infinity Positive -> false
           | _, Infinity Negative -> true
           | Rational(n1, d1), Rational(n2, d2) -> (x - y).Sign.IsOne
-
-        // TODO verify this for negative numbers
+*)
         static member Ceiling x =
           match x with
-          | Rational(_,_) as r when r.IsInteger -> r
-          | Rational(n, d) as r -> 
-              let q, rem = bigint.DivRem(n, d)
-              if r.Sign.IsMinusOne then Rational(bigint.Abs(q), bigint q.Sign)
-              else Rational(q + bigint.One, bigint.One)
+          | Rational r -> Rational <| R.Ceiling r
           | _ -> x
 
-        static member Floor x = PNumber.Ceiling x - PNumber.One
+// wrong for integers...
+        static member Floor x = 
+          match x with
+          | Rational r -> Rational <| R.Floor r
+          | _ -> x
 
         static member Round x =
           match x with
-          | NaN -> NaN
-          | Infinity s -> Infinity s
-          | Rational(_,_) as r when r.IsInteger -> r 
-          | Rational(n, d) -> 
-              let q, rem = bigint.DivRem(n, d) // In normalized form (sign on d), rem will always be positive
-              
-              if rem * 2I > bigint.Abs d then 
-                Rational(q + bigint d.Sign |> bigint.Abs, bigint d.Sign) 
-              elif rem * 2I < bigint.Abs d then
-                Rational(bigint.Abs q, bigint d.Sign)
-              else   // 0.5 remainder, round to even
-                Rational(q + (if q.IsEven then 0I else bigint d.Sign) |> bigint.Abs, bigint d.Sign)
+          | Rational r -> Rational <| R.Round r
+          | _ -> x
               
         
         static member Range left right =
           failwith "not implemented"
-          
+
