@@ -1,3 +1,4 @@
+// note: Tests not entirely comprehensive
 module PNumberTests
 
 open Xunit
@@ -5,68 +6,80 @@ open dpenner1.PrimellF
 
 [<Fact>]
 let ``Test Round Special``() =
-    Assert.Equal(NaN, PNumber.Round(NaN))    
-    Assert.Equal(Infinity Positive, PNumber.Round(Infinity Positive))
-    Assert.Equal(Infinity Negative, PNumber.Round(Infinity Negative))
+    Assert.Equal(NaN, round NaN)    
+    Assert.Equal(Infinity Positive, round <| Infinity Positive)
+    Assert.Equal(Infinity Negative, round <| Infinity Negative)
 
-    let r1 = Rational <| R(1I, 2I)
-    let r2 = Rational <| R(1I, -2I)
+    let r1 = Rational <| R(1, 2)
+    let r2 = Rational <| R(1, -2)
 
     //signed zero
-    Assert.Equal(Rational <| R(0I, 1I), PNumber.Round(r1))
-    Assert.Equal(Rational <| R(0I, -1I), PNumber.Round(r2))
+    Assert.Equal(Rational <| R(0, 1), round r1)
+    Assert.Equal(Rational <| R(0, -1), round r2)
 
 [<Fact>]
 let ``Test Round Thirds``() =
-    let r1 = Rational <| R(11I, 3I)
-    let r2 = Rational <| R(11I, -3I)
-    let r3 = Rational <| R(10I, 3I)
-    let r4 = Rational <| R(10I, -3I)
+    let r1 = Rational <| R(11, 3)
+    let r2 = Rational <| R(11, -3)
+    let r3 = Rational <| R(10, 3)
+    let r4 = Rational <| R(10, -3)
 
-    Assert.Equal(Rational <| R(4I, 1I), PNumber.Round(r1))    
-    Assert.Equal(Rational <| R(4I, -1I), PNumber.Round(r2))
-    Assert.Equal(Rational <| R(3I, 1I), PNumber.Round(r3))
-    Assert.Equal(Rational <| R(3I, -1I), PNumber.Round(r4))
+    Assert.Equal(Rational <| R(4, 1), round r1)    
+    Assert.Equal(Rational <| R(4, -1), round r2)
+    Assert.Equal(Rational <| R(3, 1), round r3)
+    Assert.Equal(Rational <| R(3, -1), round r4)
 
 [<Fact>]
 let ``Test Round To Even``() =
-    let r1 = Rational <| R(9I, 2I)
-    let r2 = Rational <| R(9I, -2I)
-    let r3 = Rational <| R(7I, 2I)
-    let r4 = Rational <| R(7I, -2I)
+    let r1 = Rational <| R(9, 2)
+    let r2 = Rational <| R(9, -2)
+    let r3 = Rational <| R(7, 2)
+    let r4 = Rational <| R(7, -2)
 
-    Assert.Equal(Rational <| R(4I, 1I), PNumber.Round(r1))
-    Assert.Equal(Rational <| R(4I, -1I), PNumber.Round(r2))
-    Assert.Equal(Rational <| R(4I, 1I), PNumber.Round(r3))
-    Assert.Equal(Rational <| R(4I, -1I), PNumber.Round(r4))
+    Assert.Equal(Rational <| R(4, 1), round r1)
+    Assert.Equal(Rational <| R(4, -1), round r2)
+    Assert.Equal(Rational <| R(4, 1), round r3)
+    Assert.Equal(Rational <| R(4, -1), round r4)
+
+[<Fact>]
+let ``Test Round Near Zero``() =
+    let r1 = Rational <| R(2, 3)
+    let r2 = Rational <| R(2, -3)
+    let r3 = Rational <| R(1, 3)
+    let r4 = Rational <| R(1, -3)
+
+    Assert.Equal(Rational <| R(1, 1), round r1)
+    Assert.Equal(Rational <| R(1, -1), round r2)
+    Assert.Equal(Rational <| R(0, 1), round r3)
+    Assert.Equal(Rational <| R(0, -1), round r4)
 
 [<Fact>]
 let ``Test Ceil Special``() =
-  Assert.Equal(NaN, PNumber.Ceiling NaN)
-  Assert.Equal(Infinity Positive, PNumber.Ceiling(Infinity Positive))
-  Assert.Equal(Infinity Negative, PNumber.Ceiling(Infinity Negative))
+  Assert.Equal(NaN, ceil NaN)
+  Assert.Equal(Infinity Positive, ceil <| Infinity Positive)
+  Assert.Equal(Infinity Negative, ceil <| Infinity Negative)
 
 
 [<Fact>]
 let ``Test Ceil``() =
-  Assert.Equal(Rational <| R(2I, 1I), PNumber.Ceiling(Rational <| R(2I, 1I)))
-  Assert.Equal(Rational <| R(2I, -1I), PNumber.Ceiling(Rational <| R(2I, -1I)))
-  Assert.Equal(Rational <| R(4I, 1I), PNumber.Ceiling(Rational <| R(10I, 3I)))
-  Assert.Equal(Rational <| R(3I, -1I), PNumber.Ceiling(Rational <| R(10I, -3I)))
+  Assert.Equal(Rational <| R(2, 1), ceil(Rational <| R(2, 1)))
+  Assert.Equal(Rational <| R(2, -1), ceil(Rational <| R(2, -1)))
+  Assert.Equal(Rational <| R(4, 1), ceil(Rational <| R(10, 3)))
+  Assert.Equal(Rational <| R(3, -1), ceil(Rational <| R(10, -3)))
 
 [<Fact>]
 let ``Test Floor Special``() =
   Assert.Equal(NaN, floor NaN)
-  Assert.Equal(Infinity Positive, PNumber.Floor(Infinity Positive))
-  Assert.Equal(Infinity Negative, PNumber.Floor(Infinity Negative))
+  Assert.Equal(Infinity Positive, floor <| Infinity Positive)
+  Assert.Equal(Infinity Negative, floor <| Infinity Negative)
 
 
 [<Fact>]
 let ``Test Floor``() =
-  Assert.Equal(Rational <| R(2I, 1I), PNumber.Floor(Rational <| R(2I, 1I)))
-  Assert.Equal(Rational <| R(2I, -1I), PNumber.Floor(Rational <| R(2I, -1I)))
-  Assert.Equal(Rational <| R(4I, 1I), PNumber.Floor(Rational <| R(10I, 3I)))
-  Assert.Equal(Rational <| R(3I, -1I), PNumber.Floor(Rational <| R(10I, -3I)))
+  Assert.Equal(Rational <| R(2, 1), floor(Rational <| R(2, 1)))
+  Assert.Equal(Rational <| R(2, -1), floor(Rational <| R(2, -1)))
+  Assert.Equal(Rational <| R(3, 1), floor(Rational <| R(10, 3)))
+  Assert.Equal(Rational <| R(4, -1), floor(Rational <| R(10, -3)))
 
 [<Fact>]
 let ``Test Add Special``() =
@@ -74,18 +87,19 @@ let ``Test Add Special``() =
   Assert.Equal(NaN, NaN + Infinity Positive)
   Assert.Equal(NaN, Infinity Negative + Infinity Positive)
   Assert.Equal(NaN, Infinity Negative + NaN)
-  Assert.Equal(NaN, NaN + (Rational <| R(1I, 1I)))
-  Assert.Equal(NaN, (Rational <| R(1I, 1I)) + NaN)
+  Assert.Equal(NaN, NaN + (Rational <| R(1, 1)))
+  Assert.Equal(NaN, (Rational <| R(1, 1)) + NaN)
 
-  Assert.Equal(Infinity Positive, Infinity Positive + (Rational <| R(1I, 1I)))
-  Assert.Equal(Infinity Positive, (Rational <| R(1I, 1I)) + Infinity Positive)
-  Assert.Equal(Infinity Negative, Infinity Negative + (Rational <| R(1I, 1I)))
-  Assert.Equal(Infinity Negative, (Rational <| R(1I, 1I)) + Infinity Negative)
+  Assert.Equal(Infinity Positive, Infinity Positive + (Rational <| R(1, 1)))
+  Assert.Equal(Infinity Positive, (Rational <| R(1, 1)) + Infinity Positive)
+  Assert.Equal(Infinity Negative, Infinity Negative + (Rational <| R(1, 1)))
+  Assert.Equal(Infinity Negative, (Rational <| R(1, 1)) + Infinity Negative)
 
+  //signed zero
   Assert.Equal(PNumber.NegativeZero, PNumber.NegativeZero + PNumber.NegativeZero)
   Assert.Equal(PNumber.Zero, PNumber.NegativeZero + PNumber.Zero)
   Assert.Equal(PNumber.Zero, PNumber.Zero + PNumber.NegativeZero)
-  Assert.Equal(PNumber.Zero, (Rational <| R(1I, -1I)) + (Rational <| R(1I, 1I)))
+  Assert.Equal(PNumber.Zero, (Rational <| R(1, -1)) + (Rational <| R(1, 1)))
 
 
 [<Fact>]
@@ -97,26 +111,26 @@ let ``Test Subtract Special``() =
   Assert.Equal(NaN, Infinity Negative - Infinity Negative)
   Assert.Equal(NaN, Infinity Negative - NaN)
   Assert.Equal(NaN, NaN - Infinity Negative)
-  Assert.Equal(NaN, NaN - (Rational <| R(1I, 1I)))
-  Assert.Equal(NaN, (Rational <| R(1I, 1I)) - NaN)
+  Assert.Equal(NaN, NaN - (Rational <| R(1, 1)))
+  Assert.Equal(NaN, (Rational <| R(1, 1)) - NaN)
 
   Assert.Equal(Infinity Negative, Infinity Negative - Infinity Positive)
   Assert.Equal(Infinity Positive, Infinity Positive - Infinity Negative)
-  Assert.Equal(Infinity Positive, Infinity Positive - (Rational <| R(1I, 1I)))
-  Assert.Equal(Infinity Negative, (Rational <| R(1I, 1I)) - Infinity Positive)
-  Assert.Equal(Infinity Negative, Infinity Negative - (Rational <| R(1I, 1I)))
-  Assert.Equal(Infinity Positive, (Rational <| R(1I, 1I)) - Infinity Negative)
+  Assert.Equal(Infinity Positive, Infinity Positive - (Rational <| R(1, 1)))
+  Assert.Equal(Infinity Negative, (Rational <| R(1, 1)) - Infinity Positive)
+  Assert.Equal(Infinity Negative, Infinity Negative - (Rational <| R(1, 1)))
+  Assert.Equal(Infinity Positive, (Rational <| R(1, 1)) - Infinity Negative)
 
-  // IEEE 754 standard has this gem
+  // EEE 754 standard has this gem
   Assert.Equal(PNumber.NegativeZero, PNumber.NegativeZero - (-PNumber.NegativeZero))
 
-  Assert.Equal(PNumber.Zero, (Rational <| R(1I, 1I)) - (Rational <| R(1I, 1I)))
+  Assert.Equal(PNumber.Zero, (Rational <| R(1, 1)) - (Rational <| R(1, 1)))
 
 [<Fact>]
 let ``Test Negate Special``() =
   Assert.Equal(NaN, -NaN)
   Assert.Equal(Infinity Positive, -Infinity Negative)
   Assert.Equal(Infinity Negative, -Infinity Positive)
-  Assert.Equal(Rational <| R(1I, -1I), -(Rational <| R(1I, 1I)))
-  Assert.Equal(Rational <| R(1I, 1I), -(Rational <| R(1I, -1I)))
+  Assert.Equal(Rational <| R(1, -1), -(Rational <| R(1, 1)))
+  Assert.Equal(Rational <| R(1, 1), -(Rational <| R(1, -1)))
 

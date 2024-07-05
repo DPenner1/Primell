@@ -1,3 +1,4 @@
+// note: Tests not entirely comprehensive
 module PrimeLibTests
 
 open Xunit
@@ -26,10 +27,11 @@ let ``Test Is Prime Special Cases`` () =
   Assert.False <| PrimeLib.IsPrime(Infinity Positive)
   Assert.False <| PrimeLib.IsPrime(Infinity Negative)
   
-  Assert.False <| PrimeLib.IsPrime(Rational <| R(1I, -1I))
-  Assert.False <| PrimeLib.IsPrime(Rational <| R(0I, 1I))
-  Assert.False <| PrimeLib.IsPrime(Rational <| R(1I, 1I))
+  Assert.False <| PrimeLib.IsPrime(Rational <| R(1, -1))
+  Assert.False <| PrimeLib.IsPrime(Rational <| R(0, 1))
+  Assert.False <| PrimeLib.IsPrime(Rational <| R(1, 1))
 
-  Assert.True <| PrimeLib.IsPrime(Rational <| R(2I, 1I))
+  Assert.True <| PrimeLib.IsPrime(Rational <| R(2, 1))
 
-  Assert.False <| PrimeLib.IsPrime(Rational <| R(5I, 2I))
+  Assert.False <| PrimeLib.IsPrime(Rational <| R(5, 2))
+  Assert.False <| PrimeLib.IsPrime(Rational <| R(5, -2))

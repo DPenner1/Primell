@@ -1,5 +1,10 @@
 namespace dpenner1.PrimellF
 
+// warning about overloading the comparison operators...
+// I *think* this is due to the semantics around IEEE754 comparisons vs "normal" comparisons, 
+// but I'm specifcally trying to mimic IEEE754 comparisons, so I'm ok with disabling this
+#nowarn "86"
+
 open System.Runtime.CompilerServices
 
 [<Struct; IsReadOnly>]
@@ -48,7 +53,13 @@ type R =
 
   static member Reciprocal (r: R) = R(bigint.Abs r.Denominator, r.Numerator * bigint r.Denominator.Sign, 1)
 
-  static member (+) (left: R, right: R) = R(left.Numerator*right.Denominator + right.Numerator*left.Denominator, left.Denominator*right.Denominator)
+  static member (+) (left: R, right: R) = // keeping sign on denominator and signed zero really hurts for this operation
+    let signAdjust = bigint (left.Sign * right.Sign)
+    let numeratorSum = left.Numerator*right.Denominator*signAdjust + right.Numerator*left.Denominator*signAdjust
+    if numeratorSum.IsZero then 
+      if left.Denominator.Sign = -1 && right.Denominator.Sign = -1 then R(0I, -1I, 1) else R(0I, 1I, 1) // signed zero
+    else 
+      R(numeratorSum, left.Denominator * bigint.Abs right.Denominator)
 
   static member (-) (left: R, right: R) = left + (-right)
 
@@ -59,8 +70,7 @@ type R =
   static member Abs (r: R) = R(r.Numerator, bigint.Abs r.Denominator, 1)
 
   static member Ceiling (r: R) =
-    if r.IsInteger then 
-      r 
+    if r.IsInteger then r 
     else
       let q, rem = bigint.DivRem(r.Numerator, r.Denominator)
       if r.Sign = 1 then 
@@ -69,14 +79,13 @@ type R =
         R(-q, -1, 1)
 
   static member Floor (r: R) =
-    if r.IsInteger then 
-      r 
+    if r.IsInteger then r 
     else
       let q, rem = bigint.DivRem(r.Numerator, r.Denominator)
       if r.Sign = 1 then 
         R(q, 1, 1)
       else
-        R(-q - 1I, bigint q.Sign, 1)
+        R(-q + 1I, -1, 1)
 
   static member Round (r: R) = 
     let q, rem = bigint.DivRem(r.Numerator, r.Denominator) // In normalized form (sign on denom), rem will always be positive
@@ -88,12 +97,34 @@ type R =
     else   // 0.5 remainder, round to even
       R(q + (if q.IsEven then 0I else bigint r.Denominator.Sign) |> bigint.Abs, bigint r.Denominator.Sign, 1)
 
-   (*       TODO - figure out the compiler error here
+  static member (<) (left: R, right: R) = 
+    if left.Sign < right.Sign then true
+    elif left.Sign > right.Sign then false
+    elif left.Sign = 0 then false  // signed zero compares equal
+    else left.Numerator * right.Denominator < right.Numerator * left.Denominator
+
+  static member (>) (left: R, right: R) = 
+    if left.Sign > right.Sign then true
+    elif left.Sign < right.Sign then false
+    elif left.Sign = 0 then false  // signed zero compares equal
+    else left.Numerator * right.Denominator > right.Numerator * left.Denominator
+
+  static member (=) (left: R, right: R) = 
+    (left.Numerator = right.Numerator && left.Denominator = right.Denominator) || (left.IsZero && right.IsZero)
+
+  static member (<=) (left: R, right: R) = left = right || left < right
+
+  static member (>=) (left: R, right: R) = left = right || left > right
+
+  static member (<>) (left: R, right: R) = left = right |> not
+
   override this.ToString() =
-    String.concat "" [if this.Denominator.Sign = -1 then "-" else ""
-                      this.Numerator.ToString()
-                      if this.IsInteger then "" else "/" + this.Denominator.ToString()]
-                      *)
+    let str1 = if this.Denominator.Sign = -1 then "-" else ""
+    let str2 = this.Numerator.ToString()
+    let str3 = if this.IsInteger then "" else "/" + bigint.Abs(this.Denominator).ToString()
+    
+    String.concat "" [str1; str2; str3] 
+                      
 
   
 // In terms of Infinity, NaN, signed zero, this type follows IEEE-754 wherever possible
@@ -194,50 +225,54 @@ type PNumber =
         
 
          // TODO: compiler warnings on < > operators 
-   (*
-        static member (<) (x, y) =
-          match x, y with
+   
+        static member (<) (left, right) =
+          match left, right with
           | NaN, _ | _, NaN -> false
           | Infinity Negative, Infinity Negative -> false
           | Infinity Negative, _ -> true
           | Infinity Positive, _ -> false
           | _, Infinity Positive -> true
           | _, Infinity Negative -> false
-          | Rational(n1, d1), Rational(n2, d2) -> (y - x).Sign.IsOne
-
-        static member (<=) (x, y) =
-          match x, y with
-          | NaN, _ | _, NaN -> false
-          | _, Infinity Positive -> true
-          | Infinity Negative, _ -> true
-          | Infinity Positive, _ -> false          
-          | _, Infinity Negative -> false
-          | Rational(n1, d1), Rational(n2, d2) -> (y - x).Sign.IsOne || (y - x).Sign.IsZero
+          | Rational left', Rational right' -> left' < right'
           
-        static member (>) (x, y) =
-          match x, y with
+        static member (>) (left, right) =
+          match left, right with
           | NaN, _ | _, NaN -> false
           | Infinity Positive, Infinity Positive -> false
           | Infinity Negative, _ -> false
           | Infinity Positive, _ -> true
           | _, Infinity Positive -> false
           | _, Infinity Negative -> true
-          | Rational(n1, d1), Rational(n2, d2) -> (x - y).Sign.IsOne
-*)
+          | Rational left', Rational right' -> left' > right'
+
+        static member (=) (left, right) =
+          match left, right with
+          | NaN, NaN -> false   // the weird case!
+          | Infinity Positive, Infinity Positive -> true
+          | Infinity Negative, Infinity Negative -> true
+          | Rational left', Rational right' -> left' = right'
+          | _ -> false
+
+        static member (<=) (left: PNumber, right: PNumber) = left = right || left < right
+
+        static member (>=) (left: PNumber, right: PNumber) = left = right || left > right
+
+        static member (<>) (left: PNumber, right: PNumber) = left = right |> not  // NaN <> NaN is true
+
         static member Ceiling x =
           match x with
-          | Rational r -> Rational <| R.Ceiling r
+          | Rational r -> Rational <| ceil r
           | _ -> x
 
-// wrong for integers...
         static member Floor x = 
           match x with
-          | Rational r -> Rational <| R.Floor r
+          | Rational r -> Rational <| floor r
           | _ -> x
 
         static member Round x =
           match x with
-          | Rational r -> Rational <| R.Round r
+          | Rational r -> Rational <| round r
           | _ -> x
               
         

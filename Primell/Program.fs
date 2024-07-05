@@ -17,7 +17,7 @@ let dif = x - y
 
 let obj = PList(seq{ Atom(Rational <| R(1I, 2I)); Atom(Infinity Negative); PList(seq{ PList(Seq.empty); Atom(NaN) }) })
 
-printfn "%O" <| obj
+printfn "%O" <| floor(Rational <| R(10I, -3I))
 
 //let c = inputs |> List.concat
 
