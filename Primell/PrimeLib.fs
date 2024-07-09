@@ -28,9 +28,9 @@ module PrimeLib =
   let private MillerRabinRound(n: bigint, a: bigint, s: bigint, d: bigint) =
 
     let rec sLoop(s': bigint, x: bigint) =
-      // would have used match if pattern match allowed 0I, I think if-else slightly more readable in this case
+      // would have used match if pattern match allowed bitint 0I literal; I think if-else slightly more readable in this case
       if s'.IsZero then  
-        Undetermined(x)
+        Undetermined x
       else
         let y = bigint.ModPow(x, 2, n)
         if y.IsOne && x <> 1I && x <> n - 1I then 
@@ -47,11 +47,11 @@ module PrimeLib =
   // Because I plan on going to BPSW, I don't want to put in the effort to code the random trials required for Miller-Rabin
   // https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test#Miller_test
   let private Miller n =
-    let limit = 2.0 * bigint.Log n ** 2 |> ceil
+    let limit = 2.0 * (bigint.Log n ** 2 |> ceil)
     (* note, this is a bit different than Wikipedia's limit of min(n - 2, floor( 2ln(n)^2 ))
        based on Wolfram Alpha, n-2 is greater when n >= 20, so I can ignore this as I'm not calling it with n < 20
-       Then note the limit here is of type Double, but it won't overflow until given a bigint around 10^10^153. 
-       But because its Double, I'm using ceil instead of floor, to be safe in case of rounding error in the Double. 
+       Then note the limit here is of type float, but it won't overflow until given a bigint around 10^10^153. 
+       But because its float, I'm using ceil instead of floor, to be safe in case of rounding error in the float. 
        Miller is temporary until BPSW is implemented, so I'm OK with the slight rough edges here *)
 
     let d, s = FactorPowersOfTwo(n - 1I, 0I) // we aren't calling Miller with even numbers
@@ -70,14 +70,14 @@ module PrimeLib =
 
   let IsPrime x = 
     match x with
-    | Rational r when r.IsInteger && r.Numerator > 1I -> 
+    | Number r when r.IsInteger && r.Numerator > 1I -> 
         let isPrime = IsPrime' r.Numerator
         if isPrime then primes.Add r.Numerator |> ignore // memoize
         isPrime      
     | _ -> false
 
-  let rec private NextPrime' x =
-    let nextInt = x + 1I
+  let rec private NextPrime' n =
+    let nextInt = n + 1I
     if IsPrime' nextInt then nextInt else NextPrime' nextInt
 
   let NextPrime x =
@@ -85,5 +85,45 @@ module PrimeLib =
     | NaN -> NaN
     | Infinity Positive -> Infinity Positive
     | Infinity Negative -> PNumber.Two
-    | Rational r when r.Sign < 1 -> PNumber.Two
-    | Rational r -> Rational <| R(NextPrime' ((floor r).Numerator), 1)
+    | Number r when r.Sign < 1 -> PNumber.Two
+    | Number r -> BigRational(NextPrime' ((floor r).Numerator), 1) |> Number
+
+  let rec private PrevPrime' n =
+    let prevInt = n - 1I
+    if prevInt < 2I then failwith "No primes less than 2, silly" 
+    elif IsPrime' prevInt then prevInt 
+    else PrevPrime' prevInt
+
+  let PrevPrime x = 
+    match x with
+    | NaN -> NaN
+    | Infinity Positive -> Infinity Positive
+    | Infinity Negative -> NaN
+    | Number r when r <= BigRational(2, 1) -> NaN
+    | Number r -> BigRational(PrevPrime' ((ceil r).Numerator), 1) |> Number
+
+  let PrimeRange left right: seq<PNumber> = 
+    match left, right with
+    | NaN, _ | _, NaN -> 
+        Seq.empty
+    | Infinity Positive, _ -> 
+        seq { while true do yield Infinity Positive }
+    | Infinity Negative, Infinity Positive ->
+        PNumber.Range PNumber.Two (Infinity Positive) |> Seq.filter IsPrime
+    | Number _ as left', Infinity Positive -> 
+        PNumber.Range (max PNumber.Two left') (Infinity Positive) |> Seq.filter IsPrime
+    | Number _ as left', Infinity Negative when left' < PNumber.Two ->
+        Seq.empty
+    | Number _ as left', Infinity Negative when left' = PNumber.Two ->
+        Seq.singleton PNumber.Two  // TODO can get rid of this case when inclusive range is implemented
+    | Number _ as left', Infinity Negative when left' > PNumber.Two ->
+        PNumber.Range left' PNumber.Two |> Seq.filter IsPrime
+    | Number _ as left', (Number _ as right') when left' < PNumber.Two && right' <= PNumber.Two ->
+        Seq.empty
+    | Number _ as left', (Number _ as right') when left' > right' ->
+        PNumber.Range left' (max right' PNumber.Two) |> Seq.filter IsPrime
+    | Number _ as left', (Number _ as right') when left' < right' ->
+        PNumber.Range (max left' PNumber.Two) right' |> Seq.filter IsPrime
+    | Number _ as left', (Number _ as right') when left' = right' ->
+        Seq.empty
+    | _ -> failwith "shouldn't be possible"

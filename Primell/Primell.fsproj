@@ -1,19 +1,18 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net7.0</TargetFramework>
   </PropertyGroup>
-
   <ItemGroup>
+    <Compile Include="BigRational.fs" />
     <Compile Include="PNumber.fs" />
     <Compile Include="PrimeLib.fs" />
     <Compile Include="PObject.fs" />
+    <Compile Include="PrimellConfiguration.fs" />
+    <Compile Include="PrimellProgramControl.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Antlr4Generation\Antlr4Generation.csproj" />
   </ItemGroup>
-
 </Project>

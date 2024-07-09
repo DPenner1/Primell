@@ -1,8 +1,8 @@
 ﻿open dpenner1.PrimellF
 
 
-let x: PNumber = Rational <| R(10I, -3I)
-let y: PNumber = Rational <| R(10, -3)
+let x: PNumber = Number <| BigRational(10I, -3I)
+let y: PNumber = Number <| BigRational(10, -3)
 
 let n = 2I
 let n' = n - 1I
@@ -15,12 +15,22 @@ let dif = x - y
 
 //List.iter(fun n -> if PrimeLib.IsPrime n then printf "%O; " n) <| numbers
 
-let obj = PList(seq{ Atom(Rational <| R(1I, 2I)); Atom(Infinity Negative); PList(seq{ PList(Seq.empty); Atom(NaN) }) })
+let obj = PList(seq{ Atom(Number <| BigRational(1I, 2I)); Atom(Infinity Negative); PList(seq{ PList(Seq.empty); Atom(NaN) }) })
 
-printfn "%O" <| floor(Rational <| R(10I, -3I))
+printfn "%O" <| obj
+
+for x in BigRational.Range(BigRational(3, 1), BigRational(13, 2), BigRational(1, 3), true, false) do 
+    printf "%O " <| x
+printfn ""
+
+for x in BigRational.Range(BigRational(3, 1), BigRational(13, 2), BigRational(1, 2), true, true) do 
+    printf "%O " <| x
+printfn ""
+
+for x in BigRational.Range(BigRational(3, 1), BigRational(8, 2), BigRational(1, 1), true, true) do 
+    printf "%O " <| x
+printfn ""
 
 //let c = inputs |> List.concat
-
-
 
 
