@@ -134,3 +134,15 @@ let ``Test Negate Special``() =
   Assert.Equal(BigRational(1, -1) |> Number, -(BigRational(1, 1) |> Number))
   Assert.Equal(BigRational(1, 1) |> Number, -(BigRational(1, -1) |> Number))
 
+[<Fact>]
+let ``Test Range``() = 
+  let expected = seq { 2..100 } |> Seq.map(fun x -> x |> BigRational |> Number)
+  let actual = PNumber.Range (2 |> BigRational |> Number) (101 |> BigRational |> Number)
+
+  Assert.Equal(Seq.length expected, Seq.length actual)
+  
+  Seq.zip expected actual |> Seq.iter(fun pair -> Assert.Equal(fst pair, snd pair))
+  
+
+
+

@@ -35,7 +35,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
     let text = context.GetText()
     let number = ParseLib.ParseInteger text control.Settings.SourceBase
 
-    if not control.Settings.FreeSource && PrimeLib.IsPrime number then
+    if control.Settings.RestrictedSource && not(PrimeLib.IsPrime number) then
       failwith "NON-PRIME DETECTED!"
     
     number |> Atom
@@ -71,10 +71,10 @@ type PrimellVisitor(control: PrimellProgramControl) =
     let isAssign = context.ASSIGN() |> isNull |> not
 
     let interimResult =
-      if context.baseNumBinaryOp() |> isNull then
+      if context.baseNumBinaryOp() |> isNull |> not then
         let operator = OperationLib.BinaryNumericOperators[context.baseNumBinaryOp().GetText()]
         OperationLib.ApplyBinaryNumericOperation left right operator []
-      elif context.baseListBinaryOp() |> isNull then
+      elif context.baseListBinaryOp() |> isNull |> not then
         let operator = OperationLib.BinaryListOperators[context.baseListBinaryOp().GetText()]
         OperationLib.ApplyBinaryListOperation left right operator []
       else 
