@@ -42,12 +42,12 @@ type BigRational =
   static member Reciprocal (r: BigRational) = BigRational(bigint.Abs r.Denominator, r.Numerator * bigint r.Denominator.Sign, 1)
 
   static member (+) (left: BigRational, right: BigRational) = // keeping sign on denominator and signed zero really hurts for this operation
-    let signAdjust = bigint (left.Sign * right.Sign)
+    let signAdjust = left.Denominator.Sign * right.Denominator.Sign |> bigint
     let numeratorSum = left.Numerator*right.Denominator*signAdjust + right.Numerator*left.Denominator*signAdjust
     if numeratorSum.IsZero then 
       if left.Denominator.Sign = -1 && right.Denominator.Sign = -1 then BigRational(0I, -1I, 1) else BigRational(0I, 1I, 1) // signed zero
     else 
-      BigRational(numeratorSum, left.Denominator * bigint.Abs right.Denominator)
+      BigRational(numeratorSum, left.Denominator * right.Denominator |> bigint.Abs)
 
   static member (-) (left: BigRational, right: BigRational) = left + (-right)
 

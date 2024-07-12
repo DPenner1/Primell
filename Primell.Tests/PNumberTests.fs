@@ -95,12 +95,21 @@ let ``Test Add Special``() =
   Assert.Equal(Infinity Negative, Infinity Negative + (BigRational(1, 1) |> Number))
   Assert.Equal(Infinity Negative, (BigRational(1, 1) |> Number) + Infinity Negative)
 
-  //signed zero
+  
+
+[<Fact>]
+let ``Test Add Zero``() =
+//signed zero
   Assert.Equal(PNumber.NegativeZero, PNumber.NegativeZero + PNumber.NegativeZero)
   Assert.Equal(PNumber.Zero, PNumber.NegativeZero + PNumber.Zero)
   Assert.Equal(PNumber.Zero, PNumber.Zero + PNumber.NegativeZero)
   Assert.Equal(PNumber.Zero, (BigRational(1, -1) |> Number) + (BigRational(1, 1) |> Number))
 
+
+  Assert.Equal(2 |> BigRational |> Number, PNumber.Two + PNumber.Zero)
+  Assert.Equal(2 |> BigRational |> Number, PNumber.Two + PNumber.NegativeZero)
+  Assert.Equal(-2 |> BigRational |> Number, -PNumber.Two + PNumber.Zero)
+  Assert.Equal(-2 |> BigRational |> Number, -PNumber.Two + PNumber.NegativeZero)
 
 [<Fact>]
 let ``Test Subtract Special``() =

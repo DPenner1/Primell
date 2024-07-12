@@ -1,9 +1,9 @@
 ﻿open dpenner1.PrimellF
 
 // slightly regretting the nested types
-let weirdList = seq { Seq.empty |> PrimellList |> PList ; NaN |> Atom } |> PrimellList |> PList
+//let weirdList = seq { Seq.empty |> PrimellList |> PList ; NaN |> Atom } |> PrimellList |> PList
 
-let obj = PList(PrimellList((seq{ Atom(Number <| BigRational(1I, 2I)); Atom(Infinity Negative); weirdList })))
+//let obj = PList(PrimellList((seq{ Atom(Number <| BigRational(1I, 2I)); Atom(Infinity Negative); weirdList })))
 let runner = new PrimellRunner();
 let range = PNumber.Range (5 |> BigRational |> Number) (101 |> BigRational |> Number)
 
