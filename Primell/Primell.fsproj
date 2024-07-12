@@ -7,9 +7,13 @@
     <Compile Include="BigRational.fs" />
     <Compile Include="PNumber.fs" />
     <Compile Include="PrimeLib.fs" />
+    <Compile Include="ParseLib.fs" />
     <Compile Include="PObject.fs" />
     <Compile Include="PrimellConfiguration.fs" />
+    <Compile Include="OperationLib.fs" />
     <Compile Include="PrimellProgramControl.fs" />
+    <Compile Include="PrimellVisitor.fs" />
+    <Compile Include="PrimellRunner.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>

@@ -39,7 +39,6 @@ module PrimeLib =
           sLoop(s' - 1I, y)
 
     match sLoop(s, bigint.ModPow(a, d, n)) with
-    | Composite -> Composite
     | Undetermined y when y.IsOne -> Undetermined y // number doesn't matter anymore
     | _ -> Composite
 

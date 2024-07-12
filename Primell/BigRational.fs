@@ -27,6 +27,7 @@ type BigRational =
       // TODO use .NET DivideByZeroException
     }
   new(numerator: bigint, denominator: bigint) = BigRational(numerator, denominator, bigint.GreatestCommonDivisor(numerator, denominator))
+  new(integer: bigint) = BigRational(integer, 1, 1)
 
   member this.IsInteger = this.Denominator = 1I || this.Denominator = -1I
 

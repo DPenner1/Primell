@@ -17,17 +17,17 @@ type Infinity =
          | Negative -> "-∞"
 
 // In terms of Infinity, NaN, signed zero, this type follows IEEE-754 wherever possible
-// If IEEE754 is silent, try to mimic BigInteger API
+// If IEEE754 is silent, try to mimic BigInteger or Double APIs
 [<Struct; IsReadOnly>]
-type PNumber = 
-  | Number of Rational: BigRational 
+type PrimellNumber = 
+  | Number of rational: BigRational 
   | Infinity of Infinity
   | NaN
    (* Notes on Number:
-        Not naming BigRational type gave compiler error 3204. 
-        Originally went for "of bigint * bigint", but couldn't reduce the fraction on construction,
-        Benefit: Pattern matching was actually cumbersome here. Downside: construction is cumbersome, BigRational(n, d) |> Number
-        In theory, could later genericize the base type of Number (eg. Real, though Complex would probably be two PNumbers)
+        - Needed to give a unused name Number case to avoid 3204 compiler error: https://stackoverflow.com/q/59738472/1607043
+        - Originally went for "of bigint * bigint", but couldn't reduce the fraction on construction,
+          Benefit: Pattern matching was actually cumbersome here. Downside: construction is cumbersome, BigRational(n, d) |> Number
+        - In theory, could later genericize the base type of Number (eg. Real, though Complex would probably be two PrimellNumbers)
    *)
 
 
@@ -46,17 +46,17 @@ type PNumber =
         
         member this.IsZero =
           match this with
-          | Number _ -> this = PNumber.Zero
+          | Number _ -> this = PrimellNumber.Zero
           | _ -> false
 
         member this.IsOne =
           match this with
-          | Number _ -> this = PNumber.One
+          | Number _ -> this = PrimellNumber.One
           | _ -> false
 
         member this.IsMinusOne =
           match this with
-          | Number _ -> this = PNumber.MinusOne
+          | Number _ -> this = PrimellNumber.MinusOne
           | _ -> false
 
         member this.IsInteger =
@@ -67,8 +67,8 @@ type PNumber =
         member this.Sign =
           match this with
           | NaN -> NaN  // .Net double.Sign crashes, I would like not to crash
-          | Infinity Negative -> PNumber.MinusOne
-          | Infinity Positive -> PNumber.One
+          | Infinity Negative -> PrimellNumber.MinusOne
+          | Infinity Positive -> PrimellNumber.One
           | Number r -> BigRational(1, bigint r.Sign) |> Number
 
         static member (~-) x =
@@ -86,7 +86,7 @@ type PNumber =
           | _, (Infinity _ as right') -> right'
           | Number left', Number right' -> left' + right' |> Number
 
-        static member (-) (left: PNumber, right: PNumber): PNumber = left + (-right)
+        static member (-) (left: PrimellNumber, right: PrimellNumber): PrimellNumber = left + (-right)
 
         // TODO
         //static member (~++)
@@ -104,13 +104,13 @@ type PNumber =
         static member Reciprocal x =
           match x with
           | NaN -> NaN
-          | Infinity Positive -> PNumber.Zero
-          | Infinity Negative -> PNumber.NegativeZero
+          | Infinity Positive -> PrimellNumber.Zero
+          | Infinity Negative -> PrimellNumber.NegativeZero
           | Number r when r.IsZero && r.Denominator.Sign = -1 -> Infinity Negative 
           | Number r when r.IsZero && r.Denominator.Sign = 1 -> Infinity Positive
           | Number r -> BigRational.Reciprocal r |> Number
 
-        static member (/) (left, right) = left * PNumber.Reciprocal right
+        static member (/) (left, right) = left * PrimellNumber.Reciprocal right
 
         static member Abs x = 
           match x with
@@ -146,11 +146,11 @@ type PNumber =
           | Number left', Number right' -> left' = right'
           | _ -> false
 
-        static member (<=) (left: PNumber, right: PNumber) = left = right || left < right
+        static member (<=) (left: PrimellNumber, right: PrimellNumber) = left = right || left < right
 
-        static member (>=) (left: PNumber, right: PNumber) = left = right || left > right
+        static member (>=) (left: PrimellNumber, right: PrimellNumber) = left = right || left > right
 
-        static member (<>) (left: PNumber, right: PNumber) = left = right |> not  // NaN <> NaN is true
+        static member (<>) (left: PrimellNumber, right: PrimellNumber) = left = right |> not  // NaN <> NaN is true
 
         static member Ceiling x =
           match x with
@@ -175,7 +175,7 @@ type PNumber =
         static member Min left right =
           if left < right then left else right
         
-        static member Range left right: seq<PNumber> =
+        static member Range left right: seq<PrimellNumber> =
           match left, right with
           | NaN, _ | _, NaN -> 
               Seq.empty
@@ -198,3 +198,4 @@ type PNumber =
 //and ReversibleInfiniteSeq<'T> =
 //  inherit seq<'T>
 
+type PNumber = PrimellNumber  // abbreviation for sanity
