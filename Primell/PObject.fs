@@ -3,24 +3,26 @@ namespace dpenner1.PrimellF
 
 
 // Ok a bit weird to call the seq a list, but conceptually, that's how I view the Primell object, as lists
-// TODO - this is mainly just a wrapper for now, but in some cases this allows for smoother handling of infinite seqs than native F# seq,
-//        eg length is passed in so that known infinite sequences can be tagged as such and not result in Seq.length computing infinitely
-type PrimellList(sequence: seq<PrimellObject>, ?length: PNumber) = 
+type PrimellList(sequence: seq<PrimellObject>, ?length: PNumber, ?name: string, ?parent: PrimellObject, ?indexInParent: int) = 
   let main = sequence   // star
-  let mutable length = defaultArg length NaN
+  let mutable length = length
+
+  // these are (probably) necessary for keeping track of stuff for assignment & indexing 
+  let name = name
+  let parent = parent
+  let indexInParent = indexInParent
   // TODO - should also guard against negative lengths
 
   interface seq<PrimellObject> with
     member this.GetEnumerator() = main.GetEnumerator()
     member this.GetEnumerator() = main.GetEnumerator() :> System.Collections.IEnumerator   // why didn't they get rid of this with .NET core?
   
-  // a little hacky, didn't want to bother with Option type when we have NaN which won't ever be a valid result for length
   member this.Length with get() =
     match length with   // important to use match and not equality due to potential weirdness with NaN != NaN
-    | NaN ->   
-        length <- Seq.length main |> BigRational |> Number   // memoize
+    | None ->   
+        length <- Seq.length main |> BigRational |> Number |> Some   // memoize
     | _ -> ()
-    length
+    length.Value
 
   member this.IsEmpty with get() = Seq.isEmpty main   // avoid calling this.Length due to potential long computation
 
@@ -33,6 +35,7 @@ type PrimellList(sequence: seq<PrimellObject>, ?length: PNumber) =
 
   override this.ToString() =  // TODO - surely there's a cleaner way than the nested concat abomination I came up with
     String.concat "" ["("; String.concat " " (main |> Seq.map(fun obj -> obj.ToString())); ")"]
+
 
 
 and PrimellObject =

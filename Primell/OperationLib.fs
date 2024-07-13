@@ -21,7 +21,7 @@ module rec OperationLib =
     let public BinaryNumericOperators = 
       dict ["+",  fun (left, right) -> PNumber.(+)(left, right) |> Atom
             "-",  fun (left, right) -> PNumber.(-)(left, right) |> Atom
-            "..", fun (left, right) -> PNumber.Range left right |> Seq.map(fun n -> n |> Atom) |> PrimellList |> PList
+            "..", fun (left, right) -> PrimeLib.PrimeRange left right |> Seq.map(fun n -> n |> Atom) |> PrimellList |> PList
            ]
     
     // TODO - I don't have any Binary List Operators implemented yet

@@ -49,7 +49,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
     | ":~" -> control.GetStringInput(); // TODO - i want to change the symbol to :"
     | ":," -> control.GetCsvInput();  // TODO - this is anticipatory
     | _ as varName ->  // not an input, implicitly assumed to be a variable - TODO make sure thats actually true, grammar-wise
-        if not <| control.Variables.ContainsKey(varName) then
+        if control.Variables.ContainsKey(varName) |> not then
           control.Variables[varName] <- PObject.Empty
         
         control.Variables[varName]
