@@ -69,7 +69,7 @@ module PrimeLib =
 
   let IsPrime x = 
     match x with
-    | Number r when r.IsInteger && r.Numerator > 1I -> 
+    | Rational r when r.IsInteger && r.Numerator > 1I -> 
         let isPrime = IsPrime' r.Numerator
         if isPrime then primes.Add r.Numerator |> ignore // memoize
         isPrime      
@@ -84,8 +84,8 @@ module PrimeLib =
     | NaN -> NaN
     | Infinity Positive -> Infinity Positive
     | Infinity Negative -> PNumber.Two
-    | Number r when r.Sign < 1 -> PNumber.Two
-    | Number r -> BigRational(NextPrime' ((floor r).Numerator), 1) |> Number
+    | Rational r when r.Sign < 1 -> PNumber.Two
+    | Rational r -> BigRational(NextPrime' ((floor r).Numerator), 1) |> Rational
 
   let rec private PrevPrime' n =
     let prevInt = n - 1I
@@ -98,8 +98,8 @@ module PrimeLib =
     | NaN -> NaN
     | Infinity Positive -> Infinity Positive
     | Infinity Negative -> NaN
-    | Number r when r <= BigRational(2, 1) -> NaN
-    | Number r -> BigRational(PrevPrime' ((ceil r).Numerator), 1) |> Number
+    | Rational r when r <= BigRational(2, 1) -> NaN
+    | Rational r -> BigRational(PrevPrime' ((ceil r).Numerator), 1) |> Rational
 
   let PrimeRange left right: seq<PNumber> = 
     match left, right with
@@ -109,20 +109,20 @@ module PrimeLib =
         seq { while true do yield Infinity Positive }
     | Infinity Negative, Infinity Positive ->
         PNumber.Range PNumber.Two (Infinity Positive) |> Seq.filter IsPrime
-    | Number _ as left', Infinity Positive -> 
+    | Rational _ as left', Infinity Positive -> 
         PNumber.Range (max PNumber.Two left') (Infinity Positive) |> Seq.filter IsPrime
-    | Number _ as left', Infinity Negative when left' < PNumber.Two ->
+    | Rational _ as left', Infinity Negative when left' < PNumber.Two ->
         Seq.empty
-    | Number _ as left', Infinity Negative when left' = PNumber.Two ->
+    | Rational _ as left', Infinity Negative when left' = PNumber.Two ->
         Seq.singleton PNumber.Two  // TODO can get rid of this case when inclusive range is implemented
-    | Number _ as left', Infinity Negative when left' > PNumber.Two ->
+    | Rational _ as left', Infinity Negative when left' > PNumber.Two ->
         PNumber.Range left' PNumber.Two |> Seq.filter IsPrime
-    | Number _ as left', (Number _ as right') when left' < PNumber.Two && right' <= PNumber.Two ->
+    | Rational _ as left', (Rational _ as right') when left' < PNumber.Two && right' <= PNumber.Two ->
         Seq.empty
-    | Number _ as left', (Number _ as right') when left' > right' ->
+    | Rational _ as left', (Rational _ as right') when left' > right' ->
         PNumber.Range left' (max right' PNumber.Two) |> Seq.filter IsPrime
-    | Number _ as left', (Number _ as right') when left' < right' ->
+    | Rational _ as left', (Rational _ as right') when left' < right' ->
         PNumber.Range (max left' PNumber.Two) right' |> Seq.filter IsPrime
-    | Number _ as left', (Number _ as right') when left' = right' ->
+    | Rational _ as left', (Rational _ as right') when left' = right' ->
         Seq.empty
     | _ -> failwith "shouldn't be possible"

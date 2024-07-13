@@ -20,7 +20,7 @@ type Infinity =
 // If IEEE754 is silent, try to mimic BigInteger or Double APIs
 [<Struct; IsReadOnly>]
 type PrimellNumber = 
-  | Number of rational: BigRational 
+  | Rational of rational: BigRational 
   | Infinity of Infinity
   | NaN
    (* Notes on Number:
@@ -35,33 +35,35 @@ type PrimellNumber =
          match this with 
          | NaN -> "NaN"
          | Infinity x -> x.ToString()
-         | Number r -> r.ToString()
+         | Rational r -> r.ToString()
+
+        interface IPrimellObject
                                                                 
-        static member One = BigRational(1I, 1I) |> Number
-        static member MinusOne = BigRational(1I, -1I) |> Number
-        static member Zero = BigRational(0I, 1I) |> Number
-        static member NegativeZero = BigRational(0I, -1I) |> Number
-        static member Two = BigRational(2I, 1I) |> Number  // lowest Prime
+        static member One = BigRational(1I, 1I) |> Rational
+        static member MinusOne = BigRational(1I, -1I) |> Rational
+        static member Zero = BigRational(0I, 1I) |> Rational
+        static member NegativeZero = BigRational(0I, -1I) |> Rational
+        static member Two = BigRational(2I, 1I) |> Rational  // lowest Prime
         
         
         member this.IsZero =
           match this with
-          | Number _ -> this = PrimellNumber.Zero
+          | Rational _ -> this = PrimellNumber.Zero
           | _ -> false
 
         member this.IsOne =
           match this with
-          | Number _ -> this = PrimellNumber.One
+          | Rational _ -> this = PrimellNumber.One
           | _ -> false
 
         member this.IsMinusOne =
           match this with
-          | Number _ -> this = PrimellNumber.MinusOne
+          | Rational _ -> this = PrimellNumber.MinusOne
           | _ -> false
 
         member this.IsInteger =
           match this with
-          | Number r -> r.IsInteger
+          | Rational r -> r.IsInteger
           | _ -> false
 
         member this.Sign =
@@ -69,14 +71,14 @@ type PrimellNumber =
           | NaN -> NaN  // .Net double.Sign crashes, I would like not to crash
           | Infinity Negative -> PrimellNumber.MinusOne
           | Infinity Positive -> PrimellNumber.One
-          | Number r -> BigRational(1, bigint r.Sign) |> Number
+          | Rational r -> BigRational(1, bigint r.Sign) |> Rational
 
         static member (~-) x =
           match x with
           | NaN -> NaN
           | Infinity Positive -> Infinity Negative
           | Infinity Negative -> Infinity Positive
-          | Number r -> Number -r
+          | Rational r -> Rational -r
 
         static member (+) (left, right) =
           match left, right with
@@ -84,7 +86,7 @@ type PrimellNumber =
           | Infinity Positive, Infinity Negative | Infinity Negative, Infinity Positive -> NaN
           | Infinity _ as left', _ -> left'
           | _, (Infinity _ as right') -> right'
-          | Number left', Number right' -> left' + right' |> Number
+          | Rational left', Rational right' -> left' + right' |> Rational
 
         static member (-) (left: PrimellNumber, right: PrimellNumber): PrimellNumber = left + (-right)
 
@@ -93,12 +95,12 @@ type PrimellNumber =
         static member ( * ) (left, right) =
           match left, right with
           | NaN, _ | _, NaN -> NaN
-          | Infinity _, Number r | Number r, Infinity _ when r.IsZero -> NaN
+          | Infinity _, Rational r | Rational r, Infinity _ when r.IsZero -> NaN
           | Infinity Positive, _ when right.Sign.IsMinusOne -> Infinity Negative
           | Infinity Positive, _ when right.Sign.IsOne-> Infinity Positive
           | Infinity Negative, _ when right.Sign.IsMinusOne -> Infinity Positive
           | Infinity Negative, _ when right.Sign.IsOne -> Infinity Negative
-          | Number left', Number right' -> left' * right' |> Number
+          | Rational left', Rational right' -> left' * right' |> Rational
           | _ -> failwith "Shouldn't be possible"
 
         static member Reciprocal x =
@@ -106,9 +108,9 @@ type PrimellNumber =
           | NaN -> NaN
           | Infinity Positive -> PrimellNumber.Zero
           | Infinity Negative -> PrimellNumber.NegativeZero
-          | Number r when r.IsZero && r.Denominator.Sign = -1 -> Infinity Negative 
-          | Number r when r.IsZero && r.Denominator.Sign = 1 -> Infinity Positive
-          | Number r -> BigRational.Reciprocal r |> Number
+          | Rational r when r.IsZero && r.Denominator.Sign = -1 -> Infinity Negative 
+          | Rational r when r.IsZero && r.Denominator.Sign = 1 -> Infinity Positive
+          | Rational r -> BigRational.Reciprocal r |> Rational
 
         static member (/) (left, right) = left * PrimellNumber.Reciprocal right
 
@@ -116,7 +118,7 @@ type PrimellNumber =
           match x with
           | NaN -> NaN
           | Infinity _ -> Infinity Positive
-          | Number r -> BigRational.Abs r |> Number
+          | Rational r -> BigRational.Abs r |> Rational
    
         static member (<) (left, right) =
           match left, right with
@@ -126,7 +128,7 @@ type PrimellNumber =
           | Infinity Positive, _ -> false
           | _, Infinity Positive -> true
           | _, Infinity Negative -> false
-          | Number left', Number right' -> left' < right'
+          | Rational left', Rational right' -> left' < right'
           
         static member (>) (left, right) =
           match left, right with
@@ -136,14 +138,14 @@ type PrimellNumber =
           | Infinity Positive, _ -> true
           | _, Infinity Positive -> false
           | _, Infinity Negative -> true
-          | Number left', Number right' -> left' > right'
+          | Rational left', Rational right' -> left' > right'
 
         static member (=) (left, right) =
           match left, right with
           | NaN, NaN -> false   // the weird case!
           | Infinity Positive, Infinity Positive -> true
           | Infinity Negative, Infinity Negative -> true
-          | Number left', Number right' -> left' = right'
+          | Rational left', Rational right' -> left' = right'
           | _ -> false
 
         static member (<=) (left: PrimellNumber, right: PrimellNumber) = left = right || left < right
@@ -154,21 +156,21 @@ type PrimellNumber =
 
         static member Ceiling x =
           match x with
-          | Number r -> ceil r |> Number
+          | Rational r -> ceil r |> Rational
           | _ -> x
 
         static member Floor x = 
           match x with
-          | Number r -> floor r |> Number
+          | Rational r -> floor r |> Rational
           | _ -> x
 
         static member Round x =
           match x with
-          | Number r -> round r |> Number
+          | Rational r -> round r |> Rational
           | _ -> x
 
         // behaviour of NaN is weird with min/max. I think its correct to return the number.
-        // with Max/Min you're asking which between a number and NaN is the max/min number, which can't be NaN
+        // with Max/Min you're asking which between a number and NaN which one is the max/min number, which can't be NaN by definition
         static member Max left right =
           if left > right then left else right
 
@@ -183,12 +185,12 @@ type PrimellNumber =
               seq { while true do yield Infinity Positive }
           | Infinity Negative, _ -> 
               seq { while true do yield Infinity Negative }
-          | Number left', Infinity Positive -> 
-              Seq.initInfinite(fun i -> ceil left' + BigRational(i,1) |> Number)
-          | Number left', Infinity Negative -> 
-              Seq.initInfinite(fun i -> ceil left' - BigRational(i,1) |> Number)
-          | Number left', Number right' ->  // Is the cast more functional? In C# i'd go with a covariant (contra?) generic
-              BigRational.Range(left', right', BigRational(1, 1), true, false) |> Seq.map(fun r -> r |> Number)
+          | Rational left', Infinity Positive -> 
+              Seq.initInfinite(fun i -> ceil left' + BigRational(i,1) |> Rational)
+          | Rational left', Infinity Negative -> 
+              Seq.initInfinite(fun i -> ceil left' - BigRational(i,1) |> Rational)
+          | Rational left', Rational right' ->  // Is the cast more functional? In C# i'd go with a covariant (contra?) generic
+              BigRational.Range(left', right', BigRational(1, 1), true, false) |> Seq.map(fun r -> r |> Rational)
 
 // TODO - if we generate a range from +inf..1 it infinitely returns +inf...
         //        but if we reverse that range, then we would actually want it to start generating from 1

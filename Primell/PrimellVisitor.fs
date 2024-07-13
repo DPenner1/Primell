@@ -6,20 +6,26 @@ open System.Collections.Generic
 // TODO - port from original C# code, very mutable stuff, see if you can get rid of non-functional stuff later
 
 type PrimellVisitor(control: PrimellProgramControl) = 
-  inherit PrimellBaseVisitor<PObject>()
+  inherit PrimellBaseVisitor<IPrimellObject>()
   let control = control
-  let placeHolders = new Stack<PObject>()
-  let currentForEach = new Stack<PObject>()
+  let placeHolders = new Stack<IPrimellObject>()
+  let currentForEach = new Stack<IPrimellObject>()
   let incorporate = new Stack<bool>()
   
+  static member private Normalize (pobj: IPrimellObject) =
+    match pobj with   // couldn't use when Seq.length = 1 as that potentially hangs on infinite sequence
+    | :? PList as l when not(l.IsEmpty) && Seq.isEmpty(l.Tail()) -> 
+        Seq.head l |> PrimellVisitor.Normalize
+    | _ -> pobj    
+
   override this.VisitParens context =
     incorporate.Pop() |> ignore
     incorporate.Push true
 
-    if context.termSeq() |> isNull then PObject.Empty else this.Visit(context.termSeq())
+    if context.termSeq() |> isNull then PList.Empty else this.Visit(context.termSeq())
 
   override this.VisitTermSeq context =
-    let mutable retval = PObject.Empty
+    let mutable retval = PList.Empty
     for termContext in context.mulTerm() do
       incorporate.Push true
 
@@ -29,7 +35,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
       else
         retval <- retval.Append pobj
         
-    retval |> PObject.Normalize
+    retval |> PrimellVisitor.Normalize
 
   override this.VisitInteger context =
     let text = context.GetText()
@@ -38,11 +44,11 @@ type PrimellVisitor(control: PrimellProgramControl) =
     if control.Settings.RestrictedSource && not(PrimeLib.IsPrime number) then
       failwith "NON-PRIME DETECTED!"
     
-    number |> Atom
+    number
 
-  override this.VisitPositiveInfinity context = Infinity Positive |> Atom
+  override this.VisitPositiveInfinity context = Infinity Positive
 
-  override this.VisitNegativeInfinity context = Infinity Negative |> Atom
+  override this.VisitNegativeInfinity context = Infinity Negative
   override this.VisitNullaryOp context =
     match context.baseNullaryOp().GetText() with
     | ":_" -> control.GetCodeInput()
@@ -50,7 +56,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
     | ":," -> control.GetCsvInput();  // TODO - this is anticipatory
     | _ as varName ->  // not an input, implicitly assumed to be a variable - TODO make sure thats actually true, grammar-wise
         if control.Variables.ContainsKey(varName) |> not then
-          control.Variables[varName] <- PObject.Empty
+          control.Variables[varName] <- PrimellList.Empty
         
         control.Variables[varName]
           
@@ -105,7 +111,8 @@ type PrimellVisitor(control: PrimellProgramControl) =
     let left = this.Visit(context.mulTerm())
 
     match this.Visit(context.termSeq()) with
-    | Atom _ as robj ->
+    | :? PNumber as robj ->
         this.ApplyBinaryOperation left robj (context.binaryOp())
-    | PList l ->
-        l |> Seq.map(fun robj -> this.ApplyBinaryOperation left robj (context.binaryOp())) |> PrimellList |> PList
+    | :? PList as l ->
+        l |> Seq.map(fun robj -> this.ApplyBinaryOperation left robj (context.binaryOp())) |> PList :> IPrimellObject
+    | _ -> failwith "Not possible"

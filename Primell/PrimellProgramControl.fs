@@ -4,7 +4,7 @@ open System.Collections.Generic
 
 type PrimellProgramControl(settings: PrimellConfiguration) =
   member val Settings = settings with get
-  member val Variables = new Dictionary<string, PObject>()
+  member val Variables = new Dictionary<string, IPrimellObject>()
 
   // This is a port from original Primell, copying to have current examples execute as before,
   // But I think I want to change the part of Primell requiring this

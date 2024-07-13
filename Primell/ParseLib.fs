@@ -24,6 +24,6 @@ module ParseLib =
   let ParseInteger (text:string) (``base``:int) =
     let b = ``base``
     if b = 1 then
-      BigRational(text.Length, 1) |> Number 
+      BigRational(text.Length, 1) |> Rational 
     else
-      BigRational(ParseInteger' text b 0 0I, 1) |> Number
+      BigRational(ParseInteger' text b 0 0I, 1) |> Rational
