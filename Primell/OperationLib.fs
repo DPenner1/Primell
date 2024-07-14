@@ -9,9 +9,9 @@ module rec OperationLib =
 
     // for now these are immutable dicts, but they might be changed to mutable Dictionary on implementation of user-defined operators
     let public UnaryNumericOperators: IDictionary<string, PNumber->IPrimellObject> = 
-      dict ["~", fun n -> PNumber.(~-) n
-            "++", fun n -> PrimeLib.NextPrime n
-            "--", fun n -> PrimeLib.PrevPrime n
+      dict ["~", fun n -> ExtendedBigRational.(~-) n.Value |> PNumber :> IPrimellObject
+            "++", fun n -> PrimeLib.NextPrime n.Value |> PNumber :> IPrimellObject
+            "--", fun n -> PrimeLib.PrevPrime n.Value |> PNumber :> IPrimellObject
            ]
 
     let public UnaryListOperators: IDictionary<string, PList->IPrimellObject> = 
@@ -21,9 +21,9 @@ module rec OperationLib =
            ]
 
     let public BinaryNumericOperators: IDictionary<string, PNumber*PNumber->IPrimellObject> = 
-      dict ["..", fun (left, right) -> PrimeLib.PrimeRange left right |> Seq.map(fun n -> n :> IPrimellObject) |> PList :> IPrimellObject
-            "+",  fun (left, right) -> PNumber.(+)(left, right)
-            "-",  fun (left, right) -> PNumber.(-)(left, right)
+      dict ["..", fun (left, right) -> PrimeLib.PrimeRange left.Value right.Value |> Seq.map(fun n -> n |> PNumber :> IPrimellObject) |> PList :> IPrimellObject
+            "+",  fun (left, right) -> ExtendedBigRational.(+)(left.Value, right.Value) |> PNumber :> IPrimellObject
+            "-",  fun (left, right) -> ExtendedBigRational.(-)(left.Value, right.Value) |> PNumber :> IPrimellObject
             
            ]
     
@@ -90,11 +90,11 @@ module rec OperationLib =
         match pobj with
         | :? PNumber as n -> 
             if truthDef.PrimesAreTruth then
-              PrimeLib.IsPrime n
+              PrimeLib.IsPrime n.Value
             else
-              match n with
+              match n.Value with
               | NaN -> false
-              | _ -> not n.IsZero
+              | _ as v -> not v.IsZero
 
         | :? PList as l ->  // infinite recursion is possible with infinite lists
             if truthDef.RequireAllTruth then

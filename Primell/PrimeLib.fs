@@ -83,8 +83,8 @@ module PrimeLib =
     match x with
     | NaN -> NaN
     | Infinity Positive -> Infinity Positive
-    | Infinity Negative -> PNumber.Two
-    | Rational r when r.Sign < 1 -> PNumber.Two
+    | Infinity Negative -> ExtendedBigRational.Two
+    | Rational r when r.Sign < 1 -> ExtendedBigRational.Two
     | Rational r -> BigRational(NextPrime' ((floor r).Numerator), 1) |> Rational
 
   let rec private PrevPrime' n =
@@ -101,28 +101,28 @@ module PrimeLib =
     | Rational r when r <= BigRational(2, 1) -> NaN
     | Rational r -> BigRational(PrevPrime' ((ceil r).Numerator), 1) |> Rational
 
-  let PrimeRange left right: seq<PNumber> = 
+  let PrimeRange left right: seq<ExtendedBigRational> = 
     match left, right with
     | NaN, _ | _, NaN -> 
         Seq.empty
     | Infinity Positive, _ -> 
         seq { while true do yield Infinity Positive }
     | Infinity Negative, Infinity Positive ->
-        PNumber.Range PNumber.Two (Infinity Positive) |> Seq.filter IsPrime
+        ExtendedBigRational.Range ExtendedBigRational.Two (Infinity Positive) |> Seq.filter IsPrime
     | Rational _ as left', Infinity Positive -> 
-        PNumber.Range (max PNumber.Two left') (Infinity Positive) |> Seq.filter IsPrime
-    | Rational _ as left', Infinity Negative when left' < PNumber.Two ->
+        ExtendedBigRational.Range (max ExtendedBigRational.Two left') (Infinity Positive) |> Seq.filter IsPrime
+    | Rational _ as left', Infinity Negative when left' < ExtendedBigRational.Two ->
         Seq.empty
-    | Rational _ as left', Infinity Negative when left' = PNumber.Two ->
-        Seq.singleton PNumber.Two  // TODO can get rid of this case when inclusive range is implemented
-    | Rational _ as left', Infinity Negative when left' > PNumber.Two ->
-        PNumber.Range left' PNumber.Two |> Seq.filter IsPrime
-    | Rational _ as left', (Rational _ as right') when left' < PNumber.Two && right' <= PNumber.Two ->
+    | Rational _ as left', Infinity Negative when left' = ExtendedBigRational.Two ->
+        Seq.singleton ExtendedBigRational.Two  // TODO can get rid of this case when inclusive range is implemented
+    | Rational _ as left', Infinity Negative when left' > ExtendedBigRational.Two ->
+        ExtendedBigRational.Range left' ExtendedBigRational.Two |> Seq.filter IsPrime
+    | Rational _ as left', (Rational _ as right') when left' < ExtendedBigRational.Two && right' <= ExtendedBigRational.Two ->
         Seq.empty
     | Rational _ as left', (Rational _ as right') when left' > right' ->
-        PNumber.Range left' (max right' PNumber.Two) |> Seq.filter IsPrime
+        ExtendedBigRational.Range left' (max right' ExtendedBigRational.Two) |> Seq.filter IsPrime
     | Rational _ as left', (Rational _ as right') when left' < right' ->
-        PNumber.Range (max left' PNumber.Two) right' |> Seq.filter IsPrime
+        ExtendedBigRational.Range (max left' ExtendedBigRational.Two) right' |> Seq.filter IsPrime
     | Rational _ as left', (Rational _ as right') when left' = right' ->
         Seq.empty
     | _ -> failwith "shouldn't be possible"

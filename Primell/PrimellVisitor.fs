@@ -44,11 +44,11 @@ type PrimellVisitor(control: PrimellProgramControl) =
     if control.Settings.RestrictedSource && not(PrimeLib.IsPrime number) then
       failwith "NON-PRIME DETECTED!"
     
-    number
+    number |> PNumber :> IPrimellObject
 
-  override this.VisitPositiveInfinity context = Infinity Positive
+  override this.VisitPositiveInfinity context = Infinity Positive |> PNumber :> IPrimellObject
 
-  override this.VisitNegativeInfinity context = Infinity Negative
+  override this.VisitNegativeInfinity context = Infinity Negative |> PNumber :> IPrimellObject
   override this.VisitNullaryOp context =
     match context.baseNullaryOp().GetText() with
     | ":_" -> control.GetCodeInput()

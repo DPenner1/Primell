@@ -5,10 +5,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BigRational.fs" />
+    <Compile Include="ExtendedBigRational.fs" />
     <Compile Include="PObject.fs" />
     <Compile Include="PNumber.fs" />
-    <Compile Include="PList.fs" />
     <Compile Include="PrimeLib.fs" />
+    <Compile Include="PList.fs" />
     <Compile Include="ParseLib.fs" />
     <Compile Include="PrimellConfiguration.fs" />
     <Compile Include="OperationLib.fs" />

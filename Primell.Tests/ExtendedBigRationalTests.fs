@@ -1,5 +1,5 @@
 // note: Tests not entirely comprehensive
-module PNumberTests
+module ExtendedBigRationalTests
 
 open Xunit
 open dpenner1.PrimellF
@@ -100,16 +100,16 @@ let ``Test Add Special``() =
 [<Fact>]
 let ``Test Add Zero``() =
 //signed zero
-  Assert.Equal(PNumber.NegativeZero, PNumber.NegativeZero + PNumber.NegativeZero)
-  Assert.Equal(PNumber.Zero, PNumber.NegativeZero + PNumber.Zero)
-  Assert.Equal(PNumber.Zero, PNumber.Zero + PNumber.NegativeZero)
-  Assert.Equal(PNumber.Zero, (BigRational(1, -1) |> Rational) + (BigRational(1, 1) |> Rational))
+  Assert.Equal(ExtendedBigRational.NegativeZero, ExtendedBigRational.NegativeZero + ExtendedBigRational.NegativeZero)
+  Assert.Equal(ExtendedBigRational.Zero, ExtendedBigRational.NegativeZero + ExtendedBigRational.Zero)
+  Assert.Equal(ExtendedBigRational.Zero, ExtendedBigRational.Zero + ExtendedBigRational.NegativeZero)
+  Assert.Equal(ExtendedBigRational.Zero, (BigRational(1, -1) |> Rational) + (BigRational(1, 1) |> Rational))
 
 
-  Assert.Equal(2 |> BigRational |> Rational, PNumber.Two + PNumber.Zero)
-  Assert.Equal(2 |> BigRational |> Rational, PNumber.Two + PNumber.NegativeZero)
-  Assert.Equal(-2 |> BigRational |> Rational, -PNumber.Two + PNumber.Zero)
-  Assert.Equal(-2 |> BigRational |> Rational, -PNumber.Two + PNumber.NegativeZero)
+  Assert.Equal(2 |> BigRational |> Rational, ExtendedBigRational.Two + ExtendedBigRational.Zero)
+  Assert.Equal(2 |> BigRational |> Rational, ExtendedBigRational.Two + ExtendedBigRational.NegativeZero)
+  Assert.Equal(-2 |> BigRational |> Rational, -ExtendedBigRational.Two + ExtendedBigRational.Zero)
+  Assert.Equal(-2 |> BigRational |> Rational, -ExtendedBigRational.Two + ExtendedBigRational.NegativeZero)
 
 [<Fact>]
 let ``Test Subtract Special``() =
@@ -131,9 +131,9 @@ let ``Test Subtract Special``() =
   Assert.Equal(Infinity Positive, (BigRational(1, 1) |> Rational) - Infinity Negative)
 
   // IEEE 754 standard has this gem
-  Assert.Equal(PNumber.NegativeZero, PNumber.NegativeZero - (-PNumber.NegativeZero))
+  Assert.Equal(ExtendedBigRational.NegativeZero, ExtendedBigRational.NegativeZero - (-ExtendedBigRational.NegativeZero))
 
-  Assert.Equal(PNumber.Zero, (BigRational(1, 1) |> Rational) - (BigRational(1, 1) |> Rational))
+  Assert.Equal(ExtendedBigRational.Zero, (BigRational(1, 1) |> Rational) - (BigRational(1, 1) |> Rational))
 
 [<Fact>]
 let ``Test Negate Special``() =
@@ -146,7 +146,7 @@ let ``Test Negate Special``() =
 [<Fact>]
 let ``Test Range``() = 
   let expected = seq { 2..100 } |> Seq.map(fun x -> x |> BigRational |> Rational)
-  let actual = PNumber.Range (2 |> BigRational |> Rational) (101 |> BigRational |> Rational)
+  let actual = ExtendedBigRational.Range (2 |> BigRational |> Rational) (101 |> BigRational |> Rational)
 
   Assert.Equal(Seq.length expected, Seq.length actual)
   
