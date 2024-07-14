@@ -2,8 +2,9 @@ namespace dpenner1.PrimellF
 
 open System.Collections.Generic
 
+// TODO - this is probably better as an enum (if that exists in F#)
 type OperationModifier = 
-  | Todo
+  | Power
 
 module rec OperationLib =
 
@@ -86,25 +87,20 @@ module rec OperationLib =
     let rec IsTruth(pobj: IPrimellObject, truthDef: TruthDefinition) =
       match pobj with
       | :? PList as l when l.IsEmpty -> truthDef.EmptyIsTruth
-      | _ ->
-        match pobj with
-        | :? PNumber as n -> 
-            if truthDef.PrimesAreTruth then
-              PrimeLib.IsPrime n.Value
-            else
-              match n.Value with
-              | NaN -> false
-              | _ as v -> not v.IsZero
-
-        | :? PList as l ->  // infinite recursion is possible with infinite lists
-            if truthDef.RequireAllTruth then
-              l |> Seq.exists(fun x -> IsTruth(x, truthDef) |> not) |> not
+      | :? PList as l ->  // infinite recursion is possible with infinite lists
+          if truthDef.RequireAllTruth then
+            l |> Seq.exists(fun x -> IsTruth(x, truthDef) |> not) |> not
               // TODO - since I'm piping a few times here, this probably isn't tail recursion
-            else
-              l |> Seq.exists(fun x -> IsTruth(x, truthDef))
-
-        | _ -> failwith "Not possible"
-                       
+          else
+            l |> Seq.exists(fun x -> IsTruth(x, truthDef))
+      | :? PNumber as n -> 
+          if truthDef.PrimesAreTruth then
+            PrimeLib.IsPrime n.Value
+          else
+            match n.Value with
+            | NaN -> false
+            | _ as v -> not v.IsZero
+      | _ -> failwith "Not possible"
 
     let public Conditional (left: IPrimellObject) (right: IPrimellObject) truthDef =
       if IsTruth(left, truthDef) then UnaryListOperators["_<"] else UnaryListOperators["_>"]

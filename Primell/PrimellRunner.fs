@@ -19,6 +19,9 @@ type PrimellRunner() =
     let programControl = PrimellProgramControl settings
     let allLineContexts = parser.program().line() |> Array.toList
 
-    let results = allLineContexts |> List.map(fun line -> this.ExecuteLine line programControl) 
-    results[results.Length - 1]
+    // TODO - more functional way?
+    for line in allLineContexts do
+      let result = this.ExecuteLine line programControl
+      if not programControl.LastOperationWasAssignment then
+        printfn "%O" result
 

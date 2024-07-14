@@ -73,6 +73,71 @@ type PrimellVisitor(control: PrimellProgramControl) =
     
     OperationLib.ApplyUnaryListOperation (this.Visit(context.mulTerm())) operator []
 
+  // don't call this unles newChild has parent set!
+  
+
+    //let x = parent |> Seq.removeAt newChild.IndexInParent.Value |> Seq.map(fun x -> x :> IPrimellObject) |> Seq.insertAt newChild.IndexInParent.Value newChild |> PList
+    //parent
+
+  member private this.PerformBasicAssign (left: IPrimellObject, right: IPrimellObject, ?stopRecursingAt: IPrimellObject) =
+    match left.Name with
+    | None -> 
+        right.WithValueOnly()
+    | Some name -> 
+        control.SetVariable(name, right, ?stopRecursingAt = stopRecursingAt)
+        control.Variables[name]
+
+
+  member private this.PerformAssign (left: IPrimellObject, right: IPrimellObject, assignMods: OperationModifier list, ?stopRecursingAt: IPrimellObject): IPrimellObject =
+    
+    (* logic from original mutable C# version:
+       if (left is empty) || (left is number) || (assignOptions has power modifier)
+         then replace left with right in-place
+       else if (right is number)
+            // replace all items in left list with right in-place
+            foreach (i in left.size): left[i].Assign right
+       else // list to list parallel assignment
+            // if left is bigger than right, extra values left intact
+            // if right is bigger than left, extra values are discarded
+
+            foreach (i in left.size): left[i].assign(right[i])   
+    *)
+    let newLeftValue = 
+      if assignMods |> List.contains Power then
+        this.PerformBasicAssign(left, right, ?stopRecursingAt=stopRecursingAt)
+      else
+        match left, right with
+        | :? PNumber, _ ->
+            this.PerformBasicAssign(left, right, ?stopRecursingAt=stopRecursingAt)
+        | :? PList as l, _ when l.IsEmpty ->
+            this.PerformBasicAssign(left, right, ?stopRecursingAt=stopRecursingAt)
+        | :? PList as l, :? PNumber ->
+            let newLvalue = l |> Seq.map(fun x -> this.PerformAssign(x, right, assignMods, ?stopRecursingAt=Some left))
+            newLvalue |> PList :> IPrimellObject     
+        | (:? PList as l1), (:? PList as l2) ->
+            let temp = (l1, l2) ||> Seq.zip |> Seq.map(fun x -> this.PerformAssign(fst x, snd x, assignMods, ?stopRecursingAt=Some left))
+            let real =
+              if l1.Length.Value > l2.Length.Value then seq { temp |> PList :> IPrimellObject; l1 |> Seq.skip(Seq.length l2.Value) |> PList :> IPrimellObject }
+              else temp
+            real |> PList :> IPrimellObject 
+        | _ -> failwith "not possible"
+
+    let newLeft = 
+      match newLeftValue with
+      | :? PNumber as n -> PNumber(n.Value, ?name=left.Name, ?parent=left.Parent, ?indexInParent=left.IndexInParent) :> IPrimellObject
+      | :? PList as l -> PList(l.Value, l.Length, ?name=left.Name, ?parent=left.Parent, ?indexInParent=left.IndexInParent) :> IPrimellObject
+      | _ -> failwith "not possible"
+
+    match left.Name with
+    | Some n -> 
+        control.SetVariable(n, newLeftValue)
+    | None ->
+        match left.Parent with
+        | None -> ()
+        | Some p -> control.UpdateParent(p :?> PList, newLeftValue)
+
+    newLeftValue
+
   member this.ApplyBinaryOperation left right (context: PrimellParser.BinaryOpContext) =
     let isAssign = context.ASSIGN() |> isNull |> not
 
@@ -85,6 +150,8 @@ type PrimellVisitor(control: PrimellProgramControl) =
         OperationLib.ApplyBinaryListOperation left right operator []
       else 
         right
+
+    control.LastOperationWasAssignment <- isAssign
       
     if isAssign then
       failwith "I'm dreading figuring this one out in F#"

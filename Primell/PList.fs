@@ -4,7 +4,7 @@ namespace dpenner1.PrimellF
 
 // Ok a bit weird to call the seq a list, but conceptually, that's how I view the Primell object, as lists
 type PrimellList(sequence: seq<IPrimellObject>, ?length: PNumber, ?name: string, ?parent: IPrimellObject, ?indexInParent: int) = 
-  inherit IPrimellObject(name, parent, indexInParent)
+  inherit IPrimellObject(?name = name, ?parent = parent, ?indexInParent = indexInParent)
   let main = sequence  // star
   let mutable length = length
   // TODO - should guard against negative lengths
@@ -22,6 +22,8 @@ type PrimellList(sequence: seq<IPrimellObject>, ?length: PNumber, ?name: string,
     length.Value
 
   member this.IsEmpty with get() = Seq.isEmpty main   // avoid calling this.Length due to potential long computation
+
+  member this.Value with get() = main
 
   member this.Head() = Seq.head main
     
@@ -44,14 +46,22 @@ type PrimellList(sequence: seq<IPrimellObject>, ?length: PNumber, ?name: string,
     | NaN -> PrimellList.Empty :> IPrimellObject  // Makes sense, trying to index with NaN means you don't get anything
     | Infinity _ -> PrimellList.Empty :> IPrimellObject  // I don't like this one... For infinite lists, in theory there is something way out there, but it's undefined
     | Rational r ->
-        if r.Numerator < 0I then  // index from end
-          this.Reverse() |> Seq.skip (int -r.Numerator - 1) |> Seq.head
-        else
-          main |> Seq.skip (int r.Numerator) |> Seq.head
-          
-          
-        
+        let indexedObject = 
+          if r.Numerator < 0I then  // index from end
+            this.Reverse() |> Seq.skip (int -r.Numerator - 1) |> Seq.head
+          else
+            main |> Seq.skip (int r.Numerator) |> Seq.head
 
+        // This is hacky: technically the best way to track parent/child and indexes would be to do it any time
+        // there's an append, prepend, rearrange etc... but since I don't think it ever matters except for
+        // index + assign, I'm just doing it here... im sure this won't come back to bite me
+        match indexedObject with
+        | :? PrimellList as l -> PrimellList(l, this.Length, ?name=l.Name, ?parent=Some this, ?indexInParent=(Some (int r.Numerator)))
+        | :? PNumber as n -> PNumber(n.Value, ?name=n.Name, ?parent=Some this, ?indexInParent=(Some (int r.Numerator)))
+        | _ -> failwith "Not possible"
+
+  override this.WithValueOnly() = PrimellList main  // TODO - copy length over?
+  
 
   override this.ToString() =  // TODO - surely there's a cleaner way than the nested concat abomination I came up with
     String.concat "" ["("; String.concat " " (main |> Seq.map(fun obj -> obj.ToString())); ")"]
