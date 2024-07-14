@@ -51,6 +51,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
 
   override this.VisitNegativeInfinity context = Infinity Negative |> PNumber :> PObject
   override this.VisitNullaryOp context =
+    control.LastOperationWasAssignment <- false
     match context.baseNullaryOp().GetText() with
     | ":_" -> control.GetCodeInput()
     | ":~" -> control.GetStringInput(); // TODO - i want to change the symbol to :"
@@ -71,6 +72,28 @@ type PrimellVisitor(control: PrimellProgramControl) =
     
     operationLib.ApplyUnaryListOperation (this.Visit(context.mulTerm())) operator []
 
+  
+  // don't call unless there actually is a parent!
+  member private this.UpdateParent(parent: PObject, newChild: PObject, ?stopRecursingAt: PObject) =
+
+    // highly suspect stuff
+    match parent with
+    | :? PReference as ref ->
+        control.SetVariable(ref.Name, newChild)
+        // we also stop recursing when we hit a reference type, as parents containing a reference will dynamically pull the new value
+    | :? PList as l -> 
+      match parent.Parent with
+      | None -> ()
+      | Some grandParent -> 
+          match stopRecursingAt with
+          | Some pobj when obj.ReferenceEquals(stopRecursingAt, grandParent) -> ()
+          | _ -> 
+              let newParentValue = l |> Seq.removeAt newChild.IndexInParent.Value |> Seq.insertAt newChild.IndexInParent.Value newChild
+              let newParent = PList(newParentValue, l.Length, ?parent = l.Parent, ?indexInParent = l.IndexInParent)
+              this.UpdateParent (grandParent, newParent, ?stopRecursingAt = stopRecursingAt) // need to recurse in case there is a higher variable to set
+    
+    | _ -> failwith "Should not have parent that isn't list or reference"
+  
   member private this.PerformAssign (left: PObject, right: PObject, assignMods: OperationModifier list, ?stopRecursingAt: PObject): PObject =
     
     (* logic from original mutable C# version:
@@ -85,6 +108,12 @@ type PrimellVisitor(control: PrimellProgramControl) =
 
             foreach (i in left.size): left[i].assign(right[i])   
     *)
+
+    // Note: there's both upwards and downwards recursion in this method which makes it confusing:
+    //  The upwards recursion is to propagate any assignment updates to a containing reference type
+    //  The downward recursion is similar to operators in general in Primell, operators just get applied recursively down the object tree a lot
+    //  But with assignment there's a special stopRecursingAt parameter: this is to prevent recursion ping pong of those downstream objects recursing back up
+
     let newLeftValue = 
       if assignMods |> List.contains Power then
         right
@@ -106,7 +135,8 @@ type PrimellVisitor(control: PrimellProgramControl) =
               else temp
             real |> PList :> PObject 
         | _ -> failwith "not possible"
-
+    
+    // currently unused
     let newLeft = 
       match newLeftValue with
       | :? PNumber as n -> PNumber(n.Value, ?parent=left.Parent, ?indexInParent=left.IndexInParent) :> PObject
@@ -115,11 +145,11 @@ type PrimellVisitor(control: PrimellProgramControl) =
 
     match left with
     | :? PReference as ref -> 
-        control.SetVariable(ref.Name, newLeftValue)
+        failwith "This shouldn't be possble, we always unbox first" //control.SetVariable(ref.Name, newLeftValue)
     | _ ->
         match left.Parent with
         | None -> ()
-        | Some p -> control.UpdateParent(p, newLeftValue, ?stopRecursingAt = stopRecursingAt)
+        | Some p -> this.UpdateParent(p, newLeftValue, ?stopRecursingAt = stopRecursingAt)
 
     newLeftValue
 

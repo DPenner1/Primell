@@ -12,32 +12,6 @@ type PrimellProgramControl(settings: PrimellConfiguration) =
   // Mingh consider changing the part of Primell requiring this
   member val LastOperationWasAssignment = false with get, set
 
-  // don't call unless there actually is a parent!
-  member this.UpdateParent(parent: PObject, newChild: PObject, ?stopRecursingAt: PObject) =
-
-    // highly suspect stuff
-    match parent with
-    | :? PReference as ref ->
-        let currentValue = variables[ref.Name]
-        let newValue = 
-          match currentValue with
-          | :? PList as l ->
-              l |> Seq.removeAt newChild.IndexInParent.Value |> Seq.insertAt newChild.IndexInParent.Value newChild |> PList :> PObject
-          | _ -> newChild
-        variables[ref.Name] = newValue |> ignore
-    | :? PList as l -> 
-      match parent.Parent with
-      | None -> ()
-      | Some grandParent -> 
-          match stopRecursingAt with
-          | Some pobj when obj.ReferenceEquals(stopRecursingAt, grandParent) -> ()
-          | _ -> 
-              let newParentValue = l |> Seq.removeAt newChild.IndexInParent.Value |> Seq.insertAt newChild.IndexInParent.Value newChild
-              let newParent = PList(newParentValue, l.Length, ?parent = l.Parent, ?indexInParent = l.IndexInParent)
-              this.UpdateParent (grandParent, newParent, ?stopRecursingAt = stopRecursingAt) // need to recurse in case there is a higher variable to set
-    
-    | _ -> failwith "Should not have parent that isn't list or reference"
-
   member this.GetVariable(name: string) = 
     if not <| variables.ContainsKey(name) then
       variables.Add(name, PList.Empty.WithParent(new PReference(name), 0)) |> ignore
