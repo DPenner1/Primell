@@ -16,7 +16,7 @@ type OperationLib(control: PrimellProgramControl) =
     let GetInt(n: PNumber) = 
       match n.Value with
       | Rational r -> (round r).Numerator |> int
-      | _ -> failwith "Things aren't supported here"
+      | _ -> System.NotImplementedException("Indexing is a little wonky right now") |> raise
          
 
     let rec Index(left: PObject) (right: PObject) =
@@ -29,7 +29,7 @@ type OperationLib(control: PrimellProgramControl) =
         | (:? PList as l), (:? PNumber as n) -> l.Index(n).WithParent(l, GetInt(n)) // base case
         | :? PNumber as n, _ -> Index(n :> PObject |> Seq.singleton |> PList) right
         | (:? PList as l1), (:? PList as l2) -> l2 |> Seq.map(fun x -> Index l1 x) |> PList :> PObject
-        | _ -> failwith "not possible"
+        | _ -> PrimellProgrammerProblemException("Not possible") |> raise
         
 
     // for now these are immutable dicts, but they might be changed to mutable Dictionary on implementation of user-defined operators
@@ -63,14 +63,14 @@ type OperationLib(control: PrimellProgramControl) =
         | :? PReference as r -> this.ApplyUnaryNumericOperation (control.GetVariable(r.Name)) operator opMods
         | :? PNumber as n -> operator n
         | :? PList as l -> l |> Seq.map(fun x -> this.ApplyUnaryNumericOperation x operator opMods) |> PList :> PObject
-        | _ -> failwith "Not possible"
+        | _ -> PrimellProgrammerProblemException("Not possible") |> raise
         
     member this.ApplyUnaryListOperation (pobj: PObject) operator opMods : PObject =
         match pobj with
         | :? PReference as r -> this.ApplyUnaryListOperation (control.GetVariable(r.Name)) operator opMods
         | :? PList as l -> operator l
         | :? PNumber as n -> this.ApplyUnaryListOperation (n :> PObject |> Seq.singleton |> PList) operator opMods
-        | _ -> failwith "Not possible"
+        | _ -> PrimellProgrammerProblemException("Not possible") |> raise
 
     member this.ApplyBinaryNumericOperation (left: PObject) (right: PObject) operator opMods : PObject =
         match left, right with
@@ -86,7 +86,7 @@ type OperationLib(control: PrimellProgramControl) =
             (l1, l2) ||> Seq.map2 (fun x y -> this.ApplyBinaryNumericOperation x y operator opMods) |> PList :> PObject
             // TODO - F# truncates to the shortest list, but Primell's default is to virtually extend the shorter list with Emptys
             // Interesting solution provided here that could be adapted: https://stackoverflow.com/a/2840062/1607043
-        | _ -> failwith "Not possible"
+        | _ -> PrimellProgrammerProblemException("Not possible") |> raise
 
     member this.ApplyBinaryListOperation (left: PObject) (right: PObject) operator opMods : PObject =
         match left, right with
@@ -100,7 +100,7 @@ type OperationLib(control: PrimellProgramControl) =
             this.ApplyBinaryListOperation left (n :> PObject |> Seq.singleton |> PList) operator opMods
         | (:? PNumber as n1), (:? PNumber as n2) -> 
             this.ApplyBinaryListOperation (n1 :> PObject |> Seq.singleton |> PList) (n2 :> PObject |> Seq.singleton |> PList) operator opMods
-        | _ -> failwith "Not possible"
+        | _ -> PrimellProgrammerProblemException("Not possible") |> raise
 
     member this.ApplyListNumericOperation (pList: PObject) (pNumber: PObject) operator opMods : PObject =
         match pList, pNumber with
@@ -113,8 +113,8 @@ type OperationLib(control: PrimellProgramControl) =
         | (:? PNumber as n1), (:? PNumber as n2) -> 
             this.ApplyListNumericOperation (n1 :> PObject |> Seq.singleton |> PList) pNumber operator opMods
         | (:? PNumber as n), (:? PList as l) -> 
-            failwith "I need more coffee before figuring out this case"
-        | _ -> failwith "Not Possible"
+            this.ApplyListNumericOperation (n :> PObject |> Seq.singleton |> PList) l operator opMods
+        | _ -> PrimellProgrammerProblemException("Not possible") |> raise
 
     member this.IsTruth(pobj: PObject, truthDef: TruthDefinition) =
       match pobj with
@@ -133,7 +133,7 @@ type OperationLib(control: PrimellProgramControl) =
             match n.Value with
             | NaN -> false
             | _ as v -> not v.IsZero
-      | _ -> failwith "Not possible"
+      | _ -> PrimellProgrammerProblemException("Not possible") |> raise
 
     // TODO - These are wrong.... operators are being returned, they need to be invoked
     member this.Conditional (left: PObject) (right: PObject) truthDef =

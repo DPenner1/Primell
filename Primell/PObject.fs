@@ -1,5 +1,6 @@
 namespace dpenner1.PrimellF
 
+exception PrimellProgrammerProblemException of string
 
 [<AbstractClass>]
 type PrimellObject(?parent: PrimellObject, ?indexInParent: int) =

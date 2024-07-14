@@ -3,6 +3,7 @@ namespace dpenner1.PrimellF
 open Antlr4.Runtime.Misc
 open System.Collections.Generic
 
+exception NonPrimeDectectionException of string * ExtendedBigRational
 // TODO - port from original C# code, very mutable stuff, see if you can get rid of non-functional stuff later
 
 type PrimellVisitor(control: PrimellProgramControl) = 
@@ -43,7 +44,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
     let number = ParseLib.ParseInteger text control.Settings.SourceBase
 
     if control.Settings.RestrictedSource && not(PrimeLib.IsPrime number) then
-      failwith "NON-PRIME DETECTED!"
+      NonPrimeDectectionException("NON-PRIME DETECTED!", number) |> raise
     
     number |> PNumber :> PObject
 
@@ -92,7 +93,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
               let newParent = PList(newParentValue, l.Length, ?parent = l.Parent, ?indexInParent = l.IndexInParent)
               this.UpdateParent (grandParent, newParent, ?stopRecursingAt = stopRecursingAt) // need to recurse in case there is a higher variable to set
     
-    | _ -> failwith "Should not have parent that isn't list or reference"
+    | _ -> PrimellProgrammerProblemException("Should not have parent that isn't list or reference... actually with virtual list extension, maybe it is?") |> raise
   
   member private this.PerformAssign (left: PObject, right: PObject, assignMods: OperationModifier list, ?stopRecursingAt: PObject): PObject =
     
@@ -134,18 +135,18 @@ type PrimellVisitor(control: PrimellProgramControl) =
               if l1.Length.Value > l2.Length.Value then seq { temp |> PList :> PObject; l1 |> Seq.skip(Seq.length l2.Value) |> PList :> PObject }
               else temp
             real |> PList :> PObject 
-        | _ -> failwith "not possible"
+        | _ -> PrimellProgrammerProblemException("not possible") |> raise
     
     // currently unused
     let newLeft = 
       match newLeftValue with
       | :? PNumber as n -> PNumber(n.Value, ?parent=left.Parent, ?indexInParent=left.IndexInParent) :> PObject
       | :? PList as l -> PList(l.Value, l.Length, ?parent=left.Parent, ?indexInParent=left.IndexInParent) :> PObject
-      | _ -> failwith "not possible"
+      | _ -> PrimellProgrammerProblemException("not possible") |> raise
 
     match left with
     | :? PReference as ref -> 
-        failwith "This shouldn't be possble, we always unbox first" //control.SetVariable(ref.Name, newLeftValue)
+        PrimellProgrammerProblemException("This shouldn't be possble, we always unbox first") |> raise
     | _ ->
         match left.Parent with
         | None -> ()
@@ -202,4 +203,4 @@ type PrimellVisitor(control: PrimellProgramControl) =
         this.ApplyBinaryOperation left robj (context.binaryOp())
     | :? PList as l ->
         l |> Seq.map(fun robj -> this.ApplyBinaryOperation left robj (context.binaryOp())) |> PList :> PObject
-    | _ -> failwith "Not possible"
+    | _ -> PrimellProgrammerProblemException("not possible") |> raise

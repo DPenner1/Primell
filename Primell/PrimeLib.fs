@@ -89,7 +89,7 @@ module PrimeLib =
 
   let rec private PrevPrime' n =
     let prevInt = n - 1I
-    if prevInt < 2I then failwith "No primes less than 2, silly" 
+    if prevInt < 2I then PrimellProgrammerProblemException("No primes less than 2, silly") |> raise
     elif IsPrime' prevInt then prevInt 
     else PrevPrime' prevInt
 
@@ -125,4 +125,4 @@ module PrimeLib =
         ExtendedBigRational.Range (max left' ExtendedBigRational.Two) right' |> Seq.filter IsPrime
     | Rational _ as left', (Rational _ as right') when left' = right' ->
         Seq.empty
-    | _ -> failwith "shouldn't be possible"
+    | _ -> PrimellProgrammerProblemException("shouldn't be possible") |> raise

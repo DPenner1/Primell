@@ -22,13 +22,13 @@ type PrimellProgramControl(settings: PrimellConfiguration) =
   member this.SetVariable(name: string, value: PObject) = 
     if variables.ContainsKey name then 
       variables[name] <- value.WithParent(new PReference(name), 0) // index doesn't matter
-    else failwith "I don't think this is ever called without an existing variable (but not sure, so explicit exception)"
+    else PrimellProgrammerProblemException("I don't think this is ever called without an existing variable") |> raise
   
   member this.GetCodeInput() =
-    failwith "Not yet implemented"
+    System.NotImplementedException() |> raise
 
   member this.GetStringInput() =
-    failwith "Not yet implemented"
+    System.NotImplementedException() |> raise
 
   member this.GetCsvInput() =
-    failwith "Not yet implemented"
+    System.NotImplementedException() |> raise

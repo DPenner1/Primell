@@ -21,10 +21,9 @@ type BigRational =
     { 
       // sign always on denominator (for signed zero purposes)
       Numerator = if numerator.IsZero then 0I else bigint.Abs numerator / gcd
-      Denominator = if denominator.IsZero then failwith "Divide by zero!" 
+      Denominator = if denominator.IsZero then System.DivideByZeroException() |> raise
                     elif numerator.IsZero then bigint denominator.Sign  // signed zero
                     else denominator / gcd * bigint numerator.Sign
-      // TODO use .NET DivideByZeroException
     }
   new(numerator: bigint, denominator: bigint) = BigRational(numerator, denominator, bigint.GreatestCommonDivisor(numerator, denominator))
   new(integer: bigint) = BigRational(integer, 1, 1)

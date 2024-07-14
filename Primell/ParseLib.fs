@@ -1,5 +1,7 @@
 namespace dpenner1.PrimellF
 
+exception PrimellInvalidSyntaxException of string
+
 module ParseLib =
 
   let rec private ParseInteger' (text:string) (b:int) (index:int) (cumulativeValue: bigint) =
@@ -17,7 +19,7 @@ module ParseLib =
           else int c - int 'A' + 36
         elif c = 'Þ' then 62
         elif c = 'þ' then 63
-        else failwith "invalid character"
+        else PrimellInvalidSyntaxException($"Invalid character ({c}) in: {text}") |> raise
           
       ParseInteger' text b (index + 1) (cumulativeValue + bigint digitValue * bigint.Pow(b, text.Length - index - 1))
 
