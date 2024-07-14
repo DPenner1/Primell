@@ -12,8 +12,8 @@
     <Compile Include="PList.fs" />
     <Compile Include="ParseLib.fs" />
     <Compile Include="PrimellConfiguration.fs" />
-    <Compile Include="OperationLib.fs" />
     <Compile Include="PrimellProgramControl.fs" />
+    <Compile Include="OperationLib.fs" />
     <Compile Include="PrimellVisitor.fs" />
     <Compile Include="PrimellRunner.fs" />
     <Compile Include="Program.fs" />

@@ -6,93 +6,126 @@ open System.Collections.Generic
 type OperationModifier = 
   | Power
 
-module rec OperationLib =
+// note: as part of trying to get PReference to work, OperationLib was converted from module to class type
+//       This may have the later benefit of being able to swap out operations dependent on control.UsePrimeOperators
+type OperationLib(control: PrimellProgramControl) =
+
+    let control = control
+    
+    // very temporary, clearly things are going poorly
+    let GetInt(n: PNumber) = 
+      match n.Value with
+      | Rational r -> (round r).Numerator |> int
+      | _ -> failwith "Things aren't supported here"
+         
+
+    let rec Index(left: PObject) (right: PObject) =
+      // This is hacky: technically the best way to track parent/child and indexes would be to do it any time
+        // there's an append, prepend, rearrange etc... but since I don't think it ever matters except for
+        // index + assign, I'm just doing it here... im sure this won't come back to bite me
+        match left, right with
+        | :? PrimellReference as r, _ -> Index(control.GetVariable r.Name) right
+        | _, (:? PrimellReference as r) -> Index left (control.GetVariable r.Name)
+        | (:? PList as l), (:? PNumber as n) -> l.Index(n).WithParent(l, GetInt(n)) // base case
+        | :? PNumber as n, _ -> Index(n :> PObject |> Seq.singleton |> PList) right
+        | (:? PList as l1), (:? PList as l2) -> l2 |> Seq.map(fun x -> Index l1 x) |> PList :> PObject
+        | _ -> failwith "not possible"
+        
 
     // for now these are immutable dicts, but they might be changed to mutable Dictionary on implementation of user-defined operators
-    let public UnaryNumericOperators: IDictionary<string, PNumber->IPrimellObject> = 
-      dict ["~", fun n -> ExtendedBigRational.(~-) n.Value |> PNumber :> IPrimellObject
-            "++", fun n -> PrimeLib.NextPrime n.Value |> PNumber :> IPrimellObject
-            "--", fun n -> PrimeLib.PrevPrime n.Value |> PNumber :> IPrimellObject
+    member this.UnaryNumericOperators: IDictionary<string, PNumber->PObject> = 
+      dict ["~", fun n -> ExtendedBigRational.(~-) n.Value |> PNumber :> PObject
+            "++", fun n -> PrimeLib.NextPrime n.Value |> PNumber :> PObject
+            "--", fun n -> PrimeLib.PrevPrime n.Value |> PNumber :> PObject
            ]
 
-    let public UnaryListOperators: IDictionary<string, PList->IPrimellObject> = 
+    member this.UnaryListOperators: IDictionary<string, PList->PObject> = 
       dict ["_<", fun (l: PrimellList) -> l.Head()
             "_>", fun (l: PrimellList) -> l.Tail()        
             "_~", fun (l: PrimellList) -> l.Reverse()
            ]
 
-    let public BinaryNumericOperators: IDictionary<string, PNumber*PNumber->IPrimellObject> = 
-      dict ["..", fun (left, right) -> PrimeLib.PrimeRange left.Value right.Value |> Seq.map(fun n -> n |> PNumber :> IPrimellObject) |> PList :> IPrimellObject
-            "+",  fun (left, right) -> ExtendedBigRational.(+)(left.Value, right.Value) |> PNumber :> IPrimellObject
-            "-",  fun (left, right) -> ExtendedBigRational.(-)(left.Value, right.Value) |> PNumber :> IPrimellObject
+    member this.BinaryNumericOperators: IDictionary<string, PNumber*PNumber->PObject> = 
+      dict ["..", fun (left, right) -> PrimeLib.PrimeRange left.Value right.Value |> Seq.map(fun n -> n |> PNumber :> PObject) |> PList :> PObject
+            "+",  fun (left, right) -> ExtendedBigRational.(+)(left.Value, right.Value) |> PNumber :> PObject
+            "-",  fun (left, right) -> ExtendedBigRational.(-)(left.Value, right.Value) |> PNumber :> PObject
             
            ]
     
     // TODO - I don't have any Binary List Operators implemented yet
-    let public BinaryListOperators: IDictionary<string, PList*PList->IPrimellObject> = 
+    member this.BinaryListOperators: IDictionary<string, PList*PList->PObject> = 
       dict ["\\",  fun (left: PrimellList, right: PrimellList) -> PrimellList.Empty
            ]
 
     // opMods for consistency, but I don't think Primell will have any need for opMods on unary numeric operators
-    let rec ApplyUnaryNumericOperation (pobj: IPrimellObject) operator opMods =
+    member this.ApplyUnaryNumericOperation (pobj: PObject) operator opMods =
         match pobj with
+        | :? PReference as r -> this.ApplyUnaryNumericOperation (control.GetVariable(r.Name)) operator opMods
         | :? PNumber as n -> operator n
-        | :? PList as l -> l |> Seq.map(fun x -> ApplyUnaryNumericOperation x operator opMods) |> PList :> IPrimellObject
+        | :? PList as l -> l |> Seq.map(fun x -> this.ApplyUnaryNumericOperation x operator opMods) |> PList :> PObject
         | _ -> failwith "Not possible"
         
-    let rec ApplyUnaryListOperation (pobj: IPrimellObject) operator opMods : IPrimellObject =
+    member this.ApplyUnaryListOperation (pobj: PObject) operator opMods : PObject =
         match pobj with
+        | :? PReference as r -> this.ApplyUnaryListOperation (control.GetVariable(r.Name)) operator opMods
         | :? PList as l -> operator l
-        | :? PNumber as n -> ApplyUnaryListOperation (n :> IPrimellObject |> Seq.singleton |> PList) operator opMods
+        | :? PNumber as n -> this.ApplyUnaryListOperation (n :> PObject |> Seq.singleton |> PList) operator opMods
         | _ -> failwith "Not possible"
 
-    let rec ApplyBinaryNumericOperation (left: IPrimellObject) (right: IPrimellObject) operator opMods : IPrimellObject =
+    member this.ApplyBinaryNumericOperation (left: PObject) (right: PObject) operator opMods : PObject =
         match left, right with
+        | (:? PReference as r), _ -> this.ApplyBinaryNumericOperation (control.GetVariable(r.Name)) right operator opMods
+        | _, (:? PReference as r) -> this.ApplyBinaryNumericOperation left (control.GetVariable(r.Name)) operator opMods
         | (:? PNumber as n1), (:? PNumber as n2) -> 
             operator(n1, n2)
         | (:? PNumber as n), (:? PList as l) -> 
-            l |> Seq.map(fun x -> ApplyBinaryNumericOperation n x operator opMods) |> PList :> IPrimellObject
+            l |> Seq.map(fun x -> this.ApplyBinaryNumericOperation n x operator opMods) |> PList :> PObject
         | (:? PList as l), (:? PNumber as n) -> 
-            l |> Seq.map(fun x -> ApplyBinaryNumericOperation x n operator opMods) |> PList :> IPrimellObject
+            l |> Seq.map(fun x -> this.ApplyBinaryNumericOperation x n operator opMods) |> PList :> PObject
         | (:? PList as l1), (:? PList as l2) -> 
-            (l1, l2) ||> Seq.map2 (fun x y -> ApplyBinaryNumericOperation x y operator opMods) |> PList :> IPrimellObject
+            (l1, l2) ||> Seq.map2 (fun x y -> this.ApplyBinaryNumericOperation x y operator opMods) |> PList :> PObject
             // TODO - F# truncates to the shortest list, but Primell's default is to virtually extend the shorter list with Emptys
             // Interesting solution provided here that could be adapted: https://stackoverflow.com/a/2840062/1607043
         | _ -> failwith "Not possible"
 
-    let rec ApplyBinaryListOperation (left: IPrimellObject) (right: IPrimellObject) operator opMods : IPrimellObject =
+    member this.ApplyBinaryListOperation (left: PObject) (right: PObject) operator opMods : PObject =
         match left, right with
+        | (:? PReference as r), _ -> this.ApplyBinaryListOperation (control.GetVariable(r.Name)) right operator opMods
+        | _, (:? PReference as r) -> this.ApplyBinaryListOperation left (control.GetVariable(r.Name)) operator opMods
         | (:? PList as l1), (:? PList as l2) -> 
             operator(l1, l2)
         | (:? PNumber as n), (:? PList as l) -> 
-            ApplyBinaryListOperation (n :> IPrimellObject |> Seq.singleton |> PList) right operator opMods
+            this.ApplyBinaryListOperation (n :> PObject |> Seq.singleton |> PList) right operator opMods
         | (:? PList as l), (:? PNumber as n) -> 
-            ApplyBinaryListOperation left (n :> IPrimellObject |> Seq.singleton |> PList) operator opMods
+            this.ApplyBinaryListOperation left (n :> PObject |> Seq.singleton |> PList) operator opMods
         | (:? PNumber as n1), (:? PNumber as n2) -> 
-            ApplyBinaryListOperation (n1 :> IPrimellObject |> Seq.singleton |> PList) (n2 :> IPrimellObject |> Seq.singleton |> PList) operator opMods
+            this.ApplyBinaryListOperation (n1 :> PObject |> Seq.singleton |> PList) (n2 :> PObject |> Seq.singleton |> PList) operator opMods
         | _ -> failwith "Not possible"
 
-    let rec ApplyListNumericOperation (pList: IPrimellObject) (pNumber: IPrimellObject) operator opMods : IPrimellObject =
+    member this.ApplyListNumericOperation (pList: PObject) (pNumber: PObject) operator opMods : PObject =
         match pList, pNumber with
+        | (:? PReference as r), _ -> this.ApplyListNumericOperation (control.GetVariable(r.Name)) pNumber operator opMods
+        | _, (:? PReference as r) -> this.ApplyListNumericOperation pList (control.GetVariable(r.Name)) operator opMods
         | (:? PList as l), (:? PNumber as n) -> 
-            operator l n
+            operator(l, n)
         | (:? PList as l1), (:? PList as l2) -> 
-            failwith "I need more coffee before figuring out this case"
+            l2 |> Seq.map(fun x -> this.ApplyListNumericOperation l1 x operator opMods) |> PList :> PObject
         | (:? PNumber as n1), (:? PNumber as n2) -> 
-            ApplyListNumericOperation (n1 :> IPrimellObject |> Seq.singleton |> PList) pNumber operator opMods
+            this.ApplyListNumericOperation (n1 :> PObject |> Seq.singleton |> PList) pNumber operator opMods
         | (:? PNumber as n), (:? PList as l) -> 
             failwith "I need more coffee before figuring out this case"
         | _ -> failwith "Not Possible"
 
-    let rec IsTruth(pobj: IPrimellObject, truthDef: TruthDefinition) =
+    member this.IsTruth(pobj: PObject, truthDef: TruthDefinition) =
       match pobj with
+      | :? PReference as r -> this.IsTruth(control.GetVariable(r.Name), truthDef)
       | :? PList as l when l.IsEmpty -> truthDef.EmptyIsTruth
       | :? PList as l ->  // infinite recursion is possible with infinite lists
           if truthDef.RequireAllTruth then
-            l |> Seq.exists(fun x -> IsTruth(x, truthDef) |> not) |> not
+            l |> Seq.exists(fun x -> this.IsTruth(x, truthDef) |> not) |> not
               // TODO - since I'm piping a few times here, this probably isn't tail recursion
           else
-            l |> Seq.exists(fun x -> IsTruth(x, truthDef))
+            l |> Seq.exists(fun x -> this.IsTruth(x, truthDef))
       | :? PNumber as n -> 
           if truthDef.PrimesAreTruth then
             PrimeLib.IsPrime n.Value
@@ -102,8 +135,11 @@ module rec OperationLib =
             | _ as v -> not v.IsZero
       | _ -> failwith "Not possible"
 
-    let public Conditional (left: IPrimellObject) (right: IPrimellObject) truthDef =
-      if IsTruth(left, truthDef) then UnaryListOperators["_<"] else UnaryListOperators["_>"]
+    // TODO - These are wrong.... operators are being returned, they need to be invoked
+    member this.Conditional (left: PObject) (right: PObject) truthDef =
+      if this.IsTruth(left, truthDef) then this.UnaryListOperators["_<"] else this.UnaryListOperators["_>"]
 
-    let public NegativeConditional (left: IPrimellObject) (right: IPrimellObject) truthDef =
-      if IsTruth(left, truthDef) then UnaryListOperators["_>"] else UnaryListOperators["_<"]
+    member this.NegativeConditional (left: PObject) (right: PObject) truthDef =
+      if this.IsTruth(left, truthDef) then this.UnaryListOperators["_>"] else this.UnaryListOperators["_<"]
+
+    
