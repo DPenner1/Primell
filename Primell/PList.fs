@@ -1,7 +1,6 @@
 namespace dpenner1.PrimellF
 
-
-
+[<Sealed>]
 // Ok a bit weird to call the seq a list, but conceptually, that's how I view the Primell object, as lists
 type PrimellList(sequence: seq<PObject>, ?length: PNumber, ?parent: PObject, ?indexInParent: int) = 
   inherit PObject(?parent = parent, ?indexInParent = indexInParent)

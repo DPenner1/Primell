@@ -51,14 +51,17 @@ type PrimellVisitor(control: PrimellProgramControl) =
   override this.VisitPositiveInfinity context = Infinity Positive |> PNumber :> PObject
 
   override this.VisitNegativeInfinity context = Infinity Negative |> PNumber :> PObject
-  override this.VisitNullaryOp context =
+  override this.VisitNullaryOp context : PObject =
     control.LastOperationWasAssignment <- false
-    match context.baseNullaryOp().GetText() with
-    | ":_" -> control.GetCodeInput()
-    | ":~" -> control.GetStringInput(); // TODO - i want to change the symbol to :"
-    | ":," -> control.GetCsvInput();  // TODO - this is anticipatory
-    | _ as varName ->  // not an input, implicitly assumed to be a variable - TODO make sure thats actually true, grammar-wise
-        control.GetVariable(varName)
+
+    let opText = context.baseNullaryOp().GetText()
+    let operator =
+      if operationLib.NullaryOperators.ContainsKey(opText) then
+        operationLib.NullaryOperators[opText]
+      else  // implicitly assumed to be a variable
+        fun () -> PrimellReference(opText)
+
+    operationLib.ApplyNullaryOperation operator []
           
   // TODO - switch this to UnaryNumeric in the grammar for consistency...
   override this.VisitNumericUnaryOperation context = 
@@ -120,13 +123,11 @@ type PrimellVisitor(control: PrimellProgramControl) =
         right
       else
         match left, right with  // get references out of the way for now, i'm sure this could be done better
-        | (:? PReference as r), _ -> this.PerformAssign(control.GetVariable(r.Name), right, assignMods, ?stopRecursingAt=stopRecursingAt)
-        | _, (:? PReference as r) -> this.PerformAssign(left, control.GetVariable(r.Name), assignMods, ?stopRecursingAt=stopRecursingAt)
-        | :? PNumber, _ ->
+        | :? PAtom, _ ->
             right
         | :? PList as l, _ when l.IsEmpty ->
             right
-        | :? PList as l, :? PNumber ->
+        | :? PList as l, :? PAtom ->
             let newLvalue = l |> Seq.map(fun x -> this.PerformAssign(x, right, assignMods, ?stopRecursingAt=Some left))
             newLvalue |> PList :> PObject     
         | (:? PList as l1), (:? PList as l2) ->
@@ -138,15 +139,14 @@ type PrimellVisitor(control: PrimellProgramControl) =
         | _ -> PrimellProgrammerProblemException("not possible") |> raise
     
     // currently unused
-    let newLeft = 
-      match newLeftValue with
-      | :? PNumber as n -> PNumber(n.Value, ?parent=left.Parent, ?indexInParent=left.IndexInParent) :> PObject
-      | :? PList as l -> PList(l.Value, l.Length, ?parent=left.Parent, ?indexInParent=left.IndexInParent) :> PObject
-      | _ -> PrimellProgrammerProblemException("not possible") |> raise
+    //let newLeft = 
+    //  match newLeftValue with
+    //  | :? PNumber as n -> PNumber(n.Value, ?parent=left.Parent, ?indexInParent=left.IndexInParent) :> PObject
+     // | :? PList as l -> PList(l.Value, l.Length, ?parent=left.Parent, ?indexInParent=left.IndexInParent) :> PObject
+     // | _ -> PrimellProgrammerProblemException("not possible") |> raise
 
     match left with
-    | :? PReference as ref -> 
-        PrimellProgrammerProblemException("This shouldn't be possble, we always unbox first") |> raise
+    | :? PReference as ref -> control.SetVariable(ref.Name, newLeftValue)
     | _ ->
         match left.Parent with
         | None -> ()

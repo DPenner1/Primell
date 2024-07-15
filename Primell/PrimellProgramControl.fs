@@ -18,17 +18,19 @@ type PrimellProgramControl(settings: PrimellConfiguration) =
 
     variables[name]
     
+  // temp
+  member this.GetVariableDictionary() = variables
 
-  member this.SetVariable(name: string, value: PObject) = 
-    if variables.ContainsKey name then 
-      variables[name] <- value.WithParent(new PReference(name), 0) // index doesn't matter
-    else PrimellProgrammerProblemException("I don't think this is ever called without an existing variable") |> raise
+  member this.SetVariable(name: string, newValue: PObject) = 
+    if variables.ContainsKey name |> not then 
+      variables.Add(name, PList.Empty)
+    variables[name] <- newValue
   
-  member this.GetCodeInput() =
+  member this.GetCodeInput(): PObject =
     System.NotImplementedException() |> raise
 
-  member this.GetStringInput() =
+  member this.GetStringInput(): PObject =
     System.NotImplementedException() |> raise
 
-  member this.GetCsvInput() =
+  member this.GetCsvInput(): PObject =
     System.NotImplementedException() |> raise

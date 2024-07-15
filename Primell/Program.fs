@@ -29,7 +29,8 @@ let negate = -testNegate
 
 let negateParseTest = "2 3~"
 
-let variableProgram = ",\n, = 3\n,"
+let variableProgram = ", = ;\n; = 3\n,\n;"
+//let variableProgram = ", = ;\n; = 3\n,\n;"
 //let testList = seq {ExtendedBigRational.Zero |> PNumber :> PObject; ExtendedBigRational.One |> PNumber :> PObject; ExtendedBigRational.Two |> PNumber :> PObject} |> PList
     
 //let testIndex = testList.Index(0 |> BigRational |> Rational |> PNumber)
@@ -39,7 +40,7 @@ let variableProgram = ",\n, = 3\n,"
 //printfn "%O" <| namedList.Name
 //runner.Run "2..101" PrimellConfiguration.PrimellDefault
 
-runner.Run variableProgram PrimellConfiguration.PrimellDefault
+runner.Run variableProgram PrimellConfiguration.Listell
 (*
 for x in BigRational.Range(BigRational(3, 1), BigRational(13, 2), BigRational(1, 3), true, false) do 
     printf "%O " <| x

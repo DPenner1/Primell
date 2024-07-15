@@ -31,6 +31,11 @@ type OperationLib(control: PrimellProgramControl) =
         | (:? PList as l1), (:? PList as l2) -> l2 |> Seq.map(fun x -> Index l1 x) |> PList :> PObject
         | _ -> PrimellProgrammerProblemException("Not possible") |> raise
         
+    member this.NullaryOperators: IDictionary<string, unit->PObject> =
+      dict [":_", fun () -> control.GetCodeInput()
+            ":~", fun () -> control.GetStringInput()  // symbol to change
+            ":,", fun () -> control.GetCsvInput()
+           ]
 
     // for now these are immutable dicts, but they might be changed to mutable Dictionary on implementation of user-defined operators
     member this.UnaryNumericOperators: IDictionary<string, PNumber->PObject> = 
@@ -56,6 +61,11 @@ type OperationLib(control: PrimellProgramControl) =
     member this.BinaryListOperators: IDictionary<string, PList*PList->PObject> = 
       dict ["\\",  fun (left: PrimellList, right: PrimellList) -> PrimellList.Empty
            ]
+ 
+
+    // opMods for consistency, but I don't think Primell will have any need for opMods on nullary operators
+    member this.ApplyNullaryOperation operator opMods : PObject =
+      operator()
 
     // opMods for consistency, but I don't think Primell will have any need for opMods on unary numeric operators
     member this.ApplyUnaryNumericOperation (pobj: PObject) operator opMods =
