@@ -29,3 +29,37 @@ module ParseLib =
       BigRational(text.Length, 1) |> Rational 
     else
       BigRational(ParseInteger' text b 0 0I, 1) |> Rational
+
+
+  let rec UpdateSettings (settings: PrimellConfiguration) (args: List<string>) =
+    if args.IsEmpty then 
+      settings
+    elif args |> List.contains "-ld" then  // TODO - there's a few settings (like SourcePath) these shouldn't override
+      UpdateSettings PrimellConfiguration.Listell (args |> List.filter(fun arg -> arg.Equals("-ld") |> not))
+    elif args |> List.contains "-pd" then 
+      UpdateSettings PrimellConfiguration.PrimellDefault (args |> List.filter(fun arg -> arg.Equals("-pd") |> not))
+    else 
+      match args[0].ToLowerInvariant() with
+      | "-b" | "--base" ->    
+        UpdateSettings { settings with InputBase = int args[1]; OutputBase = int args[1]; SourceBase = int args[1]} args.Tail.Tail  // i mean it works 
+      | "-ib" | "--input-base" -> 
+        UpdateSettings { settings with InputBase = int args[1] } args.Tail.Tail
+      | "-ob" | "--output-base" -> 
+        UpdateSettings { settings with OutputBase = int args[1] } args.Tail.Tail
+      | "-sb" | "--source-base" -> 
+        UpdateSettings { settings with SourceBase = int args[1] } args.Tail.Tail
+      | "-rs" | "--restricted-source" -> 
+        if args.Length > 1 && not <| args[1].StartsWith "-" then
+          UpdateSettings { settings with RestrictedSource = args[1].ToLowerInvariant().StartsWith "y" } args.Tail.Tail
+        else
+          UpdateSettings { settings with RestrictedSource = not settings.RestrictedSource } args.Tail
+      | "-o" | "--output" ->
+        if args.Length > 1 && not <| args[1].StartsWith "-" then
+          UpdateSettings { settings with OutputFilePath = args[1] } args.Tail.Tail
+        else
+          UpdateSettings { settings with OutputFilePath = "" } args.Tail
+      | "-r" | "--rounding-mode" ->  // would have abbreviated --rm, but that's scary
+        System.NotImplementedException () |> raise
+      | "-p" | "--precision" ->
+        System.NotImplementedException () |> raise
+      | _ -> System.ArgumentException("Invalid settings argument") |> raise

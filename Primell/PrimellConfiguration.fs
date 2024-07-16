@@ -20,7 +20,7 @@ type PrimellConfiguration =
     InputEncoding: Encoding;
     OutputEncoding: Encoding;
     SourceEncoding: Encoding;
-    InputFilePath: string; // file being run
+    SourceFilePath: string; // file being run
     OutputFilePath: string;
   }
   static member PrimellDefault = {
@@ -34,7 +34,7 @@ type PrimellConfiguration =
                                     InputEncoding = Encoding.UTF8
                                     OutputEncoding = Encoding.UTF8
                                     SourceEncoding = Encoding.UTF8
-                                    InputFilePath = ""
+                                    SourceFilePath = ""
                                     OutputFilePath = ""
                                   }
   
@@ -50,6 +50,6 @@ type PrimellConfiguration =
                             InputEncoding = Encoding.UTF8
                             OutputEncoding = Encoding.UTF8
                             SourceEncoding = Encoding.UTF8
-                            InputFilePath = ""
                             OutputFilePath = ""
+                            SourceFilePath = ""                           
                           }

@@ -32,7 +32,7 @@ type PrimellList(sequence: seq<PObject>, ?length: PNumber, ?parent: PObject, ?in
   member this.Reverse() = Seq.rev main |> PrimellList
 
   // TODO - i know Lists are O(1) on prepend and not append, but how do Seqs behave on append vs prepend?
-  member this.Append (pobj: PObject) = seq { this :> PObject; pobj } |> PrimellList
+  member this.Append (pobj: PObject) = Seq.append this (Seq.singleton pobj) |> PrimellList
 
   // TODO - is there a way to more cleanly do this without drilling into types?
   member this.AppendAll (pobj: PObject) =

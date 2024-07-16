@@ -17,19 +17,13 @@ let program = """
 ,@(2 3) =$ 7 11
 ,"""
 
-//let indexProgram = "(2 3 5)@2"  //works
-let indexProgram = "(2 3 5 7)@$3~" // works
+let program2 = "(2 3)(5 7)"
 
-//let indexProgram = "(2 3 5 7)@(2 3)" //works
-//let indexProgram = "(2 3 5 7)@(3~ 2)" //works 
-//let indexProgram = "(2 3 5 7)@(2 3~)"
+runner.InteractiveMode()
 
-let testNegate = 5 |> BigRational |> Rational
-let negate = -testNegate
-
-let negateParseTest = "2 3~"
-
-let variableProgram = ", = ;\n; = 3\n,\n;"
+//let program2 = ", =$ 2*2*5*5\n, -= 2\n,"
+//let variableProgram = "(, ;) = (3)\n,\n;"
+//let variableIndexProgram = ", = (2 3)\n,\n,@1 = 5\n,"
 //let variableProgram = ", = ;\n; = 3\n,\n;"
 //let testList = seq {ExtendedBigRational.Zero |> PNumber :> PObject; ExtendedBigRational.One |> PNumber :> PObject; ExtendedBigRational.Two |> PNumber :> PObject} |> PList
     
@@ -39,8 +33,15 @@ let variableProgram = ", = ;\n; = 3\n,\n;"
 
 //printfn "%O" <| namedList.Name
 //runner.Run "2..101" PrimellConfiguration.PrimellDefault
+//let programControl = PrimellProgramControl PrimellConfiguration.Listell
+//runner.Run program2 programControl |> ignore
 
-runner.Run variableProgram PrimellConfiguration.Listell
+//let control2 = PrimellProgramControl {PrimellConfiguration.PrimellDefault with InputFilePath = "../../../../Examples/PrimesTo100.pll"}
+
+//runner.RunFromFile  control2 |> ignore
+
+//let x = PrimellConfiguration.Listell
+//printf "%A " <| {x with SourceBase=13}
 (*
 for x in BigRational.Range(BigRational(3, 1), BigRational(13, 2), BigRational(1, 3), true, false) do 
     printf "%O " <| x

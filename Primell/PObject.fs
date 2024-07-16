@@ -31,9 +31,9 @@ x
   I can't make list mutable: I've committed to seqs as a design choice knowing the variable mutability would be tough,
   but I could make the contents of y be a reference to something mutable
 
-  But what if we wanted to evaluate? if immediately evaluated, that would x = (() 3 5), 
-  HOWEVER if variables are immediately evaluated, technically you would have () = (() 3 5) and lost any real use for assignment
-  So for now, variables will be boxed, to at least allow reasonable assignment
+  But what if we wanted to evaluate? if immediately evaluated, that would () = (() 3 5), 
+  Re-reading old comments, Primell was immediately evaluated, but the initial x = () evaluation didn't prevent () 
+  from being assigned and referenced -> so that's the re-implementation for now
 *)
 
 // note: its actually been a bit cumbersome having indirection for mutability,

@@ -22,7 +22,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
 
   override this.VisitParens context =
     incorporate.Pop() |> ignore
-    incorporate.Push true
+    incorporate.Push false
 
     if context.termSeq() |> isNull then PList.Empty else this.Visit(context.termSeq())
 
@@ -78,15 +78,20 @@ type PrimellVisitor(control: PrimellProgramControl) =
 
   
   // don't call unless there actually is a parent!
-  member private this.UpdateParent(parent: PObject, newChild: PObject, ?stopRecursingAt: PObject) =
+  // parent object is stored in newChild
+  member private this.UpdateParent(newChild: PObject, ?stopRecursingAt: PObject) =
 
-    // highly suspect stuff
-    match parent with
+    match newChild.Parent.Value with
     | :? PReference as ref ->
-        control.SetVariable(ref.Name, newChild)
+        let oldValue = control.GetVariable(ref.Name)
+        match oldValue with
+        | :? PList as l when not l.IsEmpty ->
+            let newValue = l |> Seq.removeAt newChild.IndexInParent.Value |> Seq.insertAt newChild.IndexInParent.Value newChild |> PList
+            control.SetVariable(ref.Name, newValue)
+        | _ -> control.SetVariable(ref.Name, newChild)
         // we also stop recursing when we hit a reference type, as parents containing a reference will dynamically pull the new value
     | :? PList as l -> 
-      match parent.Parent with
+      match l.Parent.Value.Parent with
       | None -> ()
       | Some grandParent -> 
           match stopRecursingAt with
@@ -94,7 +99,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
           | _ -> 
               let newParentValue = l |> Seq.removeAt newChild.IndexInParent.Value |> Seq.insertAt newChild.IndexInParent.Value newChild
               let newParent = PList(newParentValue, l.Length, ?parent = l.Parent, ?indexInParent = l.IndexInParent)
-              this.UpdateParent (grandParent, newParent, ?stopRecursingAt = stopRecursingAt) // need to recurse in case there is a higher variable to set
+              this.UpdateParent (newParent, ?stopRecursingAt = stopRecursingAt) // need to recurse in case there is a higher variable to set
     
     | _ -> PrimellProgrammerProblemException("Should not have parent that isn't list or reference... actually with virtual list extension, maybe it is?") |> raise
   
@@ -150,7 +155,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
     | _ ->
         match left.Parent with
         | None -> ()
-        | Some p -> this.UpdateParent(p, newLeftValue, ?stopRecursingAt = stopRecursingAt)
+        | Some p -> this.UpdateParent(newLeftValue.WithParent(p, left.IndexInParent.Value), ?stopRecursingAt = stopRecursingAt)
 
     newLeftValue
 
@@ -164,8 +169,9 @@ type PrimellVisitor(control: PrimellProgramControl) =
       elif context.baseListBinaryOp() |> isNull |> not then
         // TODO temp:
         if context.baseListBinaryOp().GetText() = "@" then
-          let operator = fun (l: PList, n: PNumber) -> l.Index(n)
-          operationLib.ApplyListNumericOperation left right operator [] 
+          //let operator = fun (l: PObject, r: PObject) -> operationLib.Index l r
+          //operationLib.ApplyListNumericOperation left right operator [] 
+          operationLib.Index left right
         else  
           let operator = operationLib.BinaryListOperators[context.baseListBinaryOp().GetText()]
           operationLib.ApplyBinaryListOperation left right operator []
@@ -175,7 +181,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
     control.LastOperationWasAssignment <- isAssign
       
     if isAssign then
-      this.PerformAssign(left, right, [])
+      this.PerformAssign(left, interimResult, [])
     else 
       interimResult
 

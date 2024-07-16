@@ -19,16 +19,19 @@ type OperationLib(control: PrimellProgramControl) =
       | _ -> System.NotImplementedException("Indexing is a little wonky right now") |> raise
          
 
-    let rec Index(left: PObject) (right: PObject) =
-      // This is hacky: technically the best way to track parent/child and indexes would be to do it any time
+    member this.Index(left: PObject) (right: PObject): PObject =
+        // This is hacky: technically the best way to track parent/child and indexes would be to do it any time
         // there's an append, prepend, rearrange etc... but since I don't think it ever matters except for
         // index + assign, I'm just doing it here... im sure this won't come back to bite me
+        // actually, trying to implement this one properly I'd argue did bite, but maybe not as much as other operations
+        // which modify the structure of an object (eg Flatten)
         match left, right with
-        | :? PrimellReference as r, _ -> Index(control.GetVariable r.Name) right
-        | _, (:? PrimellReference as r) -> Index left (control.GetVariable r.Name)
+        | _, (:? PrimellReference as r) -> this.Index left (control.GetVariable r.Name)
+        | (:? PrimellReference as r), (:? PNumber as n) -> (this.Index(control.GetVariable r.Name) right).WithParent(r, GetInt(n))  
+        | (:? PrimellReference as r), (:? PList as l) -> l |> Seq.map(fun x -> this.Index r l) |> PList :> PObject
         | (:? PList as l), (:? PNumber as n) -> l.Index(n).WithParent(l, GetInt(n)) // base case
-        | :? PNumber as n, _ -> Index(n :> PObject |> Seq.singleton |> PList) right
-        | (:? PList as l1), (:? PList as l2) -> l2 |> Seq.map(fun x -> Index l1 x) |> PList :> PObject
+        | :? PNumber as n, _ -> this.Index(n :> PObject |> Seq.singleton |> PList) right
+        | (:? PList as l1), (:? PList as l2) -> l2 |> Seq.map(fun x -> this.Index l1 x) |> PList :> PObject
         | _ -> PrimellProgrammerProblemException("Not possible") |> raise
         
     member this.NullaryOperators: IDictionary<string, unit->PObject> =
@@ -54,7 +57,8 @@ type OperationLib(control: PrimellProgramControl) =
       dict ["..", fun (left, right) -> PrimeLib.PrimeRange left.Value right.Value |> Seq.map(fun n -> n |> PNumber :> PObject) |> PList :> PObject
             "+",  fun (left, right) -> ExtendedBigRational.(+)(left.Value, right.Value) |> PNumber :> PObject
             "-",  fun (left, right) -> ExtendedBigRational.(-)(left.Value, right.Value) |> PNumber :> PObject
-            
+            "*",  fun (left, right) -> ExtendedBigRational.( * )(left.Value, right.Value) |> PNumber :> PObject
+            "/",  fun (left, right) -> ExtendedBigRational.( / )(left.Value, right.Value) |> PNumber :> PObject
            ]
     
     // TODO - I don't have any Binary List Operators implemented yet

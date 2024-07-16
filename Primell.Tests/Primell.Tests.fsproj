@@ -5,6 +5,7 @@
     <GenerateProgramFile>false</GenerateProgramFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="PrimellProgramTests.fs" />
     <Compile Include="PListTests.fs" />
     <Compile Include="ExtendedBigRationalTests.fs" />
     <Compile Include="PrimeLibTests.fs" />
