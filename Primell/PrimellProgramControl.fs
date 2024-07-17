@@ -9,7 +9,7 @@ type PrimellProgramControl(settings: PrimellConfiguration) =
   
 
   // This is a port from original Primell, copying to have current examples execute as before,
-  // Mingh consider changing the part of Primell requiring this
+  // Might consider changing the part of Primell requiring this
   member val LastOperationWasAssignment = false with get, set
 
   member this.GetVariable(name: string) = 

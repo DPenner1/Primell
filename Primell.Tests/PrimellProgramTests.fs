@@ -34,9 +34,14 @@ let ``Test Index``() =
 
   TestProgram("(2 3 5 7)@(2 (3 2~))", PrimellConfiguration.PrimellDefault, "5 (7 5)")
 
+  // implicit empties
+  TestProgram("()@2", PrimellConfiguration.PrimellDefault, "()")
+  TestProgram("()@$2~", PrimellConfiguration.PrimellDefault, "()")
+
 
 [<Fact>]
 let ``Test Assign``() =
   TestProgram(", = 3\n,", PrimellConfiguration.PrimellDefault, "3")
+  TestProgram(", = 3\n, = (3 5)\n,", PrimellConfiguration.PrimellDefault, "3 5")
   TestProgram(", = (2 3)\n,", PrimellConfiguration.PrimellDefault, "2 3")
   TestProgram(", = (2 3)\n, = 5\n,", PrimellConfiguration.PrimellDefault, "5 5")

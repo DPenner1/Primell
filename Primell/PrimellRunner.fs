@@ -21,18 +21,21 @@ type PrimellRunner() =
 
   let consoleCommands = [ { Key = ""; ArgumentDescription = ""; Description = "Help. Which I assume you've already figured out." }
                           { Key = "echo"; ArgumentDescription = ""; Description = "Toggles echo. This provides feedback for some commands to soothe your worries." }
-                          { Key = "q"; ArgumentDescription = ""; Description = "Quit Prime. Prime is sad." }
-                          { Key = "run"; ArgumentDescription = "<file-path>"; Description = "Runs the given file." }
+                          { Key = "q"; ArgumentDescription = ""; Description = "Quit Primell. Primell is sad." }
+                          { Key = "run"; ArgumentDescription = "<file-path>?"; Description = "Runs the given file. If none specified, defaults to file set by --source-file setting" }
                           { Key = "set"; ArgumentDescription = "<settings-list>?"; Description = "Sets Prime to given settings list. Echoes current settings if none provided." }
                         ]
 
-  let consoleSettings = [ "-o    OR  --output <file-path>?", "Directs Prime to output to given file. If no file is specified, output is to console."
+  let consoleSettings = [ "-of   OR  --output-filepath <file-path>?", "Directs Primell to output to given file. If no file is specified, output is to console."
+                          "-sf   OR  --source-filepath <file-path>?", "Sets the default source code file path for the ?run command."
                           "-b    OR  --base <base>", "Sets the base globally to given value."
-                          "-ib   OR  --input-base <base>", "Sets the base that Prime expects the user to write in for the list read (:_) operator."
-                          "-ob   OR  --output-base <base>", "Sets the base that Prime outputs in."
-                          "-sb   OR  --source-base <base>", "Sets the base that Prime expects the source code to be in."
+                          "-ib   OR  --input-base <base>", "Sets the base that Primell expects the user to write in for the list read (:_) operator."
+                          "-ob   OR  --output-base <base>", "Sets the base that Primell outputs in."
+                          "-sb   OR  --source-base <base>", "Sets the base that Primell expects the source code to be in."
                           "-rs   OR  --restricted-source <Y or N>?", "Sets whether non-prime values are allowed. If value not provided, toggles the current value."
                           "-t    OR  --truth <0 to 7>", "Sets what truth means for the boolean (?) operators"
+                          "-pd   OR  --primell-default", "Sets configuration to Primell's default. Other simultaneously provided settings override this."
+                          "-ld   OR  --listell-default", "Sets configuration to Listell, Primell's non-prime believing cousin. Other simultaneously provided settings override this."
                         ]
 
   member this.GetResultString (result: PrimellObject) (control: PrimellProgramControl) =
@@ -72,63 +75,59 @@ type PrimellRunner() =
   member this.RunFromFile (control: PrimellProgramControl) =
     let lines = IO.File.ReadAllLines(control.Settings.SourceFilePath)
     this.Run (String.concat "\n" lines) control
-
-  
+ 
 
   member this.InteractiveMode ?settings =
-    printfn "%s" "Welcome to Prime. Enter ? for help."
-    this.PromptForInput (?settings=settings)
+    let settings = defaultArg settings PrimellConfiguration.PrimellDefault
+    this.PromptForInput settings false "Welcome to Primell. Enter ? for help."
 
-  member private this.PromptForInput (?settings: PrimellConfiguration) =
+  // prompt parameter is a bit misnamed, it mostly ends up being echo from the previous recursion, but can't think of better name right now
+  member private this.PromptForInput (settings: PrimellConfiguration)(echo: bool)(prompt: string) =
+    printfn "%s" prompt
+    printfn "%s" ""
     let input = Console.ReadLine().Trim()
-    // lots of mutable stuff from direct C# conversion
-    let mutable keepPrompting = true
-    let mutable settings = defaultArg settings PrimellConfiguration.PrimellDefault
-    let mutable echo = false
+ 
+     // TODO - exception handle
 
     if input.StartsWith("?") then
       let commandKey = if input.Length > 1 then input.Substring(1).Split(' ', StringSplitOptions.RemoveEmptyEntries)[0] else ""
       let argument = input.Substring(input.IndexOf(commandKey) + commandKey.Length).Trim()
       match commandKey.ToLowerInvariant() with
+      | "q" | "quit" -> ()
       | "" | "?" | "help" -> 
-          this.HelpSpiel()
-      | "q" | "quit" -> 
-          keepPrompting <- false
-      | "run" ->           
-          this.RunFromFile(PrimellProgramControl{settings with SourceFilePath = argument}) |> ignore
-          if echo then printfn "%s" "Program has completed."
+          //this.HelpSpiel()  // TODO generate string for recursive print
+          this.PromptForInput settings echo (this.HelpSpiel())
+      | "run" ->   // TODO - read from settings
+          if argument.Length = 0 then
+            this.PromptForInput settings echo "Run what?"
+          else        
+            this.RunFromFile(PrimellProgramControl{settings with SourceFilePath = argument}) |> ignore
+            this.PromptForInput settings echo (if echo then "Program has completed." else "")  
+          // not saving filepatch in "permanent" settings is intentional
       | "set" ->
           let newSettings = argument.Split(' ', StringSplitOptions.RemoveEmptyEntries)
           if newSettings |> Array.isEmpty then
-            printfn "%A" settings  // TODO - format nicer
+            this.PromptForInput settings echo (sprintf "%A" settings) // TODO - format nicer
           else
-            settings <- ParseLib.UpdateSettings settings (newSettings |> Array.toList)
-            if echo then printfn "%s" "Settings updated."
+            this.PromptForInput(ParseLib.UpdateSettings settings (newSettings |> Array.toList)) echo (if echo then "Settings updated." else "")
       | "echo" -> 
-          echo <- not echo
-          if echo then printfn "%s" "Echo turned on. on. on."
-      | _ -> printfn "%s" "Unrecognized command" 
+          this.PromptForInput settings (not echo) (if echo then "" else "Echo turned on. on. on.")
+      | _ -> this.PromptForInput settings echo "Unrecognized command" 
     else 
-      this.Run input (PrimellProgramControl settings) |> ignore
+      this.Run input (PrimellProgramControl settings) |> ignore  
+      this.PromptForInput settings echo (if echo then "Program line executed." else "")
     
-    printfn "%s" ""
-    if keepPrompting then this.PromptForInput()
-      
-
   
   member private this.HelpSpiel() =
-    printfn "%s" ""
-    printfn "%s" "Commands  (input not prefixed with '?' engages REPL mode - currenty limited)"
-    printfn "%s" "-------------------------------------------------------------------------------------------"
+    let line = "----------------------------------------------------------------------------------------------"
+
+    let commandPreface = [""; "Commands  (input not prefixed with '?' engages REPL mode - currenty limited)"; line]
 
     let padding = (consoleCommands |> List.map(fun x -> x.Key.Length + x.ArgumentDescription.Length) |> List.max) + 4
-    consoleCommands |> List.iter(fun command -> let s = $"?{command.Key} {command.ArgumentDescription}"
-                                                printfn "%s- %s" (s.PadRight(padding)) command.Description)
+    let commandList = consoleCommands |> List.map(fun command -> let s = $"?{command.Key} {command.ArgumentDescription}"
+                                                                 sprintf "%s- %s" (s.PadRight(padding)) command.Description)
 
-    printfn "%s" ""
-    printfn "%s" ""
-    printfn "%s" "Settings"
-    printfn "%s" "-------------------------------------------------------------------------------------------"
-
-    consoleSettings |> List.iter(fun setting -> printfn "%s" (fst setting); printfn "    %s" (snd setting))
-
+    let settingPreface = [""; ""; "Settings"; line]
+    let settingList = consoleSettings |> List.collect(fun setting -> [fst setting; sprintf "    %s" (snd setting)])
+    
+    List.concat [commandPreface; commandList; settingPreface; settingList] |> String.concat "\n"

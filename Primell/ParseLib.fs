@@ -34,9 +34,9 @@ module ParseLib =
   let rec UpdateSettings (settings: PrimellConfiguration) (args: List<string>) =
     if args.IsEmpty then 
       settings
-    elif args |> List.contains "-ld" then  // TODO - there's a few settings (like SourcePath) these shouldn't override
+    elif args |> List.contains "-ld" || args |> List.contains "--listell-default" then  // TODO - there's a few settings (like SourcePath) these shouldn't override
       UpdateSettings PrimellConfiguration.Listell (args |> List.filter(fun arg -> arg.Equals("-ld") |> not))
-    elif args |> List.contains "-pd" then 
+    elif args |> List.contains "-pd" || args |> List.contains "--primell-default" then 
       UpdateSettings PrimellConfiguration.PrimellDefault (args |> List.filter(fun arg -> arg.Equals("-pd") |> not))
     else 
       match args[0].ToLowerInvariant() with
@@ -53,12 +53,17 @@ module ParseLib =
           UpdateSettings { settings with RestrictedSource = args[1].ToLowerInvariant().StartsWith "y" } args.Tail.Tail
         else
           UpdateSettings { settings with RestrictedSource = not settings.RestrictedSource } args.Tail
-      | "-o" | "--output" ->
+      | "-sf" | "--source-filepath" ->
+        if args.Length > 1 && not <| args[1].StartsWith "-" then
+          UpdateSettings { settings with SourceFilePath = args[1] } args.Tail.Tail
+        else
+          UpdateSettings { settings with SourceFilePath = "" } args.Tail
+      | "-of" | "--output-filepath" ->
         if args.Length > 1 && not <| args[1].StartsWith "-" then
           UpdateSettings { settings with OutputFilePath = args[1] } args.Tail.Tail
         else
           UpdateSettings { settings with OutputFilePath = "" } args.Tail
-      | "-r" | "--rounding-mode" ->  // would have abbreviated --rm, but that's scary
+      | "-r" | "--rounding-mode" ->  // would have abbreviated -rm, but that's scary
         System.NotImplementedException () |> raise
       | "-p" | "--precision" ->
         System.NotImplementedException () |> raise
