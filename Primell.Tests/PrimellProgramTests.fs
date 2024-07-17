@@ -31,12 +31,16 @@ let ``Test Index``() =
   TestProgram("(2 3 5 7)@(2 3)", PrimellConfiguration.PrimellDefault, "5 7")
   TestProgram("(2 3 5 7)@(3~ 2)", PrimellConfiguration.PrimellDefault, "3 5")
   TestProgram("(2 3 5 7)@(2 2~)", PrimellConfiguration.PrimellDefault, "5 5")
+  
+  TestProgram("(2 3 (5 7))@2", PrimellConfiguration.PrimellDefault, "5 7")
 
   TestProgram("(2 3 5 7)@(2 (3 2~))", PrimellConfiguration.PrimellDefault, "5 (7 5)")
 
   // implicit empties
   TestProgram("()@2", PrimellConfiguration.PrimellDefault, "()")
   TestProgram("()@$2~", PrimellConfiguration.PrimellDefault, "()")
+  TestProgram("3@2", PrimellConfiguration.PrimellDefault, "()")
+  TestProgram("3@$2~", PrimellConfiguration.PrimellDefault, "()")
 
 
 [<Fact>]
@@ -45,3 +49,20 @@ let ``Test Assign``() =
   TestProgram(", = 3\n, = (3 5)\n,", PrimellConfiguration.PrimellDefault, "3 5")
   TestProgram(", = (2 3)\n,", PrimellConfiguration.PrimellDefault, "2 3")
   TestProgram(", = (2 3)\n, = 5\n,", PrimellConfiguration.PrimellDefault, "5 5")
+
+  TestProgram(", ; = (2 3)\n,\n;", PrimellConfiguration.PrimellDefault, "2\n3")
+
+[<Fact>]
+let ``Test Index + Assign``() =
+  TestProgram(", = (2 3 5 7)\n,@2 = 11\n,", PrimellConfiguration.PrimellDefault, "2 3 11 7")
+  TestProgram(", = (2 3 5 7)\n,@2 = (2 3)\n,", PrimellConfiguration.PrimellDefault, "2 3 (2 3) 7")
+  TestProgram(", = (2 3 5 7)\n,@(2 3) = 13\n,", PrimellConfiguration.PrimellDefault, "2 3 13 13")
+  TestProgram(", = (2 3 5 7)\n,@(2 3) = (11 13)\n,", PrimellConfiguration.PrimellDefault, "2 3 11 13")
+  TestProgram(", = (2 3 (5 7))\n,@2 = 11\n,", PrimellConfiguration.PrimellDefault, "2 3 (11 11)")
+
+  // implicit filling with empty
+  TestProgram(",@2 = 5\n,", PrimellConfiguration.PrimellDefault, "() () 5")
+  TestProgram(", = 2\n,@2 = 5\n,", PrimellConfiguration.PrimellDefault, "2 () 5")
+
+  // test immediacy of evaluation
+  TestProgram(", = (; 3 5)\n; = 2\n,\n;", PrimellConfiguration.PrimellDefault, "() 3 5\n2")

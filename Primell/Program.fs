@@ -17,9 +17,10 @@ let program = """
 ,@(2 3) =$ 7 11
 ,"""
 
-let program2 = "(2 3)(5 7)"
+let program2 = ", = (2 3 5 7)\n,@(2 3) = 13"
 
-runner.InteractiveMode()
+runner.Run program2 (PrimellProgramControl PrimellConfiguration.PrimellDefault) |> ignore
+//runner.InteractiveMode()
 
 //let program2 = ", =$ 2*2*5*5\n, -= 2\n,"
 //let variableProgram = "(, ;) = (3)\n,\n;"

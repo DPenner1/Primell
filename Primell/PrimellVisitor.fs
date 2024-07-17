@@ -59,7 +59,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
       if operationLib.NullaryOperators.ContainsKey(opText) then
         operationLib.NullaryOperators[opText]
       else  // implicitly assumed to be a variable
-        fun () -> PrimellReference(opText)
+        fun () -> control.GetVariable(opText)
 
     operationLib.ApplyNullaryOperation operator []
           
@@ -83,15 +83,16 @@ type PrimellVisitor(control: PrimellProgramControl) =
 
     match newChild.Parent.Value with
     | :? PReference as ref ->
-        let oldValue = control.GetVariable(ref.Name)
-        match oldValue with
-        | :? PList as l when not l.IsEmpty ->
-            let newValue = l |> Seq.removeAt newChild.IndexInParent.Value |> Seq.insertAt newChild.IndexInParent.Value newChild |> PList
-            control.SetVariable(ref.Name, newValue)
-        | _ -> control.SetVariable(ref.Name, newChild)
+        control.SetVariable(ref.Name, newChild)
+        //let oldValue = control.GetVariable(ref.Name)
+        //match oldValue with
+        //| :? PList as l when not l.IsEmpty ->
+        //    let newValue = l |> Seq.removeAt newChild.IndexInParent.Value |> Seq.insertAt newChild.IndexInParent.Value newChild |> PList
+        //    control.SetVariable(ref.Name, newValue)
+        //| _ -> control.SetVariable(ref.Name, newChild)
         // we also stop recursing when we hit a reference type, as parents containing a reference will dynamically pull the new value
     | :? PList as l -> 
-      match l.Parent.Value.Parent with
+      match l.Parent with
       | None -> ()
       | Some grandParent -> 
           match stopRecursingAt with
