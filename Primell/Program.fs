@@ -10,16 +10,15 @@ let runner = new PrimellRunner();
 let range = ExtendedBigRational.Range (5 |> BigRational |> Rational) (101 |> BigRational |> Rational) |> Seq.map(fun x -> x |> PNumber)
 
 let program = """
-, = (2 3 5 7)
-,
-,@2 = 13
-,
-,@(2 3) =$ 7 11
-,"""
+, =$ 2*2*5*5
+, -= 2
+; =^$ 2/2
+; =^ (;_< + 3 - 2 ;)
+"""
 
-let program2 = ", = (2 3 5 7)\n,@(2 3) = 13"
+let program2 = ",@(2 3) =$ 2-2 2-2\n,"
 
-runner.Run program2 (PrimellProgramControl PrimellConfiguration.PrimellDefault) |> ignore
+runner.Run program2 PrimellConfiguration.PrimellDefault |> ignore
 //runner.InteractiveMode()
 
 //let program2 = ", =$ 2*2*5*5\n, -= 2\n,"
@@ -37,9 +36,9 @@ runner.Run program2 (PrimellProgramControl PrimellConfiguration.PrimellDefault) 
 //let programControl = PrimellProgramControl PrimellConfiguration.Listell
 //runner.Run program2 programControl |> ignore
 
-//let control2 = PrimellProgramControl {PrimellConfiguration.PrimellDefault with InputFilePath = "../../../../Examples/PrimesTo100.pll"}
+let control2 = {PrimellConfiguration.PrimellDefault with SourceFilePath = "../../../../Examples/NumbersTo100.pll"}
 
-//runner.RunFromFile  control2 |> ignore
+runner.RunFromFile  control2 |> ignore
 
 //let x = PrimellConfiguration.Listell
 //printf "%A " <| {x with SourceBase=13}

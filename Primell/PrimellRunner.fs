@@ -3,18 +3,7 @@ namespace dpenner1.PrimellF
 open Antlr4.Runtime
 open System
 
-(*
 
-        static List<Tuple<string, string>> ConsoleSettings = new List<Tuple<string, string>>
-        {
-            { Tuple.Create("-o <file-path>?  OR  --output <file-path>?", "Directs Prime to output to given file. If no file is specified, output is to console.") },
-            { Tuple.Create("-b <base>  OR  --base <base>", "Sets the base globally to given value.") },
-            { Tuple.Create("-ib <base>  OR  --input-base <base>", "Sets the base that Prime expects the user to write in for the list read (:_) operator.") },
-            { Tuple.Create("-ob <base>  OR  --output-base <base>", "Sets the base that Prime outputs in.") },
-            { Tuple.Create("-sb <base>  OR  --source-base <base>", "Sets the base that Prime expects the source code to be in.") },
-            { Tuple.Create("-fs <Y or N>?  OR  --free-source <Y or N>?", "Sets whether non-prime values are allowed. If value not provided, toggles the current value.")},
-            { Tuple.Create("-t <0 to 7>  OR  --truth <0 to 7>", "Sets what truth means for the boolean (?) operators") },
-        };*)
 type ConsoleCommand = { Key: string; ArgumentDescription: string; Description: string }
 
 type PrimellRunner() = 
@@ -33,7 +22,7 @@ type PrimellRunner() =
                           "-ob   OR  --output-base <base>", "Sets the base that Primell outputs in."
                           "-sb   OR  --source-base <base>", "Sets the base that Primell expects the source code to be in."
                           "-rs   OR  --restricted-source <Y or N>?", "Sets whether non-prime values are allowed. If value not provided, toggles the current value."
-                          "-t    OR  --truth <0 to 7>", "Sets what truth means for the boolean (?) operators"
+                          "-t    OR  --truth <0 to 7>", "Sets what truth means for the boolean (?) operators (setting unimplemented)"
                           "-pd   OR  --primell-default", "Sets configuration to Primell's default. Other simultaneously provided settings override this."
                           "-ld   OR  --listell-default", "Sets configuration to Listell, Primell's non-prime believing cousin. Other simultaneously provided settings override this."
                         ]
@@ -56,7 +45,8 @@ type PrimellRunner() =
   //      - But Primell executes line by line, I don't need the program + line stuff,
   //      - I can just create a new parser for each line (passing in an ever changing control)
 
-  member this.Run (program: string) (control: PrimellProgramControl) =
+// TODO also this method now has a silly return type
+  member this.Run (program: string) (settings: PrimellConfiguration) =
     let stream = AntlrInputStream program
     let lexer = PrimellLexer stream
     let tokens = CommonTokenStream lexer
@@ -64,17 +54,18 @@ type PrimellRunner() =
     parser.BuildParseTree <- true
     
     let allLineContexts = parser.program().line() |> Array.toList
+    let control = PrimellProgramControl(settings, allLineContexts)
 
     // resetting LastOperationWasAssignment here is a temporary hack
     allLineContexts |> List.map(fun line ->  let result, doOutput = this.ExecuteLine line control, not control.LastOperationWasAssignment
                                              control.LastOperationWasAssignment <- false
                                              if doOutput then
                                                printfn "%O" <| (this.GetResultString result control)
-                                             result, doOutput)
+                                             result, doOutput), control
 
-  member this.RunFromFile (control: PrimellProgramControl) =
-    let lines = IO.File.ReadAllLines(control.Settings.SourceFilePath)
-    this.Run (String.concat "\n" lines) control
+  member this.RunFromFile (settings: PrimellConfiguration) =
+    let lines = IO.File.ReadAllLines(settings.SourceFilePath)
+    this.Run (String.concat "\n" lines) settings
  
 
   member this.InteractiveMode ?settings =
@@ -101,7 +92,7 @@ type PrimellRunner() =
           if argument.Length = 0 then
             this.PromptForInput settings echo "Run what?"
           else        
-            this.RunFromFile(PrimellProgramControl{settings with SourceFilePath = argument}) |> ignore
+            this.RunFromFile({settings with SourceFilePath = argument}) |> ignore
             this.PromptForInput settings echo (if echo then "Program has completed." else "")  
           // not saving filepatch in "permanent" settings is intentional
       | "set" ->
@@ -114,14 +105,14 @@ type PrimellRunner() =
           this.PromptForInput settings (not echo) (if echo then "" else "Echo turned on. on. on.")
       | _ -> this.PromptForInput settings echo "Unrecognized command" 
     else 
-      this.Run input (PrimellProgramControl settings) |> ignore  
+      this.Run input settings |> ignore  
       this.PromptForInput settings echo (if echo then "Program line executed." else "")
     
   
   member private this.HelpSpiel() =
     let line = "----------------------------------------------------------------------------------------------"
 
-    let commandPreface = [""; "Commands  (input not prefixed with '?' engages REPL mode - currenty limited)"; line]
+    let commandPreface = [""; "Commands  (input not prefixed with '?' engages REPL mode - currently limited to single lines)"; line]
 
     let padding = (consoleCommands |> List.map(fun x -> x.Key.Length + x.ArgumentDescription.Length) |> List.max) + 4
     let commandList = consoleCommands |> List.map(fun command -> let s = $"?{command.Key} {command.ArgumentDescription}"

@@ -69,7 +69,7 @@ module PrimeLib =
 
   let IsPrime x = 
     match x with
-    | Rational r when r.IsInteger && r.Numerator > 1I -> 
+    | Rational r when r.IsInteger && r.Sign > 0 && r.Numerator > 1I -> 
         let isPrime = IsPrime' r.Numerator
         if isPrime then primes.Add r.Numerator |> ignore // memoize
         isPrime      

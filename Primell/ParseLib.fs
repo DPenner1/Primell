@@ -2,6 +2,11 @@ namespace dpenner1.PrimellF
 
 exception PrimellInvalidSyntaxException of string
 
+// TODO - this is probably better as an enum (if that exists in F#)
+type OperationModifier = 
+  | Power
+  | Cut
+
 module ParseLib =
 
   let rec private ParseInteger' (text:string) (b:int) (index:int) (cumulativeValue: bigint) =
@@ -19,7 +24,7 @@ module ParseLib =
           else int c - int 'A' + 36
         elif c = 'Þ' then 62
         elif c = 'þ' then 63
-        else PrimellInvalidSyntaxException($"Invalid character ({c}) in: {text}") |> raise
+        else PrimellInvalidSyntaxException $"Invalid character ({c}) in: {text}" |> raise
           
       ParseInteger' text b (index + 1) (cumulativeValue + bigint digitValue * bigint.Pow(b, text.Length - index - 1))
 
@@ -29,6 +34,22 @@ module ParseLib =
       BigRational(text.Length, 1) |> Rational 
     else
       BigRational(ParseInteger' text b 0 0I, 1) |> Rational
+
+  let rec ParseOperationModifiers' (opModText: string) (opMods: list<OperationModifier>) =
+    if opModText.Length = 0 then 
+      opMods
+    else
+      let opMod = 
+        match opModText[0] with
+        | '^' -> Power
+        | '`' -> Cut
+        | _ as c -> PrimellInvalidSyntaxException $"Invalid operation modifier: {c}" |> raise
+
+      ParseOperationModifiers' (opModText.Substring(1)) (opMod::opMods)
+
+
+  let ParseOperationModifiers (opModText: string) =
+    ParseOperationModifiers' opModText []
 
 
   let rec UpdateSettings (settings: PrimellConfiguration) (args: List<string>) =

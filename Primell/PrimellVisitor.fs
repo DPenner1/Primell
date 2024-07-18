@@ -13,6 +13,9 @@ type PrimellVisitor(control: PrimellProgramControl) =
   let currentForEach = new Stack<PObject>()
   let incorporate = new Stack<bool>()
   let operationLib = new OperationLib(control)
+
+  // TODO - can you get rid of this mutable?
+  let mutable CurrentLine = 0
   
   static member private Normalize (pobj: PObject) =
     match pobj with   // couldn't use when Seq.length = 1 as that potentially hangs on infinite sequence
@@ -20,22 +23,26 @@ type PrimellVisitor(control: PrimellProgramControl) =
         Seq.head l |> PrimellVisitor.Normalize
     | _ -> pobj    
 
+  override this.VisitLine context =
+      CurrentLine <- control.Lines |> List.findIndex(fun l -> l = context)
+      this.VisitChildren(context)
+
   override this.VisitParens context =
-    incorporate.Pop() |> ignore
-    incorporate.Push false
+    //incorporate.Pop() |> ignore
+    //incorporate.Push false
 
     if context.termSeq() |> isNull then PList.Empty else this.Visit(context.termSeq())
 
   override this.VisitTermSeq context =
     let mutable retval = PList.Empty
     for termContext in context.mulTerm() do
-      incorporate.Push true
+      //incorporate.Push false
 
       let pobj = this.Visit termContext
-      if incorporate.Pop() then 
-        retval <- retval.AppendAll pobj
-      else
-        retval <- retval.Append pobj
+      //if incorporate.Pop() then 
+        //retval <- retval.AppendAll pobj
+      //else
+      retval <- retval.Append pobj
         
     retval |> PrimellVisitor.Normalize
 
@@ -114,7 +121,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
             foreach (i in left.size): left[i].Assign right
        else // list to list parallel assignment
             // if left is bigger than right, extra values left intact
-            // if right is bigger than left, extra values are discarded
+            // if right is bigger than left, extra values are discarded  (though looking back, i find this inconsistent)
 
             foreach (i in left.size): left[i].assign(right[i])   
     *)
@@ -160,6 +167,19 @@ type PrimellVisitor(control: PrimellProgramControl) =
 
     newLeftValue
 
+  member this.ConditionalBranch (left: PObject) (right: PObject) (negate: bool) (isForward: bool) =
+      if operationLib.IsTruth(left, control.Settings.TruthDefinition) <> negate then
+        let head = operationLib.ApplyUnaryListOperation right operationLib.UnaryListOperators["_<"] []
+        match head with
+        | :? PNumber as n ->
+            match n.Value with
+            | NaN | Infinity _ -> PList.Empty :> PObject
+            | Rational r ->
+                let offset = ((round r).Numerator |> int) * (if isForward then 1 else -1)
+                PrimellVisitor(control).VisitLine(control.Lines[CurrentLine + offset])
+        | _ -> System.NotImplementedException("non-number in conditional head not yet implemented") |> raise
+      else operationLib.ApplyUnaryListOperation right operationLib.UnaryListOperators["_>"] []
+
   member this.ApplyBinaryOperation left right (context: PrimellParser.BinaryOpContext) =
     let isAssign = context.ASSIGN() |> isNull |> not
 
@@ -168,12 +188,16 @@ type PrimellVisitor(control: PrimellProgramControl) =
         let operator = operationLib.BinaryNumericOperators[context.baseNumBinaryOp().GetText()]
         operationLib.ApplyBinaryNumericOperation left right operator []
       elif context.baseListBinaryOp() |> isNull |> not then
-        // TODO temp:
-        if context.baseListBinaryOp().GetText() = "@" then
-          //let operator = fun (l: PObject, r: PObject) -> operationLib.Index l r
-          //operationLib.ApplyListNumericOperation left right operator [] 
+        let opText = context.baseListBinaryOp().GetText()
+        if opText = "@" then  // index needs special handling for the whole reference-assign
           operationLib.Index left right
-        else  
+        elif opText.StartsWith "?" then  // TODO - conditional stuff needs to not execute both branches
+          if opText.Contains "/" || opText.Contains("\\") then
+            this.ConditionalBranch left right (opText.Contains "~") (opText.Contains "/")
+          else
+            let operator = operationLib.Conditional left right (opText.Contains "~")
+            operationLib.ApplyUnaryListOperation right operator []   //head or tail operator
+        else
           let operator = operationLib.BinaryListOperators[context.baseListBinaryOp().GetText()]
           operationLib.ApplyBinaryListOperation left right operator []
       else 
@@ -182,7 +206,8 @@ type PrimellVisitor(control: PrimellProgramControl) =
     control.LastOperationWasAssignment <- isAssign
       
     if isAssign then
-      this.PerformAssign(left, interimResult, [])
+      let mods = if context.assignMods() |> isNull then "" else context.assignMods().GetText()
+      this.PerformAssign(left, interimResult, ParseLib.ParseOperationModifiers mods)
     else 
       interimResult
 
@@ -190,6 +215,9 @@ type PrimellVisitor(control: PrimellProgramControl) =
   //        also a bit ugly with the the ApplyBinaryOperation having Operation stuff and Parsing stuff
   override this.VisitBinaryOperation context =
     let left = this.Visit(context.mulTerm())
+    
+    // TODO - really need to adjust grammar to section off conditional, its a mess otherwise
+    // TODO - here we need to handle conditional, and not visit head/tail of right, depending on the result
 
     let right = match context.termSeq() with
                 | null -> this.Visit(context.atomTerm())

@@ -2,9 +2,6 @@ namespace dpenner1.PrimellF
 
 open System.Collections.Generic
 
-// TODO - this is probably better as an enum (if that exists in F#)
-type OperationModifier = 
-  | Power
 
 // note: as part of trying to get PReference to work, OperationLib was converted from module to class type
 //       This may have the later benefit of being able to swap out operations dependent on control.UsePrimeOperators
@@ -51,6 +48,7 @@ type OperationLib(control: PrimellProgramControl) =
       dict ["_<", fun (l: PrimellList) -> l.Head()
             "_>", fun (l: PrimellList) -> l.Tail()        
             "_~", fun (l: PrimellList) -> l.Reverse()
+            "__", fun (l: PrimellList) -> l.Flatten()
            ]
 
     member this.BinaryNumericOperators: IDictionary<string, PNumber*PNumber->PObject> = 
@@ -149,11 +147,10 @@ type OperationLib(control: PrimellProgramControl) =
             | _ as v -> not v.IsZero
       | _ -> PrimellProgrammerProblemException("Not possible") |> raise
 
-    // TODO - These are wrong.... operators are being returned, they need to be invoked
-    member this.Conditional (left: PObject) (right: PObject) truthDef =
-      if this.IsTruth(left, truthDef) then this.UnaryListOperators["_<"] else this.UnaryListOperators["_>"]
 
-    member this.NegativeConditional (left: PObject) (right: PObject) truthDef =
-      if this.IsTruth(left, truthDef) then this.UnaryListOperators["_>"] else this.UnaryListOperators["_<"]
+    member this.Conditional (left: PObject) (right: PObject) (negate: bool) =
+      if this.IsTruth(left, control.Settings.TruthDefinition) <> negate then this.UnaryListOperators["_<"] else this.UnaryListOperators["_>"]
+
+    
 
     

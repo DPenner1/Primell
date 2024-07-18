@@ -24,9 +24,16 @@ type PrimellList(sequence: seq<PObject>, ?length: PNumber, ?parent: PObject, ?in
 
   member this.Value with get() = main
 
-  member this.Head() = Seq.head main
+  member this.Head() = 
+    match Seq.tryHead main with
+    | Some head -> head
+    | None -> PrimellList.Empty
     
-  member this.Tail() = Seq.tail main |> PrimellList   // TODO - may need to normalize
+  // why is there a Seq.tryHead but not Seq.tryTail ??? 
+  member this.Tail() = 
+    match this.IsEmpty with
+    | true -> PrimellList.Empty
+    | false -> Seq.tail main |> PrimellList   // TODO - may need to normalize
 
   // TODO - in future, could have a constructor which has the reversed list as an argument, for infinite sequences
   member this.Reverse() = Seq.rev main |> PrimellList
@@ -39,6 +46,15 @@ type PrimellList(sequence: seq<PObject>, ?length: PNumber, ?parent: PObject, ?in
     match pobj with
     | :? PrimellList as l -> Seq.append this l |> PrimellList
     | _ -> pobj |> Seq.singleton |> PrimellList |> this.AppendAll
+
+  member private this.RaiseAtoms() =
+    main |> Seq.map(fun x -> match x with 
+                             | :? PAtom as a -> Seq.singleton (a :> PObject)
+                             | :? PrimellList as l -> l
+                             | _ -> PrimellProgrammerProblemException("not possible") |> raise)
+
+  member this.Flatten() =
+    this.RaiseAtoms() |> Seq.concat |> PrimellList
 
   member this.Index(index: PNumber) =
     match ExtendedBigRational.Round index.Value with

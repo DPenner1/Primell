@@ -2,11 +2,12 @@ namespace dpenner1.PrimellF
 
 open System.Collections.Generic
 
-type PrimellProgramControl(settings: PrimellConfiguration) =
+type PrimellProgramControl(settings: PrimellConfiguration, lines: list<PrimellParser.LineContext>) =
 
   let variables = new Dictionary<string, PObject>()
   member val Settings = settings with get
   
+  member val Lines = lines with get
 
   // This is a port from original Primell, copying to have current examples execute as before,
   // Might consider changing the part of Primell requiring this
