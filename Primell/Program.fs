@@ -18,7 +18,7 @@ let program = """
 
 let program2 = ",@(2 3) =$ 2-2 2-2\n,"
 
-runner.Run program2 PrimellConfiguration.PrimellDefault |> ignore
+//runner.Run program2 PrimellConfiguration.PrimellDefault |> ignore
 //runner.InteractiveMode()
 
 //let program2 = ", =$ 2*2*5*5\n, -= 2\n,"
@@ -39,6 +39,34 @@ runner.Run program2 PrimellConfiguration.PrimellDefault |> ignore
 let control2 = {PrimellConfiguration.PrimellDefault with SourceFilePath = "../../../../Examples/NumbersTo100.pll"}
 
 runner.RunFromFile  control2 |> ignore
+
+let x = ref 0
+let y = ref 1
+let z = ref 2
+
+let refSeq = seq {ref 0; ref 1; ref 2}
+let refList = [ref 0; ref 1; ref 2]
+let refLetSeq = seq {x; y; z}
+let refInitSeq = Seq.init 3 (fun i -> ref i)
+let refInfSeq = Seq.initInfinite (fun i -> ref i)
+
+refInitSeq |> Seq.iter(fun x -> x.Value <- 33; printfn "%d" x.Value)
+
+
+refInitSeq |> Seq.iter(fun x -> printfn "%d" x.Value)
+
+(Seq.head refSeq).Value <- 42
+(Seq.head refList).Value <- 42
+(Seq.head refLetSeq).Value <- 42
+(Seq.head refInitSeq).Value <- 42
+(Seq.head refInfSeq).Value <- 42
+
+
+printfn "Ref seq:      %d" (Seq.head refSeq).Value
+printfn "Ref list:     %d" (Seq.head refList).Value
+printfn "Ref let seq:  %d" (Seq.head refLetSeq).Value
+printfn "Ref init seq: %d" (Seq.head refInitSeq).Value
+printfn "Ref inf seq:  %d" (Seq.head refInfSeq).Value
 
 //let x = PrimellConfiguration.Listell
 //printf "%A " <| {x with SourceBase=13}
