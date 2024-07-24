@@ -17,9 +17,15 @@ type PrimellVisitor(control: PrimellProgramControl) =
   // TODO - can you get rid of this mutable?
   let mutable CurrentLine = 0
   
+   // very temporary, clearly things are going poorly
+  let GetInt(n: PNumber) = 
+    match n.Value with
+    | Rational r -> (round r).Numerator |> int
+    | _ -> System.NotImplementedException("Indexing is a little wonky right now") |> raise
+    
   static member private Normalize (pobj: PObject) =
     match pobj with   // couldn't use when Seq.length = 1 as that potentially hangs on infinite sequence
-    | :? PList as l when not(l.IsEmpty) && Seq.isEmpty(l.Tail()) -> 
+    | :? PList as l when not(l.IsEmpty) && Seq.isEmpty(Seq.tail l) -> 
         Seq.head l |> PrimellVisitor.Normalize
     | _ -> pobj    
 
@@ -66,7 +72,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
       if operationLib.NullaryOperators.ContainsKey(opText) then
         operationLib.NullaryOperators[opText]
       else  // implicitly assumed to be a variable
-        fun () -> control.GetVariable(opText)
+        fun () -> control.GetVariableReference(opText)
 
     operationLib.ApplyNullaryOperation operator []
           
@@ -83,35 +89,48 @@ type PrimellVisitor(control: PrimellProgramControl) =
     
     operationLib.ApplyUnaryListOperation (this.Visit(context.mulTerm())) operator []
 
-  
-  // don't call unless there actually is a parent!
-  // parent object is stored in newChild
-  member private this.UpdateParent(newChild: PObject, ?stopRecursingAt: PObject) =
 
-    match newChild.Parent.Value with
-    | :? PReference as ref ->
-        control.SetVariable(ref.Name, newChild)
-        //let oldValue = control.GetVariable(ref.Name)
-        //match oldValue with
-        //| :? PList as l when not l.IsEmpty ->
-        //    let newValue = l |> Seq.removeAt newChild.IndexInParent.Value |> Seq.insertAt newChild.IndexInParent.Value newChild |> PList
-        //    control.SetVariable(ref.Name, newValue)
-        //| _ -> control.SetVariable(ref.Name, newChild)
-        // we also stop recursing when we hit a reference type, as parents containing a reference will dynamically pull the new value
-    | :? PList as l -> 
-      match l.Parent with
-      | None -> ()
-      | Some grandParent -> 
-          match stopRecursingAt with
-          | Some pobj when obj.ReferenceEquals(stopRecursingAt, grandParent) -> ()
-          | _ -> 
-              let newParentValue = l |> Seq.removeAt newChild.IndexInParent.Value |> Seq.insertAt newChild.IndexInParent.Value newChild
-              let newParent = PList(newParentValue, l.Length, ?parent = l.Parent, ?indexInParent = l.IndexInParent)
-              this.UpdateParent (newParent, ?stopRecursingAt = stopRecursingAt) // need to recurse in case there is a higher variable to set
+  // im not sure this will actually work
+  member private this.UpdateStack (baseValue: PObject)(currentValue: PObject)(indexes: list<PNumber>): PObject =
+    if List.tail indexes |> List.isEmpty then
+      match currentValue with
+      | :? PList as l ->
+          match indexes.Head with
+          | _ as index when index.Value >= ExtendedBigRational.Zero && index.Value < l.Length.Value ->
+              l |> Seq.mapi(fun i x -> if i = GetInt(index) then baseValue else x) |> PList :> PObject
+          | _ -> System.NotImplementedException "indexing wonky" |> raise
+      | :? PAtom as a ->
+          this.UpdateStack baseValue (Seq.singleton (a :> PObject) |> PList) indexes
+      | _ -> PrimellProgrammerProblemException "not possible" |> raise
+    else
+      match currentValue with
+      | :? PList as l ->
+          match indexes.Head with
+          | _ as index when index.Value >= ExtendedBigRational.Zero && index.Value < l.Length.Value ->
+              l |> Seq.mapi(fun i x -> if i = GetInt(index) then this.UpdateStack baseValue x (List.tail indexes) else x) |> PList :> PObject
+          | _ -> System.NotImplementedException "indexing wonky" |> raise
+      | :? PAtom as a ->
+          this.UpdateStack baseValue (Seq.singleton (a :> PObject) |> PList) indexes
+      | _ -> PrimellProgrammerProblemException "not possible" |> raise
+
+
+  member private this.UpdateVariable (newValue: PObject) (reference: PObject) (indexes: list<PNumber>) =
+
+    match reference with
+    | :? PReference as r -> // need to recurse up the reference chain to get the parent variable that actually needs to change
+        this.UpdateVariable newValue r.Parent (r.IndexInParent::indexes)
+    | :? PVariable as v -> 
+        if List.tail indexes |> List.isEmpty then // direct assign to variable, not going down the reference chain
+          control.SetVariable(v.Name, newValue)
+        else //  need to recurse down the object structure to change it from the bottom up
+          control.SetVariable(v.Name, this.UpdateStack newValue (control.GetVariableValue(v.Name)) (List.tail indexes))
+        //
     
-    | _ -> PrimellProgrammerProblemException("Should not have parent that isn't list or reference... actually with virtual list extension, maybe it is?") |> raise
+    | _ -> PrimellProgrammerProblemException("Not possible") |> raise
   
-  member private this.PerformAssign (left: PObject, right: PObject, assignMods: OperationModifier list, ?stopRecursingAt: PObject): PObject =
+
+
+  member private this.PerformAssign (left: PObject, right: PObject, assignMods: OperationModifier list): PObject =
     
     (* logic from original mutable C# version:
        if (left is empty) || (left is number) || (assignOptions has power modifier)
@@ -121,51 +140,44 @@ type PrimellVisitor(control: PrimellProgramControl) =
             foreach (i in left.size): left[i].Assign right
        else // list to list parallel assignment
             // if left is bigger than right, extra values left intact
-            // if right is bigger than left, extra values are discarded  (though looking back, i find this inconsistent)
+            // if right is bigger than left, extra values are discarded
 
             foreach (i in left.size): left[i].assign(right[i])   
     *)
 
-    // Note: there's both upwards and downwards recursion in this method which makes it confusing:
-    //  The upwards recursion is to propagate any assignment updates to a containing reference type
-    //  The downward recursion is similar to operators in general in Primell, operators just get applied recursively down the object tree a lot
-    //  But with assignment there's a special stopRecursingAt parameter: this is to prevent recursion ping pong of those downstream objects recursing back up
-
-    let newLeftValue = 
-      if assignMods |> List.contains Power then
-        right
-      else
-        match left, right with  // get references out of the way for now, i'm sure this could be done better
-        | :? PAtom, _ ->
-            right
-        | :? PList as l, _ when l.IsEmpty ->
-            right
-        | :? PList as l, :? PAtom ->
-            let newLvalue = l |> Seq.map(fun x -> this.PerformAssign(x, right, assignMods, ?stopRecursingAt=Some left))
-            newLvalue |> PList :> PObject     
-        | (:? PList as l1), (:? PList as l2) ->
-            let temp = (l1, l2) ||> Seq.zip |> Seq.map(fun x -> this.PerformAssign(fst x, snd x, assignMods, ?stopRecursingAt=Some left))
-            let real =
-              if l1.Length.Value > l2.Length.Value then seq { temp |> PList :> PObject; l1 |> Seq.skip(Seq.length l2.Value) |> PList :> PObject }
-              else temp
-            real |> PList :> PObject 
-        | _ -> PrimellProgrammerProblemException("not possible") |> raise
-    
-    // currently unused
-    //let newLeft = 
-    //  match newLeftValue with
-    //  | :? PNumber as n -> PNumber(n.Value, ?parent=left.Parent, ?indexInParent=left.IndexInParent) :> PObject
-     // | :? PList as l -> PList(l.Value, l.Length, ?parent=left.Parent, ?indexInParent=left.IndexInParent) :> PObject
-     // | _ -> PrimellProgrammerProblemException("not possible") |> raise
-
-    match left with
-    | :? PReference as ref -> control.SetVariable(ref.Name, newLeftValue)
+    match right with
+    | :? PReference as ref -> 
+        this.PerformAssign (left, operationLib.GetReferenceValue ref, assignMods)
     | _ ->
-        match left.Parent with
-        | None -> ()
-        | Some p -> this.UpdateParent(newLeftValue.WithParent(p, left.IndexInParent.Value), ?stopRecursingAt = stopRecursingAt)
-
-    newLeftValue
+      let newLeftValue = 
+        if assignMods |> List.contains Power then
+          match left with 
+          | :? PReference as ref -> 
+              this.UpdateVariable right ref []
+          | _ -> ()
+          right
+        else
+          match left, right with
+          | :? PReference as ref, _ ->
+              this.UpdateVariable right ref []
+              right
+          | :? PAtom, _ ->
+              right
+          | :? PList as l, _ when l.IsEmpty ->
+              right
+          | :? PList as l, :? PAtom ->
+              let newLvalue = l |> Seq.map(fun x -> this.PerformAssign(x, right, assignMods))
+              newLvalue |> PList :> PObject     
+          | (:? PList as l1), (:? PList as l2) ->
+              let temp = (l1, l2) ||> Seq.zip |> Seq.map(fun x -> this.PerformAssign(fst x, snd x, assignMods))
+              let real =
+                if l1.Length.Value > l2.Length.Value then seq { temp |> PList :> PObject; l1 |> Seq.skip(Seq.length l2.Value) |> PList :> PObject }
+                else temp
+              real |> PList :> PObject 
+          | _ -> PrimellProgrammerProblemException("not possible") |> raise
+      newLeftValue
+    
+ 
 
   member this.ConditionalBranch (left: PObject) (right: PObject) (negate: bool) (isForward: bool) =
       if operationLib.IsTruth(left, control.Settings.TruthDefinition) <> negate then
@@ -218,7 +230,8 @@ type PrimellVisitor(control: PrimellProgramControl) =
     
     // TODO - really need to adjust grammar to section off conditional, its a mess otherwise
     // TODO - here we need to handle conditional, and not visit head/tail of right, depending on the result
-
+    // TODO - isn't this match just equivalent to VisitChildren()? 
+    // TODO - basically all this sucks right now
     let right = match context.termSeq() with
                 | null -> this.Visit(context.atomTerm())
                 | _ as x -> this.Visit(x)

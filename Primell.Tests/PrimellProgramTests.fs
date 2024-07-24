@@ -21,7 +21,8 @@ let ``Test Included Examples``() =
   TestProgramFromFile("../../../../Examples/PrimesTo100.pll", PrimellConfiguration.PrimellDefault, "2 3 5 7 11 13 17 19 23 29 31 37 41 43 47 53 59 61 67 71 73 79 83 89 97")
 
 [<Fact>]
-let ``Test Nullary Concat``() =
+let ``Test Nullary``() =
+  TestProgram(",", PrimellConfiguration.PrimellDefault, "()")
   // Note: this didn't work in the original C#
   TestProgram(", ()", PrimellConfiguration.PrimellDefault, "() ()")
 

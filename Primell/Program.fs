@@ -19,7 +19,7 @@ let program = """
 let program2 = ",@(2 3) =$ 2-2 2-2\n,"
 
 //runner.Run program2 PrimellConfiguration.PrimellDefault |> ignore
-//runner.InteractiveMode()
+runner.InteractiveMode()
 
 //let program2 = ", =$ 2*2*5*5\n, -= 2\n,"
 //let variableProgram = "(, ;) = (3)\n,\n;"
@@ -36,9 +36,9 @@ let program2 = ",@(2 3) =$ 2-2 2-2\n,"
 //let programControl = PrimellProgramControl PrimellConfiguration.Listell
 //runner.Run program2 programControl |> ignore
 
-let control2 = {PrimellConfiguration.PrimellDefault with SourceFilePath = "../../../../Examples/NumbersTo100.pll"}
+//let control2 = {PrimellConfiguration.PrimellDefault with SourceFilePath = "../../../../Examples/NumbersTo100.pll"}
 
-runner.RunFromFile  control2 |> ignore
+//runner.RunFromFile  control2 |> ignore
 
 let x = ref 0
 let y = ref 1

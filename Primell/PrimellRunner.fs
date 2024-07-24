@@ -26,13 +26,30 @@ type PrimellRunner() =
                           "-pd   OR  --primell-default", "Sets configuration to Primell's default. Other simultaneously provided settings override this."
                           "-ld   OR  --listell-default", "Sets configuration to Listell, Primell's non-prime believing cousin. Other simultaneously provided settings override this."
                         ]
+  //temp - copied over from operation lib
+  member this.IndexDown(pobj: PObject)(indexes: list<PNumber>) =
+      match List.tryHead indexes with
+      | None -> pobj // end of recursion
+      | Some head ->
+          match pobj with
+          | :? PList as l -> this.IndexDown(l.Index head)(indexes.Tail)
+          | :? PAtom as a -> this.IndexDown(Seq.singleton(a :> PObject) |> PList) indexes
+          | _ -> PrimellProgrammerProblemException "Not possible" |> raise
+
+  member private this.GetReferenceValue' (pref: PObject)(indexes: list<PNumber>)(control: PrimellProgramControl) =
+      match pref with  // should only ever be PVariable or PReference (may consider merging the two...)
+      | :? PVariable as v -> control.GetVariableValue v.Name
+      | :? PReference as r -> this.GetReferenceValue' r.Parent (r.IndexInParent::indexes) control
+      | _ -> PrimellProgrammerProblemException "Not possible" |> raise
+
+    member this.GetReferenceValue (pref: PReference)(control: PrimellProgramControl) =
+      this.GetReferenceValue' pref.Parent (List.singleton pref.IndexInParent)
 
   member this.GetResultString (result: PrimellObject) (control: PrimellProgramControl) =
     let temp =
       result.ToString(control.GetVariableDictionary())
 
     match result with
-    | :? PReference as ref -> this.GetResultString(control.GetVariable(ref.Name)) control
     | :? PList as l when not l.IsEmpty -> temp.Substring(1, temp.Length - 2)  // trim off outer parentheses
     | _ -> temp
   

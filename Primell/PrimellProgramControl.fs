@@ -13,9 +13,15 @@ type PrimellProgramControl(settings: PrimellConfiguration, lines: list<PrimellPa
   // Might consider changing the part of Primell requiring this
   member val LastOperationWasAssignment = false with get, set
 
-  member this.GetVariable(name: string) = 
+  member this.GetVariableReference(name: string) = 
     if not <| variables.ContainsKey(name) then
-      variables.Add(name, PList.Empty.WithParent(new PReference(name), 0)) |> ignore
+      variables.Add(name, PList.Empty) |> ignore
+
+    PrimellReference(PrimellVariable(name), ExtendedBigRational.Zero |> PNumber) // index doesn't matter refering to variable
+
+  member this.GetVariableValue(name: string) = 
+    if not <| variables.ContainsKey(name) then
+      variables.Add(name, PList.Empty) |> ignore
 
     variables[name]
     
@@ -35,3 +41,37 @@ type PrimellProgramControl(settings: PrimellConfiguration, lines: list<PrimellPa
 
   member this.GetCsvInput(): PObject =
     System.NotImplementedException() |> raise
+
+// TODO - i am really hacking stuff now trying to get it to work  
+
+and PrimellReference(parent: PObject, indexInParent: PNumber) =
+  inherit PObject()
+
+  member this.Parent with get() = parent
+  member this.IndexInParent with get() = indexInParent
+
+  member private this.IndexDown(pobj: PObject)(indexes: list<PNumber>) =
+    match List.tryHead indexes with
+    | None -> pobj // end of recursion
+    | Some head ->
+        match pobj with
+        | :? PList as l -> this.IndexDown(l.Index head)(indexes.Tail)
+        | :? PAtom as a -> this.IndexDown(Seq.singleton(a :> PObject) |> PList) indexes
+        | _ -> PrimellProgrammerProblemException "Not possible" |> raise
+
+  member private this.GetReferenceValue' (pref: PObject)(indexes: list<PNumber>)(variables: IDictionary<string, PObject>) =
+    match pref with  // should only ever be PVariable or PReference (may consider merging the two...)
+    | :? PVariable as v -> variables[v.Name]
+    | :? PrimellReference as r -> this.GetReferenceValue' r.Parent (r.IndexInParent::indexes) variables
+    | _ -> PrimellProgrammerProblemException "Not possible" |> raise
+
+  member this.GetReferenceValue (pref: PrimellReference)(control: PrimellProgramControl) =
+    this.GetReferenceValue' pref.Parent (List.singleton pref.IndexInParent) (control.GetVariableDictionary())
+
+  override this.ToString(variables) =
+    (this.GetReferenceValue' this.Parent (List.singleton this.IndexInParent) variables).ToString(variables)
+    
+    
+
+
+type PReference = PrimellReference

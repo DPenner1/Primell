@@ -2,8 +2,8 @@ namespace dpenner1.PrimellF
 
 [<Sealed>]
 // Ok a bit weird to call the seq a list, but conceptually, that's how I view the Primell object, as lists
-type PrimellList(sequence: seq<PObject>, ?length: PNumber, ?parent: PObject, ?indexInParent: int) = 
-  inherit PObject(?parent = parent, ?indexInParent = indexInParent)
+type PrimellList(sequence: seq<PObject>, ?length: PNumber) = 
+  inherit PObject()
   let main = sequence  // star
   let mutable length = length
   // TODO - should guard against negative lengths
@@ -29,11 +29,21 @@ type PrimellList(sequence: seq<PObject>, ?length: PNumber, ?parent: PObject, ?in
     | Some head -> head
     | None -> PrimellList.Empty
     
-  // why is there a Seq.tryHead but not Seq.tryTail ??? 
+  // this is a bit tortured, but working around four things here
+  //   - F# throws exceptions when Primell needs to return empty list
+  //   - F# lib has a Seq.tryHead but not Seq.tryTail ??? 
+  //   - Primell automatically unboxes one item lists
+  //   - infinite sequences are possible so I can't call Seq.length
   member this.Tail() = 
     match this.IsEmpty with
-    | true -> PrimellList.Empty
-    | false -> Seq.tail main |> PrimellList   // TODO - may need to normalize
+    | true -> PrimellList.Empty :> PObject
+    | false -> 
+        let tail = Seq.tail main |> PrimellList
+        match Seq.tryHead tail with
+        | Some head when Seq.isEmpty (Seq.tail tail) -> // tail had one item in it, Primell unboxes it
+            head
+        | _ -> tail
+
 
   // TODO - in future, could have a constructor which has the reversed list as an argument, for infinite sequences
   member this.Reverse() = Seq.rev main |> PrimellList
@@ -73,11 +83,13 @@ type PrimellList(sequence: seq<PObject>, ?length: PNumber, ?parent: PObject, ?in
             else
               main |> Seq.skip (int r.Numerator) |> Seq.head
 
-        
-  override this.WithParent(parent: PObject, indexInParent: int) =
-    PrimellList(main, this.Length, parent, indexInParent)  // TODO - length again
   
   override this.ToString() =  // TODO - surely there's a cleaner way than the nested concat abomination I came up with
     String.concat "" ["("; String.concat " " (main |> Seq.map(fun obj -> obj.ToString())); ")"]
 
+  override this.ToString(variables) =  // TODO - surely there's a cleaner way than the nested concat abomination I came up with
+    String.concat "" ["("; String.concat " " (main |> Seq.map(fun obj -> obj.ToString(variables))); ")"]
+
 type PList = PrimellList  // abbreviation for sanity
+
+
