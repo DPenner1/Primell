@@ -38,9 +38,9 @@ type OperationLib(control: PrimellProgramControl) =
 
         match left, right with
         | _, (:? PReference as r) -> this.Index left (this.GetReferenceValue r)
-        | _, (:? PList as l) -> l |> Seq.map(fun x -> this.Index left l) |> PList :> PObject
+        | _, (:? PList as l) -> l |> Seq.map(fun x -> this.Index left x) |> PList :> PObject
         | (:? PReference as r), (:? PNumber as n) -> PReference(r, n)    
-        | (:? PList as l), (:? PNumber as n) -> l |> Seq.item(GetInt n)
+        | (:? PList as l), (:? PNumber as n) -> l.Index n
         | :? PNumber as n, _ -> this.Index(n :> PObject |> Seq.singleton |> PList) right
         | _ -> PrimellProgrammerProblemException "Not possible" |> raise
         
