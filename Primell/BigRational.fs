@@ -28,6 +28,8 @@ type BigRational =
   new(numerator: bigint, denominator: bigint) = BigRational(numerator, denominator, bigint.GreatestCommonDivisor(numerator, denominator))
   new(integer: bigint) = BigRational(integer, 1, 1)
 
+  static member Zero = BigRational(0, 1, 1)
+
   member this.IsInteger = this.Denominator = 1I || this.Denominator = -1I
 
   member this.IsZero = this.Numerator.IsZero

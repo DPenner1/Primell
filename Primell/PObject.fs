@@ -35,10 +35,13 @@ x
 // note: its actually been a bit cumbersome having indirection for mutability,
 //       might try to directly store the object boxed here mutably
 type PrimellVariable(name: string) =
-  inherit PAtom()
+  inherit PObject()
 
   member this.Name with get() = name
 
+  override this.ToString() =
+    this.Name
+    
   override this.ToString(variables) =
     if variables.ContainsKey(name) then
       variables[name].ToString()

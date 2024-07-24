@@ -72,7 +72,8 @@ type PrimellVisitor(control: PrimellProgramControl) =
       if operationLib.NullaryOperators.ContainsKey(opText) then
         operationLib.NullaryOperators[opText]
       else  // implicitly assumed to be a variable
-        fun () -> control.GetVariableReference(opText)
+        control.GetVariableValue(opText) |> ignore  // hack for now, this is just to initialize to () if it doesn't exist
+        fun () -> PVariable(opText)
 
     operationLib.ApplyNullaryOperation operator []
           
@@ -89,49 +90,50 @@ type PrimellVisitor(control: PrimellProgramControl) =
     
     operationLib.ApplyUnaryListOperation (this.Visit(context.mulTerm())) operator []
 
+  member private this.DereferenceAll(pobj: PObject) =
+    match pobj with
+    | :? PVariable as v -> this.DereferenceAll(control.GetVariableValue(v.Name))
+    | :? PReference as r -> r.Dereference control.Variables
+    | :? PList as l -> l |> Seq.map(fun x -> this.DereferenceAll(x)) |> PList :> PObject
+    | _ -> pobj
 
-  // im not sure this will actually work
-  member private this.UpdateStack (baseValue: PObject)(currentValue: PObject)(indexes: list<PNumber>): PObject =
-    if List.tail indexes |> List.isEmpty then
-      match currentValue with
-      | :? PList as l ->
-          match indexes.Head with
-          | _ as index when index.Value >= ExtendedBigRational.Zero && index.Value < l.Length.Value ->
-              l |> Seq.mapi(fun i x -> if i = GetInt(index) then baseValue else x) |> PList :> PObject
-          | _ -> System.NotImplementedException "indexing wonky" |> raise
-      | :? PAtom as a ->
-          this.UpdateStack baseValue (Seq.singleton (a :> PObject) |> PList) indexes
-      | _ -> PrimellProgrammerProblemException "not possible" |> raise
-    else
-      match currentValue with
-      | :? PList as l ->
-          match indexes.Head with
-          | _ as index when index.Value >= ExtendedBigRational.Zero && index.Value < l.Length.Value ->
-              l |> Seq.mapi(fun i x -> if i = GetInt(index) then this.UpdateStack baseValue x (List.tail indexes) else x) |> PList :> PObject
-          | _ -> System.NotImplementedException "indexing wonky" |> raise
-      | :? PAtom as a ->
-          this.UpdateStack baseValue (Seq.singleton (a :> PObject) |> PList) indexes
-      | _ -> PrimellProgrammerProblemException "not possible" |> raise
-
-
-  member private this.UpdateVariable (newValue: PObject) (reference: PObject) (indexes: list<PNumber>) =
-
-    match reference with
-    | :? PReference as r -> // need to recurse up the reference chain to get the parent variable that actually needs to change
-        this.UpdateVariable newValue r.Parent (r.IndexInParent::indexes)
-    | :? PVariable as v -> 
-        if List.tail indexes |> List.isEmpty then // direct assign to variable, not going down the reference chain
-          control.SetVariable(v.Name, newValue)
-        else //  need to recurse down the object structure to change it from the bottom up
-          control.SetVariable(v.Name, this.UpdateStack newValue (control.GetVariableValue(v.Name)) (List.tail indexes))
-        //
+  member private this.GetReplacementObject (pObj: PObject) (indexes: list<PNumber>) =
+    match indexes.Tail.IsEmpty with
+    | true -> pObj
+    | false -> this.GetReplacementObject (operationLib.Index pObj indexes.Head) indexes.Tail
     
-    | _ -> PrimellProgrammerProblemException("Not possible") |> raise
-  
+
+  member private this.ReplaceVariableValue (newValue: PObject) (pvar: PVariable) (indexes: list<PNumber>) =
+    if indexes.IsEmpty then
+      control.SetVariable(pvar.Name, newValue)
+    elif indexes.Tail.IsEmpty then
+      let oldValue = control.GetVariableValue(pvar.Name)
+      match oldValue, indexes.Head.Value with
+      | (:? PList as l), (Rational _ as r) -> 
+          let index = GetInt(r |> PNumber)
+          if r < ExtendedBigRational.Zero then System.NotImplementedException "Index/assign wonky" |> raise      
+          if index >= GetInt(l.Length) then System.NotImplementedException "Index/assign wonky" |> raise
+          control.SetVariable(pvar.Name, l |> Seq.mapi(fun i x -> if i = index then newValue else x) |> PList)
+      | (:? PAtom as a), (Rational _ as r) -> 
+          let index = GetInt(r |> PNumber)
+          if index <> 0 then System.NotImplementedException "Index/assign wonky" |> raise
+          control.SetVariable(pvar.Name, newValue)
+      | _ -> System.NotImplementedException "Index/assign wonky" |> raise
+    else // still keep indexing
+      this.ReplaceVariableValue (this.GetReplacementObject (control.GetVariableValue(pvar.Name)) indexes) pvar (indexes |> List.rev |> List.tail |> List.rev)
 
 
-  member private this.PerformAssign (left: PObject, right: PObject, assignMods: OperationModifier list): PObject =
-    
+  member private this.ReplaceReferenceValue (newValue: PObject) (pref: PReference) (indexes: list<PNumber>) =
+    match pref.Parent with
+    | :? PVariable as v ->
+        this.ReplaceVariableValue newValue v (pref.IndexInParent::indexes)
+    | :? PReference as r->
+        this.ReplaceReferenceValue newValue r (pref.IndexInParent::indexes)
+    | _ -> PrimellProgrammerProblemException("not possible") |> raise
+
+            
+  // call this with right object guaranteed not to be funny
+  member private this.PerformAssign  (left: PObject, right: PObject, assignMods: OperationModifier list): PObject =
     (* logic from original mutable C# version:
        if (left is empty) || (left is number) || (assignOptions has power modifier)
          then replace left with right in-place
@@ -145,39 +147,36 @@ type PrimellVisitor(control: PrimellProgramControl) =
             foreach (i in left.size): left[i].assign(right[i])   
     *)
 
-    match right with
-    | :? PReference as ref -> 
-        this.PerformAssign (left, operationLib.GetReferenceValue ref, assignMods)
-    | _ ->
-      let newLeftValue = 
-        if assignMods |> List.contains Power then
-          match left with 
-          | :? PReference as ref -> 
-              this.UpdateVariable right ref []
-          | _ -> ()
+    if assignMods |> List.contains Power then
+      match left with 
+      | :? PVariable as v -> control.SetVariable(v.Name, right)
+      | :? PReference as r -> this.ReplaceReferenceValue right r []
+      | _ -> ()
+      right
+    else
+      match left, right with
+      | :? PVariable as pvar, _ ->
+          let newValue = this.PerformAssign(control.GetVariableValue pvar.Name, right, assignMods)
+          control.SetVariable(pvar.Name, newValue)
+          newValue
+      | :? PReference as ref, _ ->
+          let newValue = this.PerformAssign(ref.Dereference control.Variables, right, assignMods)
+          this.ReplaceReferenceValue newValue ref []
+          newValue
+      | :? PAtom, _ ->
           right
-        else
-          match left, right with
-          | :? PReference as ref, _ ->
-              this.UpdateVariable right ref []
-              right
-          | :? PAtom, _ ->
-              right
-          | :? PList as l, _ when l.IsEmpty ->
-              right
-          | :? PList as l, :? PAtom ->
-              let newLvalue = l |> Seq.map(fun x -> this.PerformAssign(x, right, assignMods))
-              newLvalue |> PList :> PObject     
-          | (:? PList as l1), (:? PList as l2) ->
-              let temp = (l1, l2) ||> Seq.zip |> Seq.map(fun x -> this.PerformAssign(fst x, snd x, assignMods))
-              let real =
-                if l1.Length.Value > l2.Length.Value then seq { temp |> PList :> PObject; l1 |> Seq.skip(Seq.length l2.Value) |> PList :> PObject }
-                else temp
-              real |> PList :> PObject 
-          | _ -> PrimellProgrammerProblemException("not possible") |> raise
-      newLeftValue
-    
- 
+      | :? PList as l, _ when l.IsEmpty ->
+          right
+      | :? PList as l, :? PAtom ->
+          let newLvalue = l |> Seq.map(fun x -> this.PerformAssign(x, right, assignMods))
+          newLvalue |> PList :> PObject     
+      | (:? PList as l1), (:? PList as l2) ->
+          let temp = (l1, l2) ||> Seq.zip |> Seq.map(fun x -> this.PerformAssign(fst x, snd x, assignMods))
+          let real =
+            if l1.Length.Value > l2.Length.Value then seq { temp |> PList :> PObject; l1 |> Seq.skip(Seq.length l2.Value) |> PList :> PObject }
+            else temp
+          real |> PList :> PObject 
+      | _ -> PrimellProgrammerProblemException("not possible") |> raise
 
   member this.ConditionalBranch (left: PObject) (right: PObject) (negate: bool) (isForward: bool) =
       if operationLib.IsTruth(left, control.Settings.TruthDefinition) <> negate then
@@ -219,7 +218,8 @@ type PrimellVisitor(control: PrimellProgramControl) =
       
     if isAssign then
       let mods = if context.assignMods() |> isNull then "" else context.assignMods().GetText()
-      this.PerformAssign(left, interimResult, ParseLib.ParseOperationModifiers mods)
+      this.PerformAssign(left, this.DereferenceAll interimResult, ParseLib.ParseOperationModifiers mods)
+      // TODO - ideally we'd have it such that at this point interimResult is necessarily dereferenced from the binary op
     else 
       interimResult
 

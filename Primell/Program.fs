@@ -9,17 +9,10 @@ let funlist = seq {BigRational(1,2) |> Rational |> PNumber :> PObject; Infinity 
 let runner = new PrimellRunner();
 let range = ExtendedBigRational.Range (5 |> BigRational |> Rational) (101 |> BigRational |> Rational) |> Seq.map(fun x -> x |> PNumber)
 
-let program = """
-, =$ 2*2*5*5
-, -= 2
-; =^$ 2/2
-; =^ (;_< + 3 - 2 ;)
-"""
+let program = ", = (; 3 5)\n; = 2\n,\n;"
 
-let program2 = ",@(2 3) =$ 2-2 2-2\n,"
-
-//runner.Run program2 PrimellConfiguration.PrimellDefault |> ignore
-runner.InteractiveMode()
+runner.Run program PrimellConfiguration.PrimellDefault |> ignore
+//runner.InteractiveMode()
 
 //let program2 = ", =$ 2*2*5*5\n, -= 2\n,"
 //let variableProgram = "(, ;) = (3)\n,\n;"
@@ -39,7 +32,7 @@ runner.InteractiveMode()
 //let control2 = {PrimellConfiguration.PrimellDefault with SourceFilePath = "../../../../Examples/NumbersTo100.pll"}
 
 //runner.RunFromFile  control2 |> ignore
-
+(*
 let x = ref 0
 let y = ref 1
 let z = ref 2
@@ -70,7 +63,7 @@ printfn "Ref inf seq:  %d" (Seq.head refInfSeq).Value
 
 //let x = PrimellConfiguration.Listell
 //printf "%A " <| {x with SourceBase=13}
-(*
+
 for x in BigRational.Range(BigRational(3, 1), BigRational(13, 2), BigRational(1, 3), true, false) do 
     printf "%O " <| x
 printfn ""

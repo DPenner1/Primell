@@ -12,7 +12,9 @@ type PrimellList(sequence: seq<PObject>, ?length: PNumber) =
     member this.GetEnumerator() = main.GetEnumerator()
     member this.GetEnumerator() = main.GetEnumerator() :> System.Collections.IEnumerator   // why didn't they get rid of this with .NET core?
   
+  
   static member Empty = Seq.empty |> PrimellList
+  
   member this.Length with get() =
     match length with   // important to use match and not equality due to potential weirdness with NaN != NaN
     | None ->   
@@ -49,6 +51,7 @@ type PrimellList(sequence: seq<PObject>, ?length: PNumber) =
   member this.Reverse() = Seq.rev main |> PrimellList
 
   // TODO - i know Lists are O(1) on prepend and not append, but how do Seqs behave on append vs prepend?
+  // TODO - the Seq.singleton causes some incorrect boxing thats masked by a later Normalize
   member this.Append (pobj: PObject) = Seq.append this (Seq.singleton pobj) |> PrimellList
 
   // TODO - is there a way to more cleanly do this without drilling into types?
@@ -57,14 +60,7 @@ type PrimellList(sequence: seq<PObject>, ?length: PNumber) =
     | :? PrimellList as l -> Seq.append this l |> PrimellList
     | _ -> pobj |> Seq.singleton |> PrimellList |> this.AppendAll
 
-  member private this.RaiseAtoms() =
-    main |> Seq.map(fun x -> match x with 
-                             | :? PAtom as a -> Seq.singleton (a :> PObject)
-                             | :? PrimellList as l -> l
-                             | _ -> PrimellProgrammerProblemException("not possible") |> raise)
-
-  member this.Flatten() =
-    this.RaiseAtoms() |> Seq.concat |> PrimellList
+  
 
   member this.Index(index: PNumber) =
     match ExtendedBigRational.Round index.Value with
@@ -93,3 +89,36 @@ type PrimellList(sequence: seq<PObject>, ?length: PNumber) =
 type PList = PrimellList  // abbreviation for sanity
 
 
+
+type PrimellReference(parent: PObject, indexInParent: PNumber) =
+  inherit PObject()
+
+  member this.Parent with get() = parent
+  member this.IndexInParent with get() = indexInParent
+
+  member private this.IndexDown(pobj: PObject)(indexes: list<PNumber>) =
+    match List.tryHead indexes with
+    | None -> pobj // end of recursion
+    | Some head ->
+        match pobj with
+        | :? PList as l -> this.IndexDown(l.Index head)(indexes.Tail)
+        | :? PAtom as a -> this.IndexDown(Seq.singleton(a :> PObject) |> PList) indexes
+        | _ -> PrimellProgrammerProblemException "Not possible" |> raise
+
+  member private this.GetReferenceValue' (pref: PObject)(indexes: list<PNumber>)(variables: System.Collections.Generic.IDictionary<string, PObject>) =
+    match pref with
+    | :? PVariable as v -> this.IndexDown(variables[v.Name]) indexes
+    | :? PrimellReference as r -> this.GetReferenceValue' r.Parent (r.IndexInParent::indexes) variables
+    | _ -> PrimellProgrammerProblemException "Not possible" |> raise
+
+  member this.Dereference(variableValues: System.Collections.Generic.IDictionary<string, PObject>) =
+    this.GetReferenceValue' this.Parent (List.singleton this.IndexInParent) variableValues
+
+  override this.ToString() =
+    String.concat "" [this.Parent.ToString(); "@"; this.IndexInParent.ToString()]
+
+  override this.ToString(variables) =
+    (this.GetReferenceValue' this.Parent (List.singleton this.IndexInParent) variables).ToString(variables)
+
+
+type PReference = PrimellReference

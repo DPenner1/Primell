@@ -47,10 +47,18 @@ type PrimellRunner() =
 
   member this.GetResultString (result: PrimellObject) (control: PrimellProgramControl) =
     let temp =
-      result.ToString(control.GetVariableDictionary())
+      result.ToString(control.Variables)
 
     match result with
     | :? PList as l when not l.IsEmpty -> temp.Substring(1, temp.Length - 2)  // trim off outer parentheses
+    | :? PVariable as v ->
+        match control.GetVariableValue(v.Name) with
+        | :? PList as l when not l.IsEmpty -> temp.Substring(1, temp.Length - 2)  // trim off outer parentheses
+        | _ -> temp
+    | :? PReference as ref ->
+        match ref.Dereference control.Variables with
+        | :? PList as l when not l.IsEmpty -> temp.Substring(1, temp.Length - 2)  // trim off outer parentheses
+        | _ -> temp
     | _ -> temp
   
 
