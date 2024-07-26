@@ -90,12 +90,15 @@ type PList = PrimellList  // abbreviation for sanity
 
 
 
-type PrimellReference(parent: PObject, indexInParent: PNumber) =
+type PrimellReference(parent: PObject, indexInParent: PNumber, capturedValue: PObject) =
   inherit PObject()
 
-  member this.Parent with get() = parent
-  member this.IndexInParent with get() = indexInParent
+  member val Parent = parent with get
+  member val IndexInParent = indexInParent with get
+  member val CapturedValue = capturedValue with get 
+  // technically could prob recurse up to get it, but there were issues beyond the recursion...
 
+(*  Old stuff with for dynamic variables that may be useful later
   member private this.IndexDown(pobj: PObject)(indexes: list<PNumber>) =
     match List.tryHead indexes with
     | None -> pobj // end of recursion
@@ -112,13 +115,11 @@ type PrimellReference(parent: PObject, indexInParent: PNumber) =
     | _ -> PrimellProgrammerProblemException "Not possible" |> raise
 
   member this.Dereference(variableValues: System.Collections.Generic.IDictionary<string, PObject>) =
-    this.GetReferenceValue' this.Parent (List.singleton this.IndexInParent) variableValues
+    this.GetReferenceValue' this.Parent (List.singleton this.IndexInParent) variableValues *)
 
-  override this.ToString() =
-    String.concat "" [this.Parent.ToString(); "@"; this.IndexInParent.ToString()]
+  override this.ToString() = this.CapturedValue.ToString()
 
-  override this.ToString(variables) =
-    (this.GetReferenceValue' this.Parent (List.singleton this.IndexInParent) variables).ToString(variables)
+  override this.ToString(variables) = this.CapturedValue.ToString()
 
 
 type PReference = PrimellReference

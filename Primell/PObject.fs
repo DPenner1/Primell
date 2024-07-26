@@ -34,13 +34,13 @@ x
 
 // note: its actually been a bit cumbersome having indirection for mutability,
 //       might try to directly store the object boxed here mutably
-type PrimellVariable(name: string) =
+type PrimellVariable(name: string, capturedValue: PObject) =
   inherit PObject()
 
-  member this.Name with get() = name
+  member val Name = name with get
+  member val CapturedValue = capturedValue with get
 
-  override this.ToString() =
-    this.Name
+  override this.ToString() = this.CapturedValue.ToString()
     
   override this.ToString(variables) =
     if variables.ContainsKey(name) then

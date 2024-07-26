@@ -20,10 +20,15 @@ type OperationLib(control: PrimellProgramControl) =
                                   | :? PAtom as a -> Seq.singleton (a :> PObject)
                                   | :? PrimellList as l -> l
                                   | :? PReference as ref ->
-                                      match ref.Dereference control.Variables with
+                                      match ref.CapturedValue with
                                       | :? PAtom as a -> Seq.singleton (a :> PObject)
                                       | :? PrimellList as l -> l
                                       | _ -> PrimellProgrammerProblemException("not possible") |> raise
+                                  | :? PVariable as v ->
+                                        match v.CapturedValue with
+                                        | :? PAtom as a -> Seq.singleton (a :> PObject)
+                                        | :? PrimellList as l -> l
+                                        | _ -> PrimellProgrammerProblemException("not possible") |> raise
                                   | _ -> PrimellProgrammerProblemException("not possible") |> raise)
 
     member this.Flatten(plist: PrimellList) =
@@ -32,11 +37,11 @@ type OperationLib(control: PrimellProgramControl) =
     member this.Index(left: PObject) (right: PObject): PObject =
 
         match left, right with
-        | _, (:? PVariable as v) -> this.Index left (control.GetVariableValue(v.Name))
-        | _, (:? PReference as r) -> this.Index left (r.Dereference control.Variables)
+        | _, (:? PVariable as v) -> this.Index left v.CapturedValue
+        | _, (:? PReference as r) -> this.Index left r.CapturedValue
         | _, (:? PList as l) -> l |> Seq.map(fun x -> this.Index left x) |> PList :> PObject
-        | (:? PVariable as v), (:? PNumber as n) -> PReference(v, n)    
-        | (:? PReference as r), (:? PNumber as n) -> PReference(r, n)    
+        | (:? PVariable as v), (:? PNumber as n) -> PReference(v, n, this.Index v.CapturedValue n)    
+        | (:? PReference as r), (:? PNumber as n) -> PReference(r, n, this.Index r.CapturedValue n)    
         | (:? PList as l), (:? PNumber as n) -> l.Index n
         | :? PNumber as n, _ -> this.Index(n :> PObject |> Seq.singleton |> PList) right
         | _ -> PrimellProgrammerProblemException "Not possible" |> raise
@@ -82,22 +87,26 @@ type OperationLib(control: PrimellProgramControl) =
     // opMods for consistency, but I don't think Primell will have any need for opMods on unary numeric operators
     member this.ApplyUnaryNumericOperation (pobj: PObject) operator opMods =
         match pobj with
-        | :? PReference as r -> this.ApplyUnaryNumericOperation (r.Dereference control.Variables) operator opMods
+        | :? PVariable as v -> this.ApplyUnaryNumericOperation v.CapturedValue operator opMods
+        | :? PReference as r -> this.ApplyUnaryNumericOperation r.CapturedValue operator opMods
         | :? PNumber as n -> operator n
         | :? PList as l -> l |> Seq.map(fun x -> this.ApplyUnaryNumericOperation x operator opMods) |> PList :> PObject
         | _ -> PrimellProgrammerProblemException("Not possible") |> raise
         
     member this.ApplyUnaryListOperation (pobj: PObject) operator opMods : PObject =
         match pobj with
-        | :? PReference as r -> this.ApplyUnaryListOperation (r.Dereference control.Variables) operator opMods
+        | :? PVariable as v -> this.ApplyUnaryListOperation v.CapturedValue operator opMods
+        | :? PReference as r -> this.ApplyUnaryListOperation r.CapturedValue operator opMods
         | :? PList as l -> operator l
         | :? PNumber as n -> this.ApplyUnaryListOperation (n :> PObject |> Seq.singleton |> PList) operator opMods
         | _ -> PrimellProgrammerProblemException("Not possible") |> raise
 
     member this.ApplyBinaryNumericOperation (left: PObject) (right: PObject) operator opMods : PObject =
         match left, right with
-        | (:? PReference as r), _ -> this.ApplyBinaryNumericOperation (r.Dereference control.Variables) right operator opMods
-        | _, (:? PReference as r) -> this.ApplyBinaryNumericOperation left (r.Dereference control.Variables) operator opMods
+        | (:? PVariable as v), _ -> this.ApplyBinaryNumericOperation v.CapturedValue right operator opMods
+        | _, (:? PVariable as v) -> this.ApplyBinaryNumericOperation left v.CapturedValue operator opMods
+        | (:? PReference as r), _ -> this.ApplyBinaryNumericOperation r.CapturedValue right operator opMods
+        | _, (:? PReference as r) -> this.ApplyBinaryNumericOperation left r.CapturedValue operator opMods
         | (:? PNumber as n1), (:? PNumber as n2) -> 
             operator(n1, n2)
         | (:? PNumber as n), (:? PList as l) -> 
@@ -112,8 +121,10 @@ type OperationLib(control: PrimellProgramControl) =
 
     member this.ApplyBinaryListOperation (left: PObject) (right: PObject) operator opMods : PObject =
         match left, right with
-        | (:? PReference as r), _ -> this.ApplyBinaryListOperation (r.Dereference control.Variables) right operator opMods
-        | _, (:? PReference as r) -> this.ApplyBinaryListOperation left (r.Dereference control.Variables) operator opMods
+        | (:? PVariable as v), _ -> this.ApplyBinaryListOperation v.CapturedValue right operator opMods
+        | _, (:? PVariable as v) -> this.ApplyBinaryListOperation left v.CapturedValue operator opMods
+        | (:? PReference as r), _ -> this.ApplyBinaryListOperation r.CapturedValue right operator opMods
+        | _, (:? PReference as r) -> this.ApplyBinaryListOperation left r.CapturedValue operator opMods
         | (:? PList as l1), (:? PList as l2) -> 
             operator(l1, l2)
         | (:? PNumber as n), (:? PList as l) -> 
@@ -126,8 +137,10 @@ type OperationLib(control: PrimellProgramControl) =
 
     member this.ApplyListNumericOperation (pList: PObject) (pNumber: PObject) operator opMods : PObject =
         match pList, pNumber with
-        | (:? PReference as r), _ -> this.ApplyListNumericOperation (r.Dereference control.Variables) pNumber operator opMods
-        | _, (:? PReference as r) -> this.ApplyListNumericOperation pList (r.Dereference control.Variables) operator opMods
+        | (:? PVariable as v), _ -> this.ApplyListNumericOperation v.CapturedValue pNumber operator opMods
+        | _, (:? PVariable as v) -> this.ApplyListNumericOperation pList v.CapturedValue operator opMods
+        | (:? PReference as r), _ -> this.ApplyListNumericOperation r.CapturedValue pNumber operator opMods
+        | _, (:? PReference as r) -> this.ApplyListNumericOperation pList r.CapturedValue operator opMods
         | (:? PList as l), (:? PNumber as n) -> 
             operator(l, n)
         | (:? PList as l1), (:? PList as l2) -> 
@@ -140,7 +153,7 @@ type OperationLib(control: PrimellProgramControl) =
 
     member this.IsTruth(pobj: PObject, truthDef: TruthDefinition) =
       match pobj with
-      | :? PReference as r -> this.IsTruth(r.Dereference control.Variables, truthDef)
+      | :? PReference as r -> this.IsTruth(r.CapturedValue, truthDef)
       | :? PList as l when l.IsEmpty -> truthDef.EmptyIsTruth
       | :? PList as l ->  // infinite recursion is possible with infinite lists
           if truthDef.RequireAllTruth then
