@@ -109,8 +109,8 @@ type PrimellVisitor(control: PrimellProgramControl) =
                 | Rational r when r < BigRational.Zero -> System.NotImplementedException("negative index") |> raise
                 | Rational r ->
                     let index = int r.Numerator
-                    if index > GetInt accList.Length then // extend list with empties
-                        Seq.append accList (Seq.init (index - (GetInt accList.Length) - 1) (fun _ -> PList.Empty :> PObject)) 
+                    if index >= GetInt accList.Length then // extend list with empties
+                        Seq.append accList (Seq.init (index - (GetInt accList.Length)) (fun _ -> PList.Empty :> PObject)) 
                         |> Seq.insertAt index (snd ivPair) 
                         |> PList
                     else 

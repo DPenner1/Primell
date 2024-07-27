@@ -74,10 +74,12 @@ let ``Test Index + Assign``() =
 
   // test immediacy of evaluation
   TestProgram(", = (; 3 5)\n; = 2\n,\n;", PrimellConfiguration.PrimellDefault, "() 3 5\n2")
-  
+
   // implicit filling with empty
   TestProgram(",@2 = 5\n,", PrimellConfiguration.PrimellDefault, "() () 5")
   TestProgram(", = 2\n,@2 = 5\n,", PrimellConfiguration.PrimellDefault, "2 () 5")
+  TestProgram(",@(2 3) = (5 7)\n,", PrimellConfiguration.PrimellDefault, "() () 5 7")
+  
 
   
 
