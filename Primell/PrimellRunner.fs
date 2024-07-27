@@ -64,8 +64,8 @@ type PrimellRunner() =
     let control = PrimellProgramControl(settings, allLineContexts)
 
     // pre-initialized values to match original C#, i still plan on doing this for Primell, 
-    // but grammar will likely change and i have other uses for both these symbols
-    control.SetVariable(";", PList(Seq.initInfinite(fun _ -> PList.Empty :> PObject), Infinity Positive |> PNumber))
+    // but grammar will likely change and i have other uses for both these symbols (actually the ; broke existing test cases)
+    // control.SetVariable(";", PList(Seq.initInfinite(fun _ -> PList.Empty :> PObject), Infinity Positive |> PNumber))
     control.SetVariable("#", PList(Seq.initInfinite(fun _ -> ExtendedBigRational.Zero |> PNumber :> PObject), Infinity Positive |> PNumber))
 
     // resetting LastOperationWasAssignment here is a temporary hack
