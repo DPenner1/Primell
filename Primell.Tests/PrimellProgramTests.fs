@@ -1,7 +1,7 @@
 module PrimellProgramTests
 
 open Xunit
-open dpenner1.PrimellF
+open dpenner1.Primell
 
 let TestProgram(program: string, settings: PrimellConfiguration, expectedResult: string) =
   let runner = PrimellRunner()

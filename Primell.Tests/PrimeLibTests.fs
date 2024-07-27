@@ -2,7 +2,7 @@
 module PrimeLibTests
 
 open Xunit
-open dpenner1.PrimellF
+open dpenner1.Primell
 
 let TestRange(range, primes) =
   range |> List.iter(fun i ->

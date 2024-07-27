@@ -1,4 +1,4 @@
-namespace dpenner1.PrimellF
+namespace dpenner1.Primell
 
 exception PrimellInvalidSyntaxException of string
 

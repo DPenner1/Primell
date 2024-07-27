@@ -1,4 +1,4 @@
-namespace dpenner1.PrimellF
+namespace dpenner1.Primell
 
 // really, a Record type would work great here, but due to all the nested typing, 
 // I just want the ability for a single-value constructor for easy piping |>

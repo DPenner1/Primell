@@ -1,4 +1,4 @@
-namespace dpenner1.PrimellF
+namespace dpenner1.Primell
 
 // warning about the comparison operators...
 // I *think* this is due to the semantics around IEEE754 comparisons vs "normal" comparisons, 

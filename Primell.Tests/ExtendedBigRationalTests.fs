@@ -2,7 +2,7 @@
 module ExtendedBigRationalTests
 
 open Xunit
-open dpenner1.PrimellF
+open dpenner1.Primell
 
 [<Fact>]
 let ``Test Round Special``() =

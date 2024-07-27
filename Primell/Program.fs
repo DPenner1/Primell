@@ -1,4 +1,4 @@
-﻿open dpenner1.PrimellF
+﻿open dpenner1.Primell
 
 let runner = PrimellRunner()
 

@@ -1,4 +1,4 @@
-namespace dpenner1.PrimellF
+namespace dpenner1.Primell
 
 [<Sealed>]
 // Ok a bit weird to call the seq a list, but conceptually, that's how I view the Primell object, as lists

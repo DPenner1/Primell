@@ -1,4 +1,4 @@
-namespace dpenner1.PrimellF
+namespace dpenner1.Primell
 
 open Antlr4.Runtime.Misc
 open System.Collections.Generic
