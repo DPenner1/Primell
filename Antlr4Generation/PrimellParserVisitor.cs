@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generated from /home/darrell/Projects/Prime/Antlr4Generation/Primell.g4 by ANTLR 4.13.1
+// Generated from /home/darrell/Projects/Prime/Antlr4Generation/PrimellParser.g4 by ANTLR 4.13.1
 
 // Unreachable code detected
 #pragma warning disable 0162
@@ -30,7 +30,7 @@ using IToken = Antlr4.Runtime.IToken;
 /// <typeparam name="Result">The return type of the visit operation.</typeparam>
 [System.CodeDom.Compiler.GeneratedCode("ANTLR", "4.13.1")]
 [System.CLSCompliant(false)]
-public interface IPrimellVisitor<Result> : IParseTreeVisitor<Result> {
+public interface IPrimellParserVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="PrimellParser.program"/>.
 	/// </summary>
@@ -99,19 +99,12 @@ public interface IPrimellVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitInteger([NotNull] PrimellParser.IntegerContext context);
 	/// <summary>
-	/// Visit a parse tree produced by the <c>negativeInfinity</c>
+	/// Visit a parse tree produced by the <c>infinity</c>
 	/// labeled alternative in <see cref="PrimellParser.atomTerm"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitNegativeInfinity([NotNull] PrimellParser.NegativeInfinityContext context);
-	/// <summary>
-	/// Visit a parse tree produced by the <c>positiveInfinity</c>
-	/// labeled alternative in <see cref="PrimellParser.atomTerm"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitPositiveInfinity([NotNull] PrimellParser.PositiveInfinityContext context);
+	Result VisitInfinity([NotNull] PrimellParser.InfinityContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>nullaryOperation</c>
 	/// labeled alternative in <see cref="PrimellParser.atomTerm"/>.
@@ -119,6 +112,13 @@ public interface IPrimellVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitNullaryOperation([NotNull] PrimellParser.NullaryOperationContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>emptyList</c>
+	/// labeled alternative in <see cref="PrimellParser.atomTerm"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitEmptyList([NotNull] PrimellParser.EmptyListContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>parens</c>
 	/// labeled alternative in <see cref="PrimellParser.atomTerm"/>.

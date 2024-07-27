@@ -1,17 +1,15 @@
 namespace dpenner1.Primell
 
-open Antlr4.Runtime.Misc
 open System.Collections.Generic
+
 
 exception NonPrimeDectectionException of string * ExtendedBigRational
 // TODO - port from original C# code, very mutable stuff, see if you can get rid of non-functional stuff later
 
 type PrimellVisitor(control: PrimellProgramControl) = 
-  inherit PrimellBaseVisitor<PObject>()
+  inherit PrimellParserBaseVisitor<PObject>()
   let control = control
-  let placeHolders = new Stack<PObject>()
   let currentForEach = new Stack<PObject>()
-  let incorporate = new Stack<bool>()
   let operationLib = new OperationLib(control)
 
   // TODO - can you get rid of this mutable?
@@ -33,21 +31,14 @@ type PrimellVisitor(control: PrimellProgramControl) =
       CurrentLine <- control.Lines |> List.findIndex(fun l -> l = context)
       this.VisitChildren(context)
 
-  override this.VisitParens context =
-    //incorporate.Pop() |> ignore
-    //incorporate.Push false
+  override this.VisitParens context = this.Visit(context.termSeq()) // not entirely sure why i need to explicitly visit this
 
-    if context.termSeq() |> isNull then PList.Empty else this.Visit(context.termSeq())
+  override this.VisitEmptyList context = PList.Empty
 
   override this.VisitTermSeq context =
     let mutable retval = PList.Empty
     for termContext in context.mulTerm() do
-      //incorporate.Push false
-
       let pobj = this.Visit termContext
-      //if incorporate.Pop() then 
-        //retval <- retval.AppendAll pobj
-      //else
       retval <- retval.Append pobj
         
     retval |> PrimellVisitor.Normalize
@@ -61,9 +52,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
     
     number |> PNumber :> PObject
 
-  override this.VisitPositiveInfinity context = Infinity Positive |> PNumber :> PObject
-
-  override this.VisitNegativeInfinity context = Infinity Negative |> PNumber :> PObject
+  override this.VisitInfinity context = Infinity Positive |> PNumber :> PObject
   override this.VisitNullaryOp context : PObject =
     control.LastOperationWasAssignment <- false
 

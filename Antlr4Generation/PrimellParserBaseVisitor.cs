@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generated from /home/darrell/Projects/Prime/Antlr4Generation/Primell.g4 by ANTLR 4.13.1
+// Generated from /home/darrell/Projects/Prime/Antlr4Generation/PrimellParser.g4 by ANTLR 4.13.1
 
 // Unreachable code detected
 #pragma warning disable 0162
@@ -25,7 +25,7 @@ using IToken = Antlr4.Runtime.IToken;
 using ParserRuleContext = Antlr4.Runtime.ParserRuleContext;
 
 /// <summary>
-/// This class provides an empty implementation of <see cref="IPrimellVisitor{Result}"/>,
+/// This class provides an empty implementation of <see cref="IPrimellParserVisitor{Result}"/>,
 /// which can be extended to create a visitor which only needs to handle a subset
 /// of the available methods.
 /// </summary>
@@ -33,7 +33,7 @@ using ParserRuleContext = Antlr4.Runtime.ParserRuleContext;
 [System.CodeDom.Compiler.GeneratedCode("ANTLR", "4.13.1")]
 [System.Diagnostics.DebuggerNonUserCode]
 [System.CLSCompliant(false)]
-public partial class PrimellBaseVisitor<Result> : AbstractParseTreeVisitor<Result>, IPrimellVisitor<Result> {
+public partial class PrimellParserBaseVisitor<Result> : AbstractParseTreeVisitor<Result>, IPrimellParserVisitor<Result> {
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="PrimellParser.program"/>.
 	/// <para>
@@ -142,7 +142,7 @@ public partial class PrimellBaseVisitor<Result> : AbstractParseTreeVisitor<Resul
 	/// <return>The visitor result.</return>
 	public virtual Result VisitInteger([NotNull] PrimellParser.IntegerContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by the <c>negativeInfinity</c>
+	/// Visit a parse tree produced by the <c>infinity</c>
 	/// labeled alternative in <see cref="PrimellParser.atomTerm"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
@@ -151,18 +151,7 @@ public partial class PrimellBaseVisitor<Result> : AbstractParseTreeVisitor<Resul
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitNegativeInfinity([NotNull] PrimellParser.NegativeInfinityContext context) { return VisitChildren(context); }
-	/// <summary>
-	/// Visit a parse tree produced by the <c>positiveInfinity</c>
-	/// labeled alternative in <see cref="PrimellParser.atomTerm"/>.
-	/// <para>
-	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
-	/// on <paramref name="context"/>.
-	/// </para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	public virtual Result VisitPositiveInfinity([NotNull] PrimellParser.PositiveInfinityContext context) { return VisitChildren(context); }
+	public virtual Result VisitInfinity([NotNull] PrimellParser.InfinityContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by the <c>nullaryOperation</c>
 	/// labeled alternative in <see cref="PrimellParser.atomTerm"/>.
@@ -174,6 +163,17 @@ public partial class PrimellBaseVisitor<Result> : AbstractParseTreeVisitor<Resul
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	public virtual Result VisitNullaryOperation([NotNull] PrimellParser.NullaryOperationContext context) { return VisitChildren(context); }
+	/// <summary>
+	/// Visit a parse tree produced by the <c>emptyList</c>
+	/// labeled alternative in <see cref="PrimellParser.atomTerm"/>.
+	/// <para>
+	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
+	/// on <paramref name="context"/>.
+	/// </para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	public virtual Result VisitEmptyList([NotNull] PrimellParser.EmptyListContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by the <c>parens</c>
 	/// labeled alternative in <see cref="PrimellParser.atomTerm"/>.

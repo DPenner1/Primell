@@ -58,7 +58,7 @@ let ``Test Assign``() =
   TestProgram(", = (2 3)\n,", PrimellConfiguration.PrimellDefault, "2 3")
   TestProgram(", = (2 3)\n, = 5\n,", PrimellConfiguration.PrimellDefault, "5 5")
   TestProgram(", = (2 3)\n, = ()\n,", PrimellConfiguration.PrimellDefault, "() ()")
-  TestProgram("(, ;) = (2 3)\n,\n;", PrimellConfiguration.PrimellDefault, "2\n3")
+  TestProgram("(, ,,) = (2 3)\n,\n,,", PrimellConfiguration.PrimellDefault, "2\n3")
   
   TestProgram(", = (2 3 5)\n, = (7 11 13)\n,", PrimellConfiguration.PrimellDefault, "7 11 13")
   TestProgram(", = (2 3 5)\n, = (7 11)\n,", PrimellConfiguration.PrimellDefault, "7 11 5")
@@ -73,7 +73,7 @@ let ``Test Index + Assign``() =
   TestProgram(", = (2 3 (5 7))\n,@2 = 11\n,", PrimellConfiguration.PrimellDefault, "2 3 (11 11)")
 
   // test immediacy of evaluation
-  TestProgram(", = (; 3 5)\n; = 2\n,\n;", PrimellConfiguration.PrimellDefault, "() 3 5\n2")
+  TestProgram(", = (,, 3 5)\n,, = 2\n,\n,,", PrimellConfiguration.PrimellDefault, "() 3 5\n2")
 
   // implicit filling with empty
   TestProgram(",@2 = 5\n,", PrimellConfiguration.PrimellDefault, "() () 5")

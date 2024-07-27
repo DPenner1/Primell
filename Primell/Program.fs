@@ -4,7 +4,7 @@ let runner = PrimellRunner()
 
 //let results, control = runner.RunFromFile { PrimellConfiguration.PrimellDefault with SourceFilePath = "./../../../../Examples/Turing.pll" }
 
-let results, control = runner.Run ", = (2 3 5 7)\n,@(2 3) = (11 13)\n," PrimellConfiguration.PrimellDefault
+let results, control = runner.Run ", = (,, 3 5)\n,, = 2\n,\n,," PrimellConfiguration.PrimellDefault
 
 //let results, control = runner.Run ",@2 = 5\n," PrimellConfiguration.PrimellDefault
 

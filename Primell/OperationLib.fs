@@ -33,7 +33,7 @@ type OperationLib(control: PrimellProgramControl) =
         
     member this.NullaryOperators: IDictionary<string, unit->PObject> =
       dict [":_", fun () -> control.GetCodeInput()
-            ":~", fun () -> control.GetStringInput()  // symbol to change
+            ":\"", fun () -> control.GetStringInput()  // symbol to change
             ":,", fun () -> control.GetCsvInput()
            ]
 
