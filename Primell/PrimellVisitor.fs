@@ -251,7 +251,11 @@ type PrimellVisitor(control: PrimellProgramControl) =
             | Rational r ->
                 let offset = ((round r).Numerator |> int) * (if isForward then 1 else -1)
                 PrimellVisitor(control).VisitLine(control.Lines[CurrentLine + offset])
-        | _ -> System.NotImplementedException("non-number in conditional head not yet implemented") |> raise
+        | :? PList as l ->
+            // Original C# didn't have nested list implemented, since I'm recursing it's easiest to do so here.
+            // While executing all lines it just returned last value, i'm mimicking that for now
+            l |> Seq.map (fun x -> this.ConditionalBranch left x negate isForward) |> Seq.last
+        | _ -> System.NotImplementedException "You're doing crazy stuff" |> raise
       else operationLib.ApplyUnaryListOperation right operationLib.UnaryListOperators["_>"] []
 
   member this.ApplyBinaryOperation left right (context: PrimellParser.BinaryOpContext) =

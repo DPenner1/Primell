@@ -48,6 +48,8 @@ Wait, you want more explanation for step 4? Here's a more detailed breakdown the
 
 # Turing Machine simulation
 
+_Note: as it turns out, this section of code `(,@2 ;@$,@3)` actually executed incorrectly in the original C# version and the F# version hangs. So neither probably works._
+
 This is really only here as proof of Turing-completeness. It is left here as a challenge to the reader: Once understood, the reader is considered an advanced beginner at Primell. To help here is a description of the first five lines, which are simply initializations:
  
  - The tape is represented by the `;` variable and is unbounded to the right. Any value can go on the tape. It is initialized with all 0s except the zeroth index which is -2 (to more easily mark left-end of tape).
@@ -64,10 +66,10 @@ Also, the code arbitrarily outputs the first 4 values of the tape.
 	;@(2-2) =$ 2~
 	,@(2 3) =$ 2-2 2-2
 	# =^$ (2-2 2~ 3 2~ 2/2) (3 2-2 2~ 7 2/2)
-	# =^$ ((3 3 3 3 3) #) >> 2
+	# =^$ (()()(3 3 3 3 3) #)
 	
 	,@2~ ?~/$ (2/2 2 3 2-2) ;@(2-2 2/2 2 3)
 	
-	#@2 =$ #@$ #[@(2-2 2/2)] @# (,@2 ;@$,@3) _<
+	#@2 =$ #@$ #[@(2-2 2/2)] @ # (,@2 ;@$,@3) _<
 	;@(,@3) =$ #@2@3
 	,@(2 3) =$ #@2@2 ,@3 + #@2@(2*2)

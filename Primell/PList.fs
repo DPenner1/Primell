@@ -22,6 +22,12 @@ type PrimellList(sequence: seq<PObject>, ?length: PNumber) =
     | _ -> ()
     length.Value
 
+  member this.IsGreaterOrEqualThanLength(value: int) =
+    match main |> Seq.tryItem value with
+    | None -> true
+    | _ -> false
+    
+
   member this.IsEmpty with get() = Seq.isEmpty main   // avoid calling this.Length due to potential long computation
 
   member this.Head() = 
@@ -66,13 +72,12 @@ type PrimellList(sequence: seq<PObject>, ?length: PNumber) =
     | Infinity _ -> PrimellList.Empty :> PObject  // I don't like this one... For infinite lists, in theory there is something way out there, but it's undefined
     | Rational r ->
           if r.Sign = -1 then  // index from end
-            let effectiveIndex =  r.Numerator - 1I |> BigRational |> Rational  // TODO is this logic correct?
-            if effectiveIndex >= this.Length.Value then  // TODO - a lot of code copying here
+            if this.IsGreaterOrEqualThanLength(int r.Numerator - 1) then
               PrimellList.Empty :> PObject
             else this.Reverse() |> Seq.skip (int r.Numerator - 1) |> Seq.head
           else
             let effectiveIndex =  r.Numerator |> BigRational |> Rational
-            if effectiveIndex >= this.Length.Value then 
+            if this.IsGreaterOrEqualThanLength(int r.Numerator) then 
               PrimellList.Empty :> PObject
             else
               main |> Seq.skip (int r.Numerator) |> Seq.head
