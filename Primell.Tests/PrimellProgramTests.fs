@@ -41,6 +41,7 @@ let ``Test Index``() =
   TestProgram("(2 3 (5 7))@2", PrimellConfiguration.PrimellDefault, "5 7")
 
   TestProgram("(2 3 5 7)@(2 (3 2~))", PrimellConfiguration.PrimellDefault, "5 (7 5)")
+  TestProgram("(11 13 (17 19) 23)@((3 2)(2 3))", PrimellConfiguration.PrimellDefault, "(23 (17 19)) ((17 19) 23)")
 
   // implicit empties
   TestProgram("()@2", PrimellConfiguration.PrimellDefault, "()")
@@ -56,8 +57,12 @@ let ``Test Assign``() =
   TestProgram(", = 3\n, = (3 5)\n,", PrimellConfiguration.PrimellDefault, "3 5")
   TestProgram(", = (2 3)\n,", PrimellConfiguration.PrimellDefault, "2 3")
   TestProgram(", = (2 3)\n, = 5\n,", PrimellConfiguration.PrimellDefault, "5 5")
-   //  turns out variables side by side never even worked in the original C#
+  TestProgram(", = (2 3)\n, = ()\n,", PrimellConfiguration.PrimellDefault, "() ()")
   TestProgram("(, ;) = (2 3)\n,\n;", PrimellConfiguration.PrimellDefault, "2\n3")
+  
+  TestProgram(", = (2 3 5)\n, = (7 11 13)\n,", PrimellConfiguration.PrimellDefault, "7 11 13")
+  TestProgram(", = (2 3 5)\n, = (7 11)\n,", PrimellConfiguration.PrimellDefault, "7 11 5")
+  TestProgram(", = (2 3)\n, = (5 7 11)\n,", PrimellConfiguration.PrimellDefault, "5 7")  // spec might change in future
 
 [<Fact>]
 let ``Test Index + Assign``() =
@@ -67,12 +72,14 @@ let ``Test Index + Assign``() =
   TestProgram(", = (2 3 5 7)\n,@(2 3) = 13\n,", PrimellConfiguration.PrimellDefault, "2 3 13 13")
   TestProgram(", = (2 3 (5 7))\n,@2 = 11\n,", PrimellConfiguration.PrimellDefault, "2 3 (11 11)")
 
+  // test immediacy of evaluation
+  TestProgram(", = (; 3 5)\n; = 2\n,\n;", PrimellConfiguration.PrimellDefault, "() 3 5\n2")
+  
   // implicit filling with empty
   TestProgram(",@2 = 5\n,", PrimellConfiguration.PrimellDefault, "() () 5")
   TestProgram(", = 2\n,@2 = 5\n,", PrimellConfiguration.PrimellDefault, "2 () 5")
 
-  // test immediacy of evaluation
-  TestProgram(", = (; 3 5)\n; = 2\n,\n;", PrimellConfiguration.PrimellDefault, "() 3 5\n2")
+  
 
 [<Fact>]
 let ``Test Conditional``() =

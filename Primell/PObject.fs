@@ -12,7 +12,7 @@ type PrimellObject() =
 type PObject = PrimellObject
 
 [<AbstractClass>]
-type PrimellAtom() =
+type PrimellAtom() =  // in future there might be more atomic items, in particular first-class operators
   inherit PObject()
 
 type PAtom = PrimellAtom

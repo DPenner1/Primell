@@ -2,9 +2,13 @@
 
 let runner = PrimellRunner()
 
-let result, control = runner.RunFromFile { PrimellConfiguration.PrimellDefault with SourceFilePath = "./../../../../Examples/NumbersTo100.pll" }
+//let result, control = runner.RunFromFile { PrimellConfiguration.PrimellDefault with SourceFilePath = "./../../../../Examples/NumbersTo100.pll" }
 
-//printfn "%s" <| runner.GetResultString result control
+//let result, control = runner.Run ", = (2 3 5)\n, = (7 11)\n," PrimellConfiguration.PrimellDefault
+
+let results, control = runner.Run ",@2 = 5\n," PrimellConfiguration.PrimellDefault
+
+printfn "%s" <| runner.GetResultString (List.last results |> fst) control
 
 
 (* Potentially useful (but out of date) simplification of the objects

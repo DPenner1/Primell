@@ -35,15 +35,14 @@ type OperationLib(control: PrimellProgramControl) =
       this.RaiseAtoms plist |> Seq.concat |> PrimellList
 
     member this.Index(left: PObject) (right: PObject): PObject =
-
         match left, right with
         | _, (:? PVariable as v) -> this.Index left v.CapturedValue
         | _, (:? PReference as r) -> this.Index left r.CapturedValue
-        | _, (:? PList as l) -> l |> Seq.map(fun x -> this.Index left x) |> PList :> PObject
-        | (:? PVariable as v), (:? PNumber as n) -> PReference(v, n, this.Index v.CapturedValue n)    
-        | (:? PReference as r), (:? PNumber as n) -> PReference(r, n, this.Index r.CapturedValue n)    
+        | (:? PVariable as v), _ -> PReference(v, right, this.Index v.CapturedValue right)    
+        | (:? PReference as r), _ -> PReference(r, right, this.Index r.CapturedValue right)
         | (:? PList as l), (:? PNumber as n) -> l.Index n
         | :? PNumber as n, _ -> this.Index(n :> PObject |> Seq.singleton |> PList) right
+        | _, (:? PList as l) -> l |> Seq.map(fun x -> this.Index left x) |> PList :> PObject
         | _ -> PrimellProgrammerProblemException "Not possible" |> raise
         
     member this.NullaryOperators: IDictionary<string, unit->PObject> =
