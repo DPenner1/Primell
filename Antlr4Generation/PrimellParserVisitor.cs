@@ -44,6 +44,12 @@ public interface IPrimellParserVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitLine([NotNull] PrimellParser.LineContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="PrimellParser.outputSpec"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitOutputSpec([NotNull] PrimellParser.OutputSpecContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="PrimellParser.termSeq"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -219,10 +225,4 @@ public interface IPrimellParserVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitBinaryOp([NotNull] PrimellParser.BinaryOpContext context);
-	/// <summary>
-	/// Visit a parse tree produced by <see cref="PrimellParser.outMethod"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitOutMethod([NotNull] PrimellParser.OutMethodContext context);
 }

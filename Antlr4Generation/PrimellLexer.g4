@@ -13,6 +13,16 @@ FOREACH_RIGHT : ']' ;
 LPAREN : '(' ;
 RPAREN : ')' ;
 
+OUT_INV : '"~' ;
+OUT_DEF : '""' ;
+OUT_STR : '"' ;
+
+OPMOD_POW : '^' ;
+OPMOD_CUT : '`' ;
+OPMOD_FOLD : '!' ;
+
+COMMENT_START : '~~' ;
+
 OP_READ_CODE : ':_' ;
 OP_READ_STR : ':"' ;
 OP_READ_CSV : ':,' ;
@@ -59,13 +69,8 @@ OP_COND : '?' ;
 OP_NEG_COND : '?~' ;
 OP_LIST_DIFF : '\\' ;
 OP_INTERSECT : '&' ;
-OUT_INV : '"~' ;
-OUT_DEF : '""' ;
-OUT_STR : '"' ;
-// OUT_MOD_VERT=65  don't know what this is yet
-OPMOD_POW : '^' ;
-OPMOD_CUT : '`' ;
-OPMOD_FOLD : '!' ;
 
-WS : [ \t\r]+ -> skip ;  // new line \n will be checked for
+WS : [ \t\r]+ -> skip ;
 NL : '\n';
+
+COMMENT : '~~' ~[\r\n]* ;

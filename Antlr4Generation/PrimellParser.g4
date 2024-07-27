@@ -4,9 +4,11 @@ options {
   tokenVocab = PrimellLexer;
 }
 
-program : line? (NL+ line)* EOF;   // there was probably a simpler way to write this grammar rule
+program : line? (NL+ line)* EOF;
 
-line : termSeq outMethod?;
+line : termSeq outputSpec? COMMENT? ;
+
+outputSpec : OUT_INV | OUT_DEF | OUT_STR ;
 
 termSeq : mulTerm+ ;
 
@@ -65,5 +67,5 @@ binaryOp : ASSIGN assignMods
          | baseListBinaryOp opMods (ASSIGN assignMods)?
          ;
 
-outMethod : OUT_INV | OUT_DEF | OUT_STR ;
+
 
