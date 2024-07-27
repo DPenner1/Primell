@@ -10,7 +10,7 @@ Primell is a language that likes prime numbers. So much in fact, that it is the 
 
 *A "serious" version is being planned for which doesn't have source restriction.*
 
-# Why? 
+# Why?
 
 Primell was created as an experiment. I had intended on creating a more serious language down the road and Primell was a learning step. Also, it was amusing to create a programming language that doesn't allow 0 or 1 in its code.
 
@@ -31,7 +31,7 @@ Other familiar data types are only simulated with these. For example:
 
 ## Operators
 
-With most allowed characters being used for numbers, operators are completely made of symbols. Most of them are intuitive though. Really. Especially with stretches of imagination.
+With the Latin alphabet being reserved for use as base-64 numbers, operators are completely made of symbols. Most of them are intuitive though. Really. Especially with stretches of imagination.
 
 Since Primell is not very familiar with how operators work, Primell for the most part executes them in strict left-to-right order. There are 4 exceptions: 
 
@@ -60,7 +60,7 @@ You'll note that the parentheses were not printed to the screen. The outermost p
 
 Note that spaces aren't usually necessary, `(2 3 5)+2_~_>*3` would have been an identical program.
 
-Programs may have multiple lines and the lines are executed from top to bottom in the same manner. Primell doesn't quite have traditional control-flow like other programming languages, but instead does have the capability to incorporate lines of code within another line. Check out the conditional branch operator `?/`. This is actually sufficient for simulating a Turing machine (see the [Examples.md](https://github.com/DPenner1/Primell/blob/main/Examples/Examples.md) file for details).
+Programs may have multiple lines and the lines are executed from top to bottom in the same manner. Primell doesn't quite have traditional control-flow like other programming languages, but instead does have the capability to incorporate lines of code within another line. Check out the conditional branch operator `?/`. This is probably sufficient for simulating a Turing machine (see the [Examples.md](https://github.com/DPenner1/Primell/blob/main/Examples/Examples.md) file for details).
 
 # Running Primell #
 
@@ -74,29 +74,10 @@ For example, included example programs can be run with the following (Linux file
 
     ?run ../Examples/HelloWorld.prime
 
-# Future #
-
-I'm actively working on porting this to F# (as of 2024-07-01). The data types that Primell works with are ideal for a functional language, but it also has mutable variables, so I was looking for a language that was functional, but not too functional. With that, my .NET experience, and the ANTLR C#.NET target, it made F# a natural choice. F# is new to me, but at present I'm fairly confident in getting the data types to work well, though haven't yet started on the parsing/ANTLR stuff.
-
-Potential future features:
-
- - Strings (though only syntactic sugar for it, they will be strictly interpreted as a list of numbers)
- - User-defined operators?
-   - Initial musing based on the minimilistic grammar of Primell is that defining an operator will itself be a list unary operator. The operator will take a list (tuple) of arguments which define the function, though I'll need to figure out how to handle unexpected inputs
-   - First-class operators? Initial musing is this seems much less likely. Primell's all operators work on all data types philosophy creates difficulties here, but maybe if existing operators are applied to a first-class operator, this implicitly creates another operator?
- - Re-work variables (this should come with the F# port). Right now Primell contains 3 pre-defined variable names, this will be expanded.
- - Allowing up to base-64 brings up an interesting programming challenge. The first 62 characters can be standard latin alphanumeric, but then we're out of characters (standard versions of base64 tend to use symbols which I needed to reserve for various operations). I hard-coded uppercase/lowercase thorn for characters 63 & 64, but could these be made configurable, thus having a variable lexer?
- - Create a "serious" version. This will have the following features
-    - No prime numbers and symbols only source restricion
-    - Certain operators that work specifically with primes will be re-defined to be more conventional
-    - At present the plan is still keeping a degree of minimalism. The operators will remain symbols only, but if user defined operators are implemented, this would probably allow non-symbols 
-
 # Notes on the source code #
 
 Don't look at it. It's painful. If you choose not to heed that warning, read on. Though I guess that was implicit.
 
-- Based on having originally used Antlr 4.7 and .NET Framework 4.x, I think I originally coded this project in 2017. In order to work on my current Linux .NET Core set-up, I had to upgrade both Antlr and .NET. But irritatingly, I lost the grammar file and had to reconstruct it by looking at the generated code. There might be some rough edges, but at least that meant I refamiliarized myself with the solution and am actually motivated to clean up the rough edges.
-- The "PL" prefix used everywhere stands for "Primell Language". The PLNumber class was adapted from a BigRational class I had previously developed. However, it did not support infinity, NaN or negative zero like PLNumber does, so there may be bugs in there.
-- On naming, I had originally simply called the language Prime, and that is evident in source code. Last minute change to avoid potential trademark issue with HP Prime. Primell was derived as Prime List Language.
-- The infinite lists were coded in a hurry. There was probably a framework class that could have helped. The port to F# will hopefully resolve this. 
+- This was originally coded around 2017 in a C# solution. Seven years later, I came back to it and ported it to F#, mainly for better infinite sequence support and to bring Primell in a more functional direction (though the mutable assignment function in Primell proved far harder than anticipated).
+- On naming, I had originally simply called the language Prime, but changed to avoid potential trademark issue with HP Prime. Primell was derived as Prime List Language.
 - I opted not to add the Antlr4 generated files to the `.gitignore` to allow for users to run the project without self-generating the files.
