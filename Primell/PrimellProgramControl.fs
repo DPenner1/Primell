@@ -13,12 +13,10 @@ type PrimellProgramControl(settings: PrimellConfiguration, lines: list<PrimellPa
   // Might consider changing the part of Primell requiring this
   member val LastOperationWasAssignment = false with get, set
 
-  member this.GetVariableValue(name: string) = 
+  member this.GetVariable(name: string) = 
     if not <| this.Variables.ContainsKey(name) then
       this.Variables.Add(name, PrimellList(Seq.empty, ExtendedBigRational.Zero |> PNumber, Variable name)) |> ignore
-
     this.Variables[name]
-  
 
   member this.SetVariable(name: string, newValue: PObject) = 
     if this.Variables.ContainsKey name |> not then 

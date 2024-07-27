@@ -72,7 +72,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
       if operationLib.NullaryOperators.ContainsKey(opText) then
         operationLib.NullaryOperators[opText]
       else  // implicitly assumed to be a variable
-        fun () -> control.GetVariableValue(opText)
+        fun () -> control.GetVariable(opText)
 
     operationLib.ApplyNullaryOperation operator []
           
@@ -159,6 +159,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
     match refObj.Reference with
     | Variable name ->
         control.SetVariable(name, (this.GetReplacementObject refObj refIndex newValue).WithReference(Variable name))
+        control.GetVariable name
     | Reference (ro, ri) ->  // this recursion step feels too easy for this data structure, could be wrong
         this.ReplaceReference ro ri ((this.GetReplacementObject refObj refIndex newValue).WithReference(Reference(ro, ri)))  
     | Void -> PrimellProgrammerProblemException "This method shouldn't be called with Void reference" |> raise
@@ -166,10 +167,11 @@ type PrimellVisitor(control: PrimellProgramControl) =
   // called when left is either PAtom, empty list, or manually per operation modifier
   member private this.PerformAtomicAssign (left: PObject, right: PObject) =
     match left.Reference with
-    | Void -> () // no action needed
-    | Variable name -> control.SetVariable(name, right.WithReference(Variable name))
+    | Void -> right // no action needed
+    | Variable name -> 
+        control.SetVariable(name, right.WithReference(Variable name))
+        control.GetVariable name
     | Reference (refObj, refIndex) -> this.ReplaceReference refObj refIndex right
-    right
 
   member private this.PerformListAssign (left: PList, right: PObject, assignMods: OperationModifier list) =
     let newValue = 
@@ -190,10 +192,11 @@ type PrimellVisitor(control: PrimellProgramControl) =
       | _ -> PrimellProgrammerProblemException "not possible" |> raise
     
     match left.Reference with
-    | Void -> () // no action needed
-    | Variable name -> control.SetVariable(name, newValue.WithReference(Variable name))
+    | Void -> newValue // no action needed
+    | Variable name -> 
+        control.SetVariable(name, newValue.WithReference(Variable name))
+        control.GetVariable name
     | Reference (refObj, refIndex) -> this.ReplaceReference refObj refIndex newValue
-    newValue
 
   member private this.PerformAssign  (left: PObject, right: PObject, assignMods: OperationModifier list): PObject =
     (* logic from original mutable C# version:
