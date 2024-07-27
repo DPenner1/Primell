@@ -89,6 +89,19 @@ type PrimellVisitor(control: PrimellProgramControl) =
     
     operationLib.ApplyUnaryListOperation (this.Visit(context.mulTerm())) operator []
 
+  (*
+    interesting issue came up with previous implementation of referencing simply being an object and an index *number* Consider:
+    x = (2 3 5 7)
+    x@(2 3) = (11 13)
+
+    intuitively, you want this to result in x = (2 3 11 13). However with a singular index number and immutability, this was
+    done in two steps, first producing (2 3 11 7), then the reference with index 3 necessarily has a stale value and overwrites
+    to (2 3 5 13)... so we need to make assignments to the referenced object all at once... but with infinite lists how do we know
+    that we have all the references (eg think x@(2..inf)), so we can't really do it one at a time that way
+    so instead of a singular index number, we use the whole index object at once, eg. (2 3) or (2..inf) per the examples, which should
+    allow us to defer evaluating an infinite list on assign... thats going to be tricky
+  *)
+
   member private this.GetReplacementObjectWithListIndex(cValue: PObject)(cListIndex: PList)(newValue: PObject) =
     // at least in the base case, cListIndex.Length >= length of newValue (which itself should at least be 2 items)
     // but yes, the recursion step on this one scares me

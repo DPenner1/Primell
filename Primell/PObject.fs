@@ -4,17 +4,18 @@ exception PrimellProgrammerProblemException of string
 
 [<AbstractClass>]
 type PrimellObject internal (?refersTo: Reference) =
-  // these string ones are (probably) old and no longer required
-  abstract member ToString: System.Collections.Generic.IDictionary<string, PrimellObject> -> string
-  default this.ToString(variables) =
-    this.ToString()
 
-  // I kinda don't like this: In mutable paradigm, this would just be implemented right here,
+  // I really don't like this one: In mutable paradigm, this would just be implemented right here.
   // But in immutable, it effectively requires a copy constructor to get the object with a reference
-  // Forcing all that inherit this to implement what is effectively a mechanical detail
+  // and in principle, without having reference to downstream types, this forces them
+  // to implement what is effectively a mechanical parsing detail
   abstract member WithReference: Reference -> PrimellObject
 
   member val Reference = defaultArg refersTo Void with get
+
+// references are a way to deal with indexing mutability (and is more of an implementation detail instead of a object within Primell)
+// so if you have a variable x, and index it at index i (x@i), the parser simply generates a reference with values x and i, 
+// figuring assignments out based on that later. References can also reference other references [citation needed]
 
 and Reference =  // TODO - naming, not sure i like type and one of the options being named the same
   | Variable of string
@@ -29,39 +30,4 @@ type PrimellAtom(?refersTo: Reference) =  // in future there might be more atomi
 
 type PAtom = PrimellAtom
 
-(* A functional approach to reference maybe? It's hard to avoid, because Primell does have mutable variables. Consider the program:
 
-x = (y 3 5)
-y = 2
-x
-
-  that last line could print (2 3 5) and its hard to do that without some indirection
-  I can't make list mutable: I've committed to seqs as a design choice knowing the variable mutability would be tough,
-  but I could make the contents of y be a reference to something mutable
-
-  But what if we wanted to evaluate? if immediately evaluated, that would () = (() 3 5), 
-  Re-reading old comments, Primell was immediately evaluated, but the initial x = () evaluation didn't prevent () 
-  from being assigned and referenced -> so that's the re-implementation for now
-*)
-
-// note: its actually been a bit cumbersome having indirection for mutability,
-//       might try to directly store the object boxed here mutably
-(*
-type PrimellVariable(name: string, capturedValue: PObject) =
-  inherit PObject()
-
-  member val Name = name with get
-  member val CapturedValue = capturedValue with get
-
-  override this.ToString() = this.CapturedValue.ToString()
-    
-  override this.ToString(variables) =
-    if variables.ContainsKey(name) then
-      variables[name].ToString()
-    else "()"  // just hack upon hack now (because we've boxed we've not attempted to retrieve the thing...)
-
-type PVariable = PrimellVariable
-*)
-// references are a way to deal with indexing mutability (and is more of an implementation detail instead of a object within Primell)
-// so if you have a variable x, and index it at index i (x@i), the parser simply generates a reference with values x and i, 
-// figuring assignments out based on that later. References can also reference other references [citation needed]
