@@ -3,17 +3,29 @@ namespace dpenner1.Primell
 exception PrimellProgrammerProblemException of string
 
 [<AbstractClass>]
-type PrimellObject() =
-  // these are (probably) necessary for keeping track of stuff for assignment & indexing 
+type PrimellObject internal (?refersTo: Reference) =
+  // these string ones are (probably) old and no longer required
   abstract member ToString: System.Collections.Generic.IDictionary<string, PrimellObject> -> string
   default this.ToString(variables) =
     this.ToString()
 
+  // I kinda don't like this: In mutable paradigm, this would just be implemented right here,
+  // But in immutable, it effectively requires a copy constructor to get the object with a reference
+  // Forcing all that inherit this to implement what is effectively a mechanical detail
+  abstract member WithReference: Reference -> PrimellObject
+
+  member val Reference = defaultArg refersTo Void with get
+
+and Reference =  // TODO - naming, not sure i like type and one of the options being named the same
+  | Variable of string
+  | Reference of ReferencedObject: PrimellObject * ReferenceIndex: PrimellObject
+  | Void   // I could have gone without this and then done option<Reference>, but this feels like it better reflects the intent
+
 type PObject = PrimellObject
 
 [<AbstractClass>]
-type PrimellAtom() =  // in future there might be more atomic items, in particular first-class operators
-  inherit PObject()
+type PrimellAtom(?refersTo: Reference) =  // in future there might be more atomic items, in particular first-class operators
+  inherit PObject(?refersTo = refersTo)
 
 type PAtom = PrimellAtom
 
@@ -34,6 +46,7 @@ x
 
 // note: its actually been a bit cumbersome having indirection for mutability,
 //       might try to directly store the object boxed here mutably
+(*
 type PrimellVariable(name: string, capturedValue: PObject) =
   inherit PObject()
 
@@ -48,7 +61,7 @@ type PrimellVariable(name: string, capturedValue: PObject) =
     else "()"  // just hack upon hack now (because we've boxed we've not attempted to retrieve the thing...)
 
 type PVariable = PrimellVariable
-
+*)
 // references are a way to deal with indexing mutability (and is more of an implementation detail instead of a object within Primell)
 // so if you have a variable x, and index it at index i (x@i), the parser simply generates a reference with values x and i, 
 // figuring assignments out based on that later. References can also reference other references [citation needed]

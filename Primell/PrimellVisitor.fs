@@ -72,7 +72,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
       if operationLib.NullaryOperators.ContainsKey(opText) then
         operationLib.NullaryOperators[opText]
       else  // implicitly assumed to be a variable
-        fun () -> PVariable(opText, control.GetVariableValue(opText))
+        fun () -> control.GetVariableValue(opText)
 
     operationLib.ApplyNullaryOperation operator []
           
@@ -89,12 +89,12 @@ type PrimellVisitor(control: PrimellProgramControl) =
     
     operationLib.ApplyUnaryListOperation (this.Visit(context.mulTerm())) operator []
 
-  member private this.GetReplacedCapturedObjectListIndex(cValue: PObject)(cListIndex: PList)(newValue: PObject) =
+  member private this.GetReplacementObjectWithListIndex(cValue: PObject)(cListIndex: PList)(newValue: PObject) =
     // at least in the base case, cListIndex.Length >= length of newValue (which itself should at least be 2 items)
     // but yes, the recursion step on this one scares me
     match cValue with 
     | (:? PAtom) -> 
-        this.GetReplacedCapturedObjectListIndex (Seq.singleton cValue |> PList) cListIndex newValue
+        this.GetReplacementObjectWithListIndex (Seq.singleton cValue |> PList) cListIndex newValue
     | (:? PList as cList) ->
         match newValue with
         | :? PAtom ->
@@ -121,7 +121,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
     | _ -> System.NotImplementedException "nested ref/var" |> raise
     
 
-  member private this.GetReplacedCapturedObject(cValue: PObject)(cValueIndex: PNumber)(newValue: PObject) =
+  member private this.GetReplacementObjectWithNumericIndex(cValue: PObject)(cValueIndex: PNumber)(newValue: PObject) =
     match cValue with
     | :? PAtom ->
         match round cValueIndex.Value with
@@ -146,27 +146,55 @@ type PrimellVisitor(control: PrimellProgramControl) =
     | :? PList as l ->
         l |> Seq.mapi (fun i x -> if i = GetInt cValueIndex then newValue else x) |> PList :> PObject
     | _ -> System.NotImplementedException "nested ref/var" |> raise
+
+  member private this.GetReplacementObject(cValue: PObject)(cValueIndex: PObject)(newValue: PObject) =
+    match cValueIndex with
+    | :? PNumber as n -> this.GetReplacementObjectWithNumericIndex cValue n newValue
+    | :? PList as l ->  this.GetReplacementObjectWithListIndex cValue l newValue
+    | _ -> PrimellProgrammerProblemException "not yet possible" |> raise
   
-  member private this.ReplaceReference (pref: PReference) (newValue: PObject) =
+  member private this.ReplaceReference (refObj: PObject) (refIndex: PObject) (newValue: PObject) =
     // the high level thing for base case is referencedObject@referenceIndex = newValue
-    // at least in base case, assign mechanics is that length of newValue does not exceed length of referenceIndex
-    match pref.ReferenceIndex with
-    | (:? PNumber as nIndex) ->  // the "simple" case
-        match pref.ReferencedObject with
-        | :? PVariable as v ->
-            control.SetVariable(v.Name, this.GetReplacedCapturedObject v.CapturedValue nIndex newValue)
-        | :? PReference as r ->
-            this.ReplaceReference r (this.GetReplacedCapturedObject r.CapturedValue nIndex newValue)  // this recursion feels too easy for this data structure, could be wrong
-        | _ -> PrimellProgrammerProblemException "Non ref/var reference" |> raise
-    | (:? PList as lIndex) -> // can't recursively one-by-one call, we run into that issue where we don't assign all at once
-        match pref.ReferencedObject with
-        | :? PVariable as v ->
-            control.SetVariable(v.Name, this.GetReplacedCapturedObjectListIndex v.CapturedValue lIndex newValue)
-        | :? PReference as r ->
-            this.ReplaceReference r (this.GetReplacedCapturedObjectListIndex r.CapturedValue lIndex newValue)  // this recursion feels too easy for this data structure, could be wrong
-        | _ -> PrimellProgrammerProblemException "Non ref/var reference" |> raise
-    | _ -> System.NotImplementedException "I'm no miracle worker" |> raise
-            
+    // at least in non-recursive case, assign mechanics is such that length of newValue does not exceed length of referenceIndex
+    match refObj.Reference with
+    | Variable name ->
+        control.SetVariable(name, (this.GetReplacementObject refObj refIndex newValue).WithReference(Variable name))
+    | Reference (ro, ri) ->  // this recursion step feels too easy for this data structure, could be wrong
+        this.ReplaceReference ro ri ((this.GetReplacementObject refObj refIndex newValue).WithReference(Reference(ro, ri)))  
+    | Void -> PrimellProgrammerProblemException "This method shouldn't be called with Void reference" |> raise
+
+  // called when left is either PAtom, empty list, or manually per operation modifier
+  member private this.PerformAtomicAssign (left: PObject, right: PObject) =
+    match left.Reference with
+    | Void -> () // no action needed
+    | Variable name -> control.SetVariable(name, right.WithReference(Variable name))
+    | Reference (refObj, refIndex) -> this.ReplaceReference refObj refIndex right
+    right
+
+  member private this.PerformListAssign (left: PList, right: PObject, assignMods: OperationModifier list) =
+    let newValue = 
+      match right with
+      | :? PAtom ->
+            let newLvalue = left |> Seq.map(fun x -> this.PerformAssign(x, right, assignMods))
+            newLvalue |> PList :> PObject   
+      | :? PList as l when l.IsEmpty ->  
+          let newLvalue = left |> Seq.map(fun x -> this.PerformAssign(x, right, assignMods))
+          newLvalue |> PList :> PObject   
+      | :? PList as l ->
+          let temp = (left, l) ||> Seq.zip |> Seq.map(fun x -> this.PerformAssign(fst x, snd x, assignMods))
+          let real =  // TODO - more problems with infinite lists
+            if left.Length.Value > l.Length.Value then 
+              Seq.append temp (left |> Seq.skip (Seq.length l))
+            else temp
+          real |> PList :> PObject 
+      | _ -> PrimellProgrammerProblemException "not possible" |> raise
+    
+    match left.Reference with
+    | Void -> () // no action needed
+    | Variable name -> control.SetVariable(name, newValue.WithReference(Variable name))
+    | Reference (refObj, refIndex) -> this.ReplaceReference refObj refIndex newValue
+    newValue
+
   member private this.PerformAssign  (left: PObject, right: PObject, assignMods: OperationModifier list): PObject =
     (* logic from original mutable C# version:
        if (left is empty) || (left is number) || (assignOptions has modifier for this)
@@ -198,48 +226,15 @@ type PrimellVisitor(control: PrimellProgramControl) =
     // but once values are assigned, you need to make those assignments stick (in C# mutable, they would just be modified in place)
     // In F# immutable Primell, we need to recurse up the reference chain (which isn't the same as the nested list data structure!)
 
-    match right with // unbox right side, its the left side that'll get sticky
-    | :? PVariable as v -> this.PerformAssign(left, v.CapturedValue, assignMods)
-    | :? PReference as r -> this.PerformAssign(left, r.CapturedValue, assignMods)
-    | _ ->
-      if assignMods |> List.contains Power then
-        match left with 
-        | :? PVariable as v -> control.SetVariable(v.Name, this.PerformAssign(v.CapturedValue, right, assignMods))
-        | :? PReference as r -> this.ReplaceReference r (this.PerformAssign(r.CapturedValue, right, assignMods))
-        | _ -> ()
-        right
-      else
-        match left, right with
-        | :? PVariable as pvar, _ ->
-            let newValue = this.PerformAssign(pvar.CapturedValue, right, assignMods)
-            control.SetVariable(pvar.Name, newValue)
-            newValue
-        | :? PReference as pref, _ -> 
-            let newValue = this.PerformAssign(pref.CapturedValue, right, assignMods)
-            this.ReplaceReference pref newValue
-            newValue
-        | :? PAtom, _ ->
-            right
-        | :? PList as l, _ when l.IsEmpty ->
-            right
-        | :? PList as l, :? PAtom ->
-            let newLvalue = l |> Seq.map(fun x -> this.PerformAssign(x, right, assignMods))
-            newLvalue |> PList :> PObject   
-        | (:? PList as l1), (:? PList as l2) when l2.IsEmpty ->  
-            let newLvalue = l1 |> Seq.map(fun x -> this.PerformAssign(x, right, assignMods))
-            newLvalue |> PList :> PObject   
-        | (:? PList as l1), (:? PList as l2) ->
-            let temp = (l1, l2) ||> Seq.zip |> Seq.map(fun x -> this.PerformAssign(fst x, snd x, assignMods))
-            let real =  // TODO - more problems with infinite lists
-              if l1.Length.Value > l2.Length.Value then 
-                Seq.append temp (l1 |> Seq.skip (Seq.length l2))
-              else temp
-            real |> PList :> PObject 
-        | _ -> PrimellProgrammerProblemException("not possible") |> raise
+    match left, (assignMods |> List.contains Power) with
+    | _, true | :? PAtom, _ ->
+        this.PerformAtomicAssign(left, right)
+    | :? PList as l, _ when l.IsEmpty ->
+        this.PerformAtomicAssign(left, right)
+    | :? PList as l, _ ->
+        this.PerformListAssign(l, right, assignMods)
+    | _ -> PrimellProgrammerProblemException("not possible") |> raise
 
-    // todo - in theory the assign should not just return the bare new value, 
-    //        but the PVariable or reference with the new capturedObject
-    //        
 
   member this.ConditionalBranch (left: PObject) (right: PObject) (negate: bool) (isForward: bool) =
       if operationLib.IsTruth(left, control.Settings.TruthDefinition) <> negate then
@@ -268,7 +263,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
       elif context.baseListBinaryOp() |> isNull |> not then
         let opText = context.baseListBinaryOp().GetText()
         if opText = "@" then  // index needs special handling for the whole reference-assign
-          operationLib.Index left right
+          (operationLib.Index left right).WithReference(Reference(left, right))
         elif opText.StartsWith "?" then  // TODO - conditional stuff needs to not execute both branches
           if opText.Contains "/" || opText.Contains("\\") then
             this.ConditionalBranch left right (opText.Contains "~") (opText.Contains "/")

@@ -33,14 +33,6 @@ type PrimellRunner() =
 
     match result with
     | :? PList as l when not l.IsEmpty -> temp.Substring(1, temp.Length - 2)  // trim off outer parentheses
-    | :? PVariable as v ->
-        match v.CapturedValue with
-        | :? PList as l when not l.IsEmpty -> temp.Substring(1, temp.Length - 2)  // trim off outer parentheses
-        | _ -> temp
-    | :? PReference as ref ->
-        match ref.CapturedValue with
-        | :? PList as l when not l.IsEmpty -> temp.Substring(1, temp.Length - 2)  // trim off outer parentheses
-        | _ -> temp
     | _ -> temp
   
 

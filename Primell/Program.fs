@@ -4,11 +4,11 @@ let runner = PrimellRunner()
 
 //let results, control = runner.RunFromFile { PrimellConfiguration.PrimellDefault with SourceFilePath = "./../../../../Examples/Turing.pll" }
 
-let results, control = runner.Run ", = (2 3 5)\n, = (7 11 13)\n," PrimellConfiguration.PrimellDefault
+let results, control = runner.Run ", = (2 3 5 7)\n,@(2 3) = (11 13)\n," PrimellConfiguration.PrimellDefault
 
 //let results, control = runner.Run ",@2 = 5\n," PrimellConfiguration.PrimellDefault
 
-printfn "%s" <| runner.GetResultString (List.last results |> fst) control
+//printfn "%s" <| runner.GetResultString (List.last results |> fst) control
 
 
 (* Potentially useful (but out of date) simplification of the objects

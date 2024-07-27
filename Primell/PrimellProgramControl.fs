@@ -15,7 +15,7 @@ type PrimellProgramControl(settings: PrimellConfiguration, lines: list<PrimellPa
 
   member this.GetVariableValue(name: string) = 
     if not <| this.Variables.ContainsKey(name) then
-      this.Variables.Add(name, PList.Empty) |> ignore
+      this.Variables.Add(name, PrimellList(Seq.empty, ExtendedBigRational.Zero |> PNumber, Variable name)) |> ignore
 
     this.Variables[name]
   

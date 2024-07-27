@@ -2,8 +2,8 @@ namespace dpenner1.Primell
 
 [<Sealed>]
 // Ok a bit weird to call the seq a list, but conceptually, that's how I view the Primell object, as lists
-type PrimellList(sequence: seq<PObject>, ?length: PNumber) = 
-  inherit PObject()
+type PrimellList(sequence: seq<PObject>, ?length: PNumber, ?refersTo: Reference) = 
+  inherit PObject(?refersTo = refersTo)
   let main = sequence  // star
   let mutable length = length
   // TODO - should guard against negative lengths
@@ -68,17 +68,21 @@ type PrimellList(sequence: seq<PObject>, ?length: PNumber) =
 
   member this.Index(index: PNumber) =
     match ExtendedBigRational.Round index.Value with
-    | NaN -> PrimellList.Empty :> PObject  // Makes sense, trying to index with NaN means you don't get anything
-    | Infinity _ -> PrimellList.Empty :> PObject  // I don't like this one... For infinite lists, in theory there is something way out there, but it's undefined
+    | NaN ->  // Makes sense, trying to index with NaN means you don't get anything
+        PrimellList.Empty :> PObject  
+    | Infinity _ -> 
+        // I don't like this one... in theory there can be something way out there, but in general, it's undefined
+        PrimellList.Empty :> PObject 
     | Rational r ->
           if r.Sign = -1 then  // index from end
             if this.IsGreaterOrEqualThanLength(int r.Numerator - 1) then
               PrimellList.Empty :> PObject
-            else this.Reverse() |> Seq.skip (int r.Numerator - 1) |> Seq.head
+            else 
+              this.Reverse() |> Seq.skip (int r.Numerator - 1) |> Seq.head
           else
             let effectiveIndex =  r.Numerator |> BigRational |> Rational
             if this.IsGreaterOrEqualThanLength(int r.Numerator) then 
-              PrimellList.Empty :> PObject
+              PrimellList.Empty :> PObject 
             else
               main |> Seq.skip (int r.Numerator) |> Seq.head
 
@@ -88,6 +92,8 @@ type PrimellList(sequence: seq<PObject>, ?length: PNumber) =
 
   override this.ToString(variables) =  // TODO - surely there's a cleaner way than the nested concat abomination I came up with
     String.concat "" ["("; String.concat " " (main |> Seq.map(fun obj -> obj.ToString(variables))); ")"]
+
+  override this.WithReference(ref) = PrimellList(main, ?length = length, ?refersTo = Some ref)
 
 type PList = PrimellList  // abbreviation for sanity
 
@@ -104,6 +110,7 @@ type PList = PrimellList  // abbreviation for sanity
   so instead of a singular index number, we use the whole index object at once, eg. (2 3) or (2..inf) per the examples, which should
   allow us to defer evaluating an infinite list on assign... thats going to be tricky
 *)
+(*
 type PrimellReference(referencedObject: PObject, referenceIndex: PObject, capturedValue: PObject) =
   inherit PObject()
 
@@ -137,3 +144,4 @@ type PrimellReference(referencedObject: PObject, referenceIndex: PObject, captur
 
 
 type PReference = PrimellReference
+*)
