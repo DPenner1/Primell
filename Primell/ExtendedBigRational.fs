@@ -170,10 +170,10 @@ type ExtendedBigRational =
 
         // behaviour of NaN is weird with min/max. I think its correct to return the number.
         // with Max/Min you're asking which between a number and NaN which one is the max/min number, which can't be NaN by definition
-        static member Max left right =
+        static member Max (left, right) =
           if left > right then left else right
 
-        static member Min left right =
+        static member Min (left, right) =
           if left < right then left else right
         
         static member Range left right: seq<ExtendedBigRational> =
