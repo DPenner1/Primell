@@ -38,22 +38,9 @@ type PrimellRunner() =
 
   member this.ExecuteLine (lineText: string) (control: PrimellProgramControl) =
 
-    let visitor = PrimellVisitor control
-    let stream = AntlrInputStream lineText
-    let lexer = PrimellLexer stream
-    let tokens = CommonTokenStream lexer
-    let parser = PrimellParser tokens
-    parser.BuildParseTree <- true
+    let parser = PrimellVisitor.GetParser lineText
+    PrimellVisitor(control).Visit(parser.line())
 
-    visitor.Visit(parser.line())
-
-  // TODO - for now I'm leaving grammar intact due to needing to compare results to original C#
-  //      - But Primell executes line by line, I don't need the program + line stuff,
-  //      - I can just create a new parser for each line (passing in an ever changing control)
-   
-  //member this.RunLines allLineContexts control =
-    
-// TODO also this method now has a silly return type
   member this.Run (program: string) (settings: PrimellConfiguration) =
     let lines = program.Split('\n', StringSplitOptions.TrimEntries ||| StringSplitOptions.RemoveEmptyEntries)
 
@@ -64,8 +51,7 @@ type PrimellRunner() =
     control.SetVariable(",,,,,", PList(Seq.initInfinite(fun _ -> ExtendedBigRational.Zero |> PNumber :> PObject), Infinity Positive |> PNumber))
 
     // resetting LastOperationWasAssignment here is a temporary hack
-    // also this has just been cobbled together over time, definitely needs cleanup
-
+    // also this has just been cobbled together over time, this could definitely be cleaner
     for i in 0..(control.LineResults.Length - 1) do
       control.CurrentLine <- i
       let result, doOutput = this.ExecuteLine control.LineResults[i].Text control, not control.LastOperationWasAssignment

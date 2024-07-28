@@ -6,6 +6,8 @@ IDENTIFIER : [,]+ ;
 
 RTL : '$' ;
 
+CONCAT : ';' ;
+
 ASSIGN : '=' ;
 
 FOREACH_LEFT : '[' ;
@@ -53,10 +55,6 @@ OP_BIN_AND : '`&' ;
 OP_BIN_OR : '`|' ;
 OP_BIN_XOR : '`^' ;
 OP_BIN_NOT : '`~' ;
-OP_LSHIFT : '<<' ;
-OP_RSHIFT : '>>' ;
-OP_LROTATE : '<<<' ;
-OP_RROTATE : '>>>' ;
 OP_INDEX : '@' ;
 OP_INDEX_OF : '@#' ;
 OP_FILT : '*?';
@@ -69,6 +67,7 @@ OP_COND : '?' ;
 OP_NEG_COND : '?~' ;
 OP_LIST_DIFF : '\\' ;
 OP_INTERSECT : '&' ;
+OP_CONS : '::' ;
 
 WS : [ \t\r\n]+ -> skip ;
 

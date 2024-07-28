@@ -50,6 +50,12 @@ public interface IPrimellParserVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitTermSeq([NotNull] PrimellParser.TermSeqContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="PrimellParser.concatMulterm"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitConcatMulterm([NotNull] PrimellParser.ConcatMultermContext context);
+	/// <summary>
 	/// Visit a parse tree produced by the <c>listUnaryOperation</c>
 	/// labeled alternative in <see cref="PrimellParser.mulTerm"/>.
 	/// </summary>

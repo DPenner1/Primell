@@ -8,7 +8,9 @@ line : termSeq outputSpec? COMMENT? EOF;
 
 outputSpec : OUT_INV | OUT_DEF | OUT_STR ;
 
-termSeq : mulTerm+ ;
+termSeq : concatMulterm+ ;
+
+concatMulterm : CONCAT? mulTerm ;
 
 mulTerm: atomTerm                                               #atom
        | mulTerm numUnaryOp                                     #numericUnaryOperation 
@@ -43,7 +45,6 @@ baseListUnaryOp : OP_HEAD | OP_TAIL | OP_DISTINCT | OP_REV | OP_FLATTEN | OP_SOR
 
 baseListBinaryOp : OP_COND | OP_NEG_COND | OP_INDEX | OP_INDEX_OF
                  | OP_JUMP | OP_JUMP_BACK | OP_NEG_JUMP | OP_NEG_JUMP_BACK
-                 | OP_LSHIFT | OP_RSHIFT | OP_LROTATE | OP_RROTATE
                  | OP_LIST_DIFF | OP_INTERSECT
                  ;
 

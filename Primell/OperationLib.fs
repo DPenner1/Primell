@@ -33,7 +33,7 @@ type OperationLib(control: PrimellProgramControl) =
         
     member this.NullaryOperators: IDictionary<string, unit->PObject> =
       dict [":_", fun () -> control.GetCodeInput()
-            ":\"", fun () -> control.GetStringInput()  // symbol to change
+            ":\"", fun () -> control.GetStringInput()
             ":,", fun () -> control.GetCsvInput()
            ]
 
@@ -66,6 +66,10 @@ type OperationLib(control: PrimellProgramControl) =
       dict ["\\",  fun (left: PrimellList, right: PrimellList) -> PrimellList.Empty
            ]
  
+    // TODO - none implemented yet
+    member this.NumericListOperators: IDictionary<string, PNumber*PList->PObject> = 
+      dict ["::",  fun (left: PNumber, right: PrimellList) -> PrimellList.Empty
+           ]
 
     // opMods for consistency, but I don't think Primell will have any need for opMods on nullary operators
     member this.ApplyNullaryOperation operator opMods : PObject =

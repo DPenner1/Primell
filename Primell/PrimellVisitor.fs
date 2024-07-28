@@ -13,13 +13,21 @@ type PrimellVisitor(control: PrimellProgramControl) =
   let currentForEach = new Stack<PObject>()
   let operationLib = new OperationLib(control)
 
+  // TODO - get rid of this
   let GetInt(n: PNumber) = 
     match n.Value with
     | Rational r when r >= BigRational.Zero -> (round r).Numerator |> int
     | _ -> System.NotImplementedException("Index only with positive finite values for now") |> raise
   
-   // very temporary, clearly things are going poorly
+   
   
+  static member GetParser (line: string) =
+    let stream = AntlrInputStream line
+    let lexer = PrimellLexer stream
+    let tokens = CommonTokenStream lexer
+    let parser = PrimellParser tokens
+    parser.BuildParseTree <- true
+    parser
     
   static member private Normalize (pobj: PObject) =
     match pobj with   // couldn't use when Seq.length = 1 as that potentially hangs on infinite sequence
@@ -34,12 +42,17 @@ type PrimellVisitor(control: PrimellProgramControl) =
   override this.VisitEmptyList context = PList.Empty
 
   override this.VisitTermSeq context =
-    let mutable retval = PList.Empty
-    for termContext in context.mulTerm() do
-      let pobj = this.Visit termContext
-      retval <- retval.Append pobj
-        
-    retval |> PrimellVisitor.Normalize
+
+    (Seq.empty, context.concatMulterm()) ||> Seq.fold(fun retval concatMulTerm ->
+      match concatMulTerm.CONCAT(), this.Visit(concatMulTerm.mulTerm()) with
+      | null, (_ as pobj) ->
+          Seq.append retval (Seq.singleton pobj)
+      | _, (:? PAtom as a) -> 
+          Seq.append retval (Seq.singleton a)
+      | _, (:? PList as l) ->
+          Seq.append retval l
+      | _ -> PrimellProgrammerProblemException "not possible" |> raise
+    ) |> PList |> PrimellVisitor.Normalize
 
   override this.VisitInteger context =
     let text = context.GetText()
@@ -249,12 +262,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
             | Rational r ->
                 let offset = ((round r).Numerator |> int) * (if isForward then 1 else -1)
 
-                // TODO - it's a little awkward to have this here, as runner also has simlar code
-                let stream = AntlrInputStream control.LineResults[control.CurrentLine + offset].Text
-                let lexer = PrimellLexer stream
-                let tokens = CommonTokenStream lexer
-                let parser = PrimellParser tokens
-                parser.BuildParseTree <- true
+                let parser = PrimellVisitor.GetParser control.LineResults[control.CurrentLine + offset].Text
                 PrimellVisitor(control).VisitLine(parser.line())
 
         | :? PList as l ->
