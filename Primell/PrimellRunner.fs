@@ -51,8 +51,8 @@ type PrimellRunner() =
     runnerVariables |> Seq.iter(fun kvp -> control.Variables[kvp.Key] <- kvp.Value)  // add in saved variables
 
     // pre-initialized variables
-    control.SetVariable(",,,", PList(Seq.initInfinite(fun _ -> PList.Empty :> PObject), Infinity Positive |> PNumber))
-    control.SetVariable(",,,,,", PList(Seq.initInfinite(fun _ -> ExtendedBigRational.Zero |> PNumber :> PObject), Infinity Positive |> PNumber))
+    control.CreateNewVariable(",,,", PList(Seq.initInfinite(fun _ -> PList.Empty :> PObject), Infinity Positive |> PNumber))
+    control.CreateNewVariable(",,,,,", PList(Seq.initInfinite(fun _ -> ExtendedBigRational.Zero |> PNumber :> PObject), Infinity Positive |> PNumber))
 
     // resetting LastOperationWasAssignment here is a temporary hack
     // also this has just been cobbled together over time, this could definitely be cleaner
@@ -127,9 +127,10 @@ type PrimellRunner() =
         this.PromptForInput settings echo (if echo then "Program line executed." else "")
     with
     | :? Antlr4.Runtime.Misc.ParseCanceledException as ex -> this.PromptForInput settings echo $"Invalid syntax: {ex.Message}"
+    | :? NotImplementedException as ex-> this.PromptForInput settings echo $"Primell's programmer hasn't implemented that yet: {ex.Message}"
     | PrimellInvalidSyntaxException msg -> this.PromptForInput settings echo $"Invalid Syntax: {msg}"
     | PrimellProgrammerProblemException _ -> this.PromptForInput settings echo "Error in Primell's programmer's brain"
-    | :? NotImplementedException as ex-> this.PromptForInput settings echo $"Primell's programmer hasn't implemented that yet: {ex.Message}"
+    | NonPrimeDectectionException _ -> printfn "NON-PRIME DETECTED!"  // purposeful exit
     
   
   member private this.HelpSpiel() =

@@ -3,7 +3,8 @@
 let runner = PrimellRunner()
 runner.InteractiveMode()
 
-//let control = runner.Run ", = (,, 3 5)\n,, = 2\n,\n,," PrimellConfiguration.PrimellDefault
+//let control = runner.Run "(2 (3 5) 7) = 11" PrimellConfiguration.PrimellDefault
+//let control = runner.Run "5/0" PrimellConfiguration.Listell
 
 //printfn "%s" <| runner.GetResultString (List.last results |> fst) control
 

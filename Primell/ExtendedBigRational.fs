@@ -96,10 +96,15 @@ type ExtendedBigRational =
           match left, right with
           | NaN, _ | _, NaN -> NaN
           | Infinity _, Rational r | Rational r, Infinity _ when r.IsZero -> NaN
+          | Rational r, Infinity _ | Rational r, Infinity _ when r.IsZero -> NaN
           | Infinity Positive, _ when right.Sign.IsMinusOne -> Infinity Negative
           | Infinity Positive, _ when right.Sign.IsOne-> Infinity Positive
           | Infinity Negative, _ when right.Sign.IsMinusOne -> Infinity Positive
           | Infinity Negative, _ when right.Sign.IsOne -> Infinity Negative
+          | _, Infinity Positive when left.Sign.IsMinusOne -> Infinity Negative
+          | _, Infinity Positive when left.Sign.IsOne-> Infinity Positive
+          | _, Infinity Negative when left.Sign.IsMinusOne -> Infinity Positive
+          | _, Infinity Negative when left.Sign.IsOne -> Infinity Negative
           | Rational left', Rational right' -> left' * right' |> Rational
           | _ -> failwith "Shouldn't be possible"
 

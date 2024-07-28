@@ -4,7 +4,7 @@ open System.Collections.Generic
 open Antlr4.Runtime
 
 
-exception NonPrimeDectectionException of string * ExtendedBigRational
+exception NonPrimeDectectionException of ExtendedBigRational
 // TODO - port from original C# code, very mutable stuff, see if you can get rid of non-functional stuff later
 
 type PrimellVisitor(control: PrimellProgramControl) = 
@@ -36,7 +36,9 @@ type PrimellVisitor(control: PrimellProgramControl) =
         Seq.head l |> PrimellVisitor.Normalize
     | _ -> pobj    
 
-  override this.VisitLine context = this.Visit(context.termSeq())
+  override this.VisitLine context = 
+    let result = this.Visit(context.termSeq())
+    result
 
   override this.VisitParens context = this.Visit(context.termSeq())
 
@@ -53,14 +55,16 @@ type PrimellVisitor(control: PrimellProgramControl) =
       | _, (:? PList as l) ->
           Seq.append retval l
       | _ -> PrimellProgrammerProblemException "not possible" |> raise
-    ) |> PList |> PrimellVisitor.Normalize
+    ) 
+    |> PList 
+    |> PrimellVisitor.Normalize
 
   override this.VisitInteger context =
     let text = context.GetText()
     let number = ParseLib.ParseInteger text control.Settings.SourceBase
 
     if control.Settings.RestrictedSource && not(PrimeLib.IsPrime number) then
-      NonPrimeDectectionException("NON-PRIME DETECTED!", number) |> raise
+      NonPrimeDectectionException number |> raise
     
     number |> PNumber :> PObject
 
@@ -172,8 +176,11 @@ type PrimellVisitor(control: PrimellProgramControl) =
     // at least in non-recursive case, assign mechanics is such that length of newValue does not exceed length of referenceIndex
     match refObj.Reference with
     | Variable name ->
-        control.SetVariable(name, (this.GetReplacementObject refObj refIndex newValue).WithReference(Variable name))
-        control.GetVariable name
+        let replacementValue = this.GetReplacementObject refObj refIndex newValue
+        if control.TrySetVariable(name, refObj, replacementValue) then
+          control.GetVariable name
+        else 
+          replacementValue
     | Reference (ro, ri) ->  // this recursion step feels too easy for this data structure, could be wrong
         this.ReplaceReference ro ri ((this.GetReplacementObject refObj refIndex newValue).WithReference(Reference(ro, ri)))  
     | Void -> PrimellProgrammerProblemException "This method shouldn't be called with Void reference" |> raise
@@ -183,8 +190,10 @@ type PrimellVisitor(control: PrimellProgramControl) =
     match left.Reference with
     | Void -> right // no action needed
     | Variable name -> 
-        control.SetVariable(name, right.WithReference(Variable name))
-        control.GetVariable name
+        if control.TrySetVariable(name, left, right) then
+          control.GetVariable name
+        else
+          right
     | Reference (refObj, refIndex) -> this.ReplaceReference refObj refIndex right
 
   member private this.PerformListAssign (left: PList, right: PObject, assignMods: OperationModifier list) =
@@ -208,8 +217,10 @@ type PrimellVisitor(control: PrimellProgramControl) =
     match left.Reference with
     | Void -> newValue // no action needed
     | Variable name -> 
-        control.SetVariable(name, newValue.WithReference(Variable name))
-        control.GetVariable name
+        if control.TrySetVariable(name, left, newValue) then
+          control.GetVariable name
+        else
+          newValue
     | Reference (refObj, refIndex) -> this.ReplaceReference refObj refIndex newValue
 
   member private this.PerformAssign  (left: PObject, right: PObject, assignMods: OperationModifier list): PObject =
@@ -267,7 +278,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
                 PrimellVisitor(control).VisitLine(parser.line())
 
         | :? PList as l ->
-            // Original C# didn't have nested list implemented, since I'm recursing it's easiest to do so here.
+            // Original C# didn't have nested list implemented, since I'm recursing because it's easiest but not necessarily correct.
             // While executing all lines it just returned last value, i'm mimicking that for now
             l |> Seq.map (fun x -> this.ConditionalBranch left x negate isForward) |> Seq.last
         | _ -> System.NotImplementedException "You're doing crazy stuff" |> raise
@@ -321,16 +332,36 @@ type PrimellVisitor(control: PrimellProgramControl) =
 
     this.ApplyBinaryOperation left right (context.binaryOp())
 
-  override this.VisitForEachLeftTerm context =
-    currentForEach.Push(this.Visit(context.mulTerm()))
-    this.Visit(context.forEachBlock()) |> ignore
-    currentForEach.Pop()
+  override this.VisitForEachListUnary context =
+    let operator = operationLib.UnaryListOperators[context.listUnaryOp().baseListUnaryOp().GetText()]
+    match this.Visit(context.termSeq()) with
+    | :? PAtom as a ->
+        operationLib.ApplyUnaryListOperation a operator []
+    | :? PList as l ->
+        l |> Seq.map(fun pobj -> operationLib.ApplyUnaryListOperation pobj operator []) |> PList :> PObject
+    | _ -> PrimellProgrammerProblemException("not possible") |> raise
+
+  override this.VisitForEachBinary context =
+    let left = this.Visit(context.termSeq()[0])
+    let right = 
+      match context.atomTerm() with
+      | null -> this.Visit(context.termSeq()[1])
+      | _ as a -> this.Visit(a)
+
+    match left with
+    | :? PList as l when l.IsEmpty -> 
+        this.ApplyBinaryOperation l right (context.binaryOp())
+    | :? PList as l -> 
+        l |> Seq.map(fun pobj -> this.ApplyBinaryOperation l right (context.binaryOp())) |> PList :> PObject 
+    | :? PAtom as a ->
+        this.ApplyBinaryOperation a right (context.binaryOp())
+    | _ -> PrimellProgrammerProblemException "not possible" |> raise
 
   override this.VisitForEachRightTerm context =
     let left = this.Visit(context.mulTerm())
 
     match this.Visit(context.termSeq()) with
-    | :? PNumber as robj ->
+    | :? PAtom as robj ->
         this.ApplyBinaryOperation left robj (context.binaryOp())
     | :? PList as l ->
         l |> Seq.map(fun robj -> this.ApplyBinaryOperation left robj (context.binaryOp())) |> PList :> PObject

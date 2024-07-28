@@ -12,12 +12,13 @@ termSeq : concatMulterm+ ;
 
 concatMulterm : CONCAT? mulTerm ;
 
-mulTerm : atomTerm                                               #atom
-        | mulTerm numUnaryOp                                     #numericUnaryOperation 
-        | mulTerm listUnaryOp                                    #listUnaryOperation
-        | mulTerm binaryOp (atomTerm | RTL termSeq)              #binaryOperation
-        | mulTerm forEachBlock                                   #forEachLeftTerm
-        | mulTerm binaryOp FOREACH_LEFT termSeq FOREACH_RIGHT    #forEachRightTerm
+mulTerm : atomTerm                                                              #atom
+        | mulTerm numUnaryOp                                                    #numericUnaryOperation 
+        | mulTerm listUnaryOp                                                   #listUnaryOperation
+        | mulTerm binaryOp (atomTerm | RTL termSeq)                             #binaryOperation
+        | FOREACH_LEFT termSeq FOREACH_RIGHT listUnaryOp                        #forEachListUnary
+        | FOREACH_LEFT termSeq FOREACH_RIGHT binaryOp (atomTerm | RTL termSeq)  #forEachBinary
+        | mulTerm FOREACH_LEFT binaryOp termSeq FOREACH_RIGHT                   #forEachRightTerm
         ;             
 
 atomTerm : INT                      #integer
@@ -26,13 +27,6 @@ atomTerm : INT                      #integer
          | LPAREN RPAREN            #emptyList
          | LPAREN termSeq RPAREN    #parens
          ;
-
-forEachBlock : FOREACH_LEFT forEachOperation FOREACH_RIGHT ;
-
-forEachOperation : binaryOp (atomTerm | RTL termSeq)  #forEachBinary
-                 | numUnaryOp                         #forEachNumericUnary
-                 | listUnaryOp                        #forEachListUnary
-                 ;
 
 baseNullaryOp : IDENTIFIER | OP_READ_STR | OP_READ_CSV;
 

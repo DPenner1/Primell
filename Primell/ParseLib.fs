@@ -56,9 +56,9 @@ module ParseLib =
     if args.IsEmpty then 
       settings
     elif args |> List.contains "-ld" || args |> List.contains "--listell-default" then  // TODO - there's a few settings (like SourcePath) these shouldn't override
-      UpdateSettings PrimellConfiguration.Listell (args |> List.filter(fun arg -> arg = "-ld" || arg = "--listell-default" |> not))
+      UpdateSettings PrimellConfiguration.Listell (args |> List.where(fun arg -> arg <> "-ld" && arg <> "--listell-default"))
     elif args |> List.contains "-pd" || args |> List.contains "--primell-default" then 
-      UpdateSettings PrimellConfiguration.PrimellDefault (args |> List.filter(fun arg -> arg = "-pd" || arg = "--primell-default" |> not))
+      UpdateSettings PrimellConfiguration.PrimellDefault (args |> List.filter(fun arg -> arg <> "-pd" && arg <> "--primell-default"))
     else 
       match args[0].ToLowerInvariant() with
       | "-b" | "--base" ->    

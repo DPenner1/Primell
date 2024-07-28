@@ -144,6 +144,36 @@ let ``Test Negate Special``() =
   Assert.Equal(BigRational(1, 1) |> Rational, -(BigRational(1, -1) |> Rational))
 
 [<Fact>]
+let ``Test Multiply Special``() =
+  Assert.Equal(NaN, NaN * NaN)
+  Assert.Equal(NaN, NaN * Infinity Negative)
+  Assert.Equal(NaN, Infinity Positive * NaN)
+  Assert.Equal(Infinity Positive, Infinity Positive * Infinity Positive)
+  Assert.Equal(Infinity Negative, Infinity Positive * Infinity Negative)
+  Assert.Equal(Infinity Negative, Infinity Negative * Infinity Positive)
+  Assert.Equal(Infinity Positive, Infinity Negative * Infinity Negative)
+
+  Assert.Equal(ExtendedBigRational.Zero, ExtendedBigRational.Zero * ExtendedBigRational.Zero)
+  Assert.Equal(ExtendedBigRational.NegativeZero, ExtendedBigRational.NegativeZero * ExtendedBigRational.Zero)
+  Assert.Equal(ExtendedBigRational.NegativeZero, ExtendedBigRational.Zero * ExtendedBigRational.NegativeZero)
+  Assert.Equal(ExtendedBigRational.Zero, ExtendedBigRational.NegativeZero * ExtendedBigRational.NegativeZero)
+  
+  Assert.Equal(NaN, ExtendedBigRational.Zero * NaN)
+  Assert.Equal(NaN, ExtendedBigRational.NegativeZero * NaN)
+  Assert.Equal(NaN, Infinity Positive * ExtendedBigRational.Zero)
+  Assert.Equal(NaN, ExtendedBigRational.Zero * Infinity Negative)
+  Assert.Equal(NaN, ExtendedBigRational.NegativeZero * Infinity Negative)
+  Assert.Equal(NaN, Infinity Positive * ExtendedBigRational.NegativeZero)
+
+[<Fact>]
+let ``Test Reciprocal Special``() =
+  Assert.Equal(NaN, ExtendedBigRational.Reciprocal NaN)
+  Assert.Equal(ExtendedBigRational.Zero, ExtendedBigRational.Reciprocal <| Infinity Positive)
+  Assert.Equal(ExtendedBigRational.NegativeZero, ExtendedBigRational.Reciprocal <| Infinity Negative)
+  Assert.Equal(Infinity Positive, ExtendedBigRational.Reciprocal ExtendedBigRational.Zero)
+  Assert.Equal(Infinity Negative, ExtendedBigRational.Reciprocal ExtendedBigRational.NegativeZero)
+
+[<Fact>]
 let ``Test Range``() = 
   let expected = seq { 2..100 } |> Seq.map(fun x -> x |> BigRational |> Rational)
   let actual = ExtendedBigRational.Range (2 |> BigRational |> Rational) (101 |> BigRational |> Rational)

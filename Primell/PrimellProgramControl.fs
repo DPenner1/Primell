@@ -28,11 +28,28 @@ type PrimellProgramControl(settings: PrimellConfiguration, lines: string seq) =
     if not <| this.Variables.ContainsKey(name) then
       this.Variables.Add(name, PrimellList(Seq.empty, ExtendedBigRational.Zero |> PNumber, Variable name)) |> ignore
     this.Variables[name]
-
-  member this.SetVariable(name: string, newValue: PObject) = 
-    if this.Variables.ContainsKey name |> not then 
-      this.Variables.Add(name, PList.Empty)
+  
+  member internal this.CreateNewVariable(name: string, newValue: PObject) = 
+    if this.Variables.ContainsKey name then 
+      PrimellProgrammerProblemException "variable already exists" |> raise
     this.Variables[name] <- newValue
+
+  // hopefully this works, but the idea is that with so much recursion potentially going on
+  // (and cycles are probably possible, and definitely possible after first-class operators)
+  // a variable we mean to set has already been set by a different recursive branch
+  // so we first check that that hasn't happened with a Object.Reference equality
+  member this.TrySetVariable(name: string, oldValue: PObject, newValue: PObject) = 
+  // TODO - learn byrefs and whether matching on TryGetValue works
+    if this.Variables.ContainsKey name then
+      match obj.ReferenceEquals(oldValue, this.Variables[name]) with
+      | true ->  // fresh value
+          this.Variables[name] <- newValue.WithReference(Variable name)
+          true
+      | false -> false
+    else 
+      this.Variables[name] <- newValue.WithReference(Variable name)
+      true
+
   
   member this.GetCodeInput(parameters: PList): PObject =
     System.NotImplementedException() |> raise
