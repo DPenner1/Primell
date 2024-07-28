@@ -5,12 +5,12 @@ open dpenner1.Primell
 
 let TestProgram(program: string, settings: PrimellConfiguration, expectedResult: string) =
   let runner = PrimellRunner()
-  let results, control = runner.Run program settings
-  let actualResult = results 
-                     |> List.where(fun r -> snd r) 
-                     |> List.map(fun r -> runner.GetResultString (fst r) control)
-                     |> String.concat "\n"
-  Assert.Equal(expectedResult, actualResult)
+  let control = runner.Run program settings
+  let outputCheck = control.LineResults 
+                    |> Array.filter(fun lineRec -> match lineRec.Output with | Some _ -> true | _ -> false)
+                    |> Array.map(fun lineRec -> lineRec.Output.Value)
+                    |> String.concat "\n"
+  Assert.Equal(expectedResult, outputCheck)
 
 let TestProgramFromFile(filePath: string, settings: PrimellConfiguration, expectedResult: string) = 
   let lines = System.IO.File.ReadAllLines(filePath)

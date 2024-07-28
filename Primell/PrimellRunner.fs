@@ -36,35 +36,45 @@ type PrimellRunner() =
     | _ -> temp
   
 
-  member this.ExecuteLine lineContext control =
+  member this.ExecuteLine (lineText: string) (control: PrimellProgramControl) =
+
     let visitor = PrimellVisitor control
-    visitor.Visit(lineContext)
-
-  // TODO - for now I'm leaving grammar intact due to needing to compare results to original C#
-  //      - But Primell executes line by line, I don't need the program + line stuff,
-  //      - I can just create a new parser for each line (passing in an ever changing control)
-
-// TODO also this method now has a silly return type
-  member this.Run (program: string) (settings: PrimellConfiguration) =
-    let stream = AntlrInputStream program
+    let stream = AntlrInputStream lineText
     let lexer = PrimellLexer stream
     let tokens = CommonTokenStream lexer
     let parser = PrimellParser tokens
     parser.BuildParseTree <- true
+
+    visitor.Visit(parser.line())
+
+  // TODO - for now I'm leaving grammar intact due to needing to compare results to original C#
+  //      - But Primell executes line by line, I don't need the program + line stuff,
+  //      - I can just create a new parser for each line (passing in an ever changing control)
+   
+  //member this.RunLines allLineContexts control =
     
-    let allLineContexts = parser.program().line() |> Array.toList
-    let control = PrimellProgramControl(settings, allLineContexts)
+// TODO also this method now has a silly return type
+  member this.Run (program: string) (settings: PrimellConfiguration) =
+    let lines = program.Split('\n', StringSplitOptions.TrimEntries ||| StringSplitOptions.RemoveEmptyEntries)
+
+    let control = PrimellProgramControl(settings, lines)
 
     // pre-initialized variables
     control.SetVariable(",,,", PList(Seq.initInfinite(fun _ -> PList.Empty :> PObject), Infinity Positive |> PNumber))
     control.SetVariable(",,,,,", PList(Seq.initInfinite(fun _ -> ExtendedBigRational.Zero |> PNumber :> PObject), Infinity Positive |> PNumber))
 
     // resetting LastOperationWasAssignment here is a temporary hack
-    allLineContexts |> List.map(fun line ->  let result, doOutput = this.ExecuteLine line control, not control.LastOperationWasAssignment
-                                             control.LastOperationWasAssignment <- false
-                                             if doOutput then
-                                               printfn "%s" <| (this.GetResultString result control)
-                                             result, doOutput), control
+    // also this has just been cobbled together over time, definitely needs cleanup
+
+    for i in 0..(control.LineResults.Length - 1) do
+      control.CurrentLine <- i
+      let result, doOutput = this.ExecuteLine control.LineResults[i].Text control, not control.LastOperationWasAssignment
+      control.LastOperationWasAssignment <- false
+      control.LineResults[i] <-
+        { control.LineResults[i] with Result = Some result; Output = if doOutput then Some (this.GetResultString result control) else None }
+      if doOutput then printfn "%s" <| control.LineResults[i].Output.Value
+
+    control
 
   member this.RunFromFile (settings: PrimellConfiguration) =
     let lines = IO.File.ReadAllLines(settings.SourceFilePath)

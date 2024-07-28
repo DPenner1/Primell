@@ -2,12 +2,23 @@ namespace dpenner1.Primell
 
 open System.Collections.Generic
 
-type PrimellProgramControl(settings: PrimellConfiguration, lines: list<PrimellParser.LineContext>) =
+type LineRecord =
+  {
+    Text: string
+    Result: PObject option
+    Output: string option
+  }
+
+type PrimellProgramControl(settings: PrimellConfiguration, lines: string seq) =
 
   member val Variables = new Dictionary<string, PObject>() with get
   member val Settings = settings with get
+
+  // TODO - can you get rid of this mutable?
+  member val CurrentLine = 0 with get, set
   
-  member val Lines = lines with get
+  member val LineResults = 
+    lines |> Array.ofSeq |> Array.map (fun l -> { Text = l; Result = None; Output = None; }) with get
 
   // This is a port from original Primell, copying to have current examples execute as before,
   // Might consider changing the part of Primell requiring this

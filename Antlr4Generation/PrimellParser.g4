@@ -4,9 +4,7 @@ options {
   tokenVocab = PrimellLexer;
 }
 
-program : line? (NL+ line)* EOF;
-
-line : termSeq outputSpec? COMMENT? ;
+line : termSeq outputSpec? COMMENT? EOF;
 
 outputSpec : OUT_INV | OUT_DEF | OUT_STR ;
 

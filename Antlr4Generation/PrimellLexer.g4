@@ -70,7 +70,6 @@ OP_NEG_COND : '?~' ;
 OP_LIST_DIFF : '\\' ;
 OP_INTERSECT : '&' ;
 
-WS : [ \t\r]+ -> skip ;
-NL : '\n';
+WS : [ \t\r\n]+ -> skip ;
 
 COMMENT : '~~' ~[\r\n]* ;

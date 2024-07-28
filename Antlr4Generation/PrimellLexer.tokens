@@ -61,8 +61,7 @@ OP_NEG_COND=60
 OP_LIST_DIFF=61
 OP_INTERSECT=62
 WS=63
-NL=64
-COMMENT=65
+COMMENT=64
 '∞'=2
 '$'=4
 '='=5
@@ -123,4 +122,3 @@ COMMENT=65
 '?~'=60
 '\\'=61
 '&'=62
-'\n'=64

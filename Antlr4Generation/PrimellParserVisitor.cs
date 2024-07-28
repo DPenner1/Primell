@@ -32,12 +32,6 @@ using IToken = Antlr4.Runtime.IToken;
 [System.CLSCompliant(false)]
 public interface IPrimellParserVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="PrimellParser.program"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitProgram([NotNull] PrimellParser.ProgramContext context);
-	/// <summary>
 	/// Visit a parse tree produced by <see cref="PrimellParser.line"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

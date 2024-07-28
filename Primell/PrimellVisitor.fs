@@ -1,6 +1,7 @@
 namespace dpenner1.Primell
 
 open System.Collections.Generic
+open Antlr4.Runtime
 
 
 exception NonPrimeDectectionException of string * ExtendedBigRational
@@ -12,14 +13,13 @@ type PrimellVisitor(control: PrimellProgramControl) =
   let currentForEach = new Stack<PObject>()
   let operationLib = new OperationLib(control)
 
-  // TODO - can you get rid of this mutable?
-  let mutable CurrentLine = 0
-  
-   // very temporary, clearly things are going poorly
   let GetInt(n: PNumber) = 
     match n.Value with
     | Rational r when r >= BigRational.Zero -> (round r).Numerator |> int
     | _ -> System.NotImplementedException("Index only with positive finite values for now") |> raise
+  
+   // very temporary, clearly things are going poorly
+  
     
   static member private Normalize (pobj: PObject) =
     match pobj with   // couldn't use when Seq.length = 1 as that potentially hangs on infinite sequence
@@ -27,9 +27,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
         Seq.head l |> PrimellVisitor.Normalize
     | _ -> pobj    
 
-  override this.VisitLine context =
-      CurrentLine <- control.Lines |> List.findIndex(fun l -> l = context)
-      this.VisitChildren(context)
+  override this.VisitLine context = this.Visit(context.termSeq())
 
   override this.VisitParens context = this.Visit(context.termSeq()) // not entirely sure why i need to explicitly visit this
 
@@ -250,7 +248,15 @@ type PrimellVisitor(control: PrimellProgramControl) =
             | NaN | Infinity _ -> PList.Empty :> PObject
             | Rational r ->
                 let offset = ((round r).Numerator |> int) * (if isForward then 1 else -1)
-                PrimellVisitor(control).VisitLine(control.Lines[CurrentLine + offset])
+
+                // TODO - i didn't want this here
+                let visitor = PrimellVisitor control
+                let stream = AntlrInputStream control.LineResults[control.CurrentLine + offset].Text
+                let lexer = PrimellLexer stream
+                let tokens = CommonTokenStream lexer
+                let parser = PrimellParser tokens
+                parser.BuildParseTree <- true
+                PrimellVisitor(control).VisitLine(parser.line())
         | :? PList as l ->
             // Original C# didn't have nested list implemented, since I'm recursing it's easiest to do so here.
             // While executing all lines it just returned last value, i'm mimicking that for now
