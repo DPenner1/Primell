@@ -51,7 +51,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
     number |> PNumber :> PObject
 
   override this.VisitInfinity context = Infinity Positive |> PNumber :> PObject
-  override this.VisitNullaryOp context : PObject =
+  override this.VisitNullaryOp context =
     control.LastOperationWasAssignment <- false
 
     let opText = context.baseNullaryOp().GetText()
@@ -249,14 +249,14 @@ type PrimellVisitor(control: PrimellProgramControl) =
             | Rational r ->
                 let offset = ((round r).Numerator |> int) * (if isForward then 1 else -1)
 
-                // TODO - i didn't want this here
-                let visitor = PrimellVisitor control
+                // TODO - it's a little awkward to have this here, as runner also has this code
                 let stream = AntlrInputStream control.LineResults[control.CurrentLine + offset].Text
                 let lexer = PrimellLexer stream
                 let tokens = CommonTokenStream lexer
                 let parser = PrimellParser tokens
                 parser.BuildParseTree <- true
                 PrimellVisitor(control).VisitLine(parser.line())
+
         | :? PList as l ->
             // Original C# didn't have nested list implemented, since I'm recursing it's easiest to do so here.
             // While executing all lines it just returned last value, i'm mimicking that for now
