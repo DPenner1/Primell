@@ -18,13 +18,6 @@ type OperationLib(control: PrimellProgramControl) =
     member this.Flatten(plist: PrimellList) =
       this.RaiseAtoms plist |> Seq.concat |> PrimellList
 
-    member this.Index(left: PObject) (right: PObject): PObject =
-        match left, right with
-        | (:? PList as l), (:? PNumber as n) -> l.Index n
-        | :? PAtom as a, _ -> this.Index(a :> PObject |> Seq.singleton |> PList) right
-        | _, (:? PList as l) -> l |> Seq.map(fun x -> this.Index left x) |> PList :> PObject
-        | _ -> PrimellProgrammerProblemException "Not possible" |> raise
-    // for now these are immutable dicts, but they might be changed to mutable Dictionary on implementation of user-defined operators
     member this.NullaryOperators: IDictionary<string, unit->PObject> =
       dict [
             ":\"", fun () -> control.GetStringInput()
@@ -57,12 +50,16 @@ type OperationLib(control: PrimellProgramControl) =
     
     // TODO - I don't have any Binary List Operators implemented yet
     member this.BinaryListOperators: IDictionary<string, PList*PList->PObject> = 
-      dict ["\\",  fun (left: PrimellList, right: PrimellList) -> PrimellList.Empty
+      dict ["\\",  fun (left: PList, right: PList) -> PList.Empty
            ]
  
     // TODO - none implemented yet
     member this.NumericListOperators: IDictionary<string, PNumber*PList->PObject> = 
-      dict ["::",  fun (left: PNumber, right: PrimellList) -> PrimellList.Empty
+      dict ["::",  fun (left: PNumber, right: PList) -> PList.Empty
+           ]
+
+    member this.ListNumericOperators: IDictionary<string, PList*PNumber->PObject> = 
+      dict ["@",  fun (left: PList, right: PNumber) -> left.Index right
            ]
 
     // opMods for consistency, but I don't think Primell will have any need for opMods on nullary operators
@@ -141,7 +138,3 @@ type OperationLib(control: PrimellProgramControl) =
 
     member this.Conditional (left: PObject) (right: PObject) (negate: bool) =
       if this.IsTruth(left, control.Settings.TruthDefinition) <> negate then this.UnaryListOperators["_<"] else this.UnaryListOperators["_>"]
-
-    
-
-    

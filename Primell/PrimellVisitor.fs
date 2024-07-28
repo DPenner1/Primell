@@ -37,7 +37,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
 
   override this.VisitLine context = this.Visit(context.termSeq())
 
-  override this.VisitParens context = this.Visit(context.termSeq()) // not entirely sure why i need to explicitly visit this
+  override this.VisitParens context = this.Visit(context.termSeq())
 
   override this.VisitEmptyList context = PList.Empty
 
@@ -282,7 +282,8 @@ type PrimellVisitor(control: PrimellProgramControl) =
       elif context.baseListBinaryOp() |> isNull |> not then
         let opText = context.baseListBinaryOp().GetText()
         if opText = "@" then  // index needs special handling for the whole reference-assign
-          (operationLib.Index left right).WithReference(Reference(left, right))
+          let operator = operationLib.ListNumericOperators["@"]
+          (operationLib.ApplyListNumericOperation left right operator []).WithReference(Reference(left, right))
         elif opText.StartsWith "?" then  // TODO - conditional stuff needs to not execute both branches
           if opText.Contains "/" || opText.Contains("\\") then
             this.ConditionalBranch left right (opText.Contains "~") (opText.Contains "/")
