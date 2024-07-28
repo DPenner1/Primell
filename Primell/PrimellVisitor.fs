@@ -249,7 +249,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
             | Rational r ->
                 let offset = ((round r).Numerator |> int) * (if isForward then 1 else -1)
 
-                // TODO - it's a little awkward to have this here, as runner also has this code
+                // TODO - it's a little awkward to have this here, as runner also has simlar code
                 let stream = AntlrInputStream control.LineResults[control.CurrentLine + offset].Text
                 let lexer = PrimellLexer stream
                 let tokens = CommonTokenStream lexer
