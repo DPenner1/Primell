@@ -27,6 +27,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
     let tokens = CommonTokenStream lexer
     let parser = PrimellParser tokens
     parser.BuildParseTree <- true
+    parser.ErrorHandler <- BailErrorStrategy()
     parser
     
   static member private Normalize (pobj: PObject) =
@@ -253,7 +254,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
 
 
   member this.ConditionalBranch (left: PObject) (right: PObject) (negate: bool) (isForward: bool) =
-      if operationLib.IsTruth(left, control.Settings.TruthDefinition) <> negate then
+      if operationLib.IsTruth(left, control.Settings.PrimesAreTruth, control.Settings.RequireAllTruth) <> negate then
         let head = operationLib.ApplyUnaryListOperation right operationLib.UnaryListOperators["_<"] []
         match head with
         | :? PNumber as n ->

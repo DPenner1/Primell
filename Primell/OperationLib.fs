@@ -117,17 +117,17 @@ type OperationLib(control: PrimellProgramControl) =
             this.ApplyListNumericOperation (n :> PObject |> Seq.singleton |> PList) l operator opMods
         | _ -> PrimellProgrammerProblemException("Not possible") |> raise
 
-    member this.IsTruth(pobj: PObject, truthDef: TruthDefinition) =
+    member this.IsTruth(pobj: PObject, primesAreTruth: bool, requireAllTruth: bool) =
       match pobj with
-      | :? PList as l when l.IsEmpty -> truthDef.EmptyIsTruth
+      | :? PList as l when l.IsEmpty -> false
       | :? PList as l ->  // infinite recursion is possible with infinite lists
-          if truthDef.RequireAllTruth then
-            l |> Seq.exists(fun x -> this.IsTruth(x, truthDef) |> not) |> not
+          if requireAllTruth then
+            l |> Seq.exists(fun x -> this.IsTruth(x, primesAreTruth, requireAllTruth) |> not) |> not
               // TODO - since I'm piping a few times here, this probably isn't tail recursion
           else
-            l |> Seq.exists(fun x -> this.IsTruth(x, truthDef))
+            l |> Seq.exists(fun x -> this.IsTruth(x, primesAreTruth, requireAllTruth))
       | :? PNumber as n -> 
-          if truthDef.PrimesAreTruth then
+          if primesAreTruth then
             PrimeLib.IsPrime n.Value
           else
             match n.Value with
@@ -137,4 +137,6 @@ type OperationLib(control: PrimellProgramControl) =
 
 
     member this.Conditional (left: PObject) (right: PObject) (negate: bool) =
-      if this.IsTruth(left, control.Settings.TruthDefinition) <> negate then this.UnaryListOperators["_<"] else this.UnaryListOperators["_>"]
+      if this.IsTruth(left, control.Settings.PrimesAreTruth, control.Settings.RequireAllTruth) <> negate then 
+        this.UnaryListOperators["_<"]  // TODO - when operators become first-class, you probably don't want these overridable...
+      else this.UnaryListOperators["_>"]

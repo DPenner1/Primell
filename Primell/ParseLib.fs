@@ -17,14 +17,14 @@ module ParseLib =
       let digitValue = 
         if c >= '0' && c <= '9' then 
           int c - int '0'
-        elif c >= 'A' && c <= 'Z' then
+        elif c >= 'A' && c <= 'Z' && b > 10 then
           int c - int 'A' + 10
-        elif c >= 'a' && c <= 'z' then
+        elif c >= 'a' && c <= 'z' && b > 10 then
           if b <= 36 then int c - int 'A' + 10
           else int c - int 'A' + 36
-        elif c = 'Þ' then 62
-        elif c = 'þ' then 63
-        else PrimellInvalidSyntaxException $"Invalid character ({c}) in: {text}" |> raise
+        elif c = 'Þ' && b > 62 then 62 
+        elif c = 'þ' && b > 63 then 63
+        else PrimellInvalidSyntaxException $"Invalid integer character '{c}' in: {text}" |> raise
           
       ParseInteger' text b (index + 1) (cumulativeValue + bigint digitValue * bigint.Pow(b, text.Length - index - 1))
 
@@ -56,9 +56,9 @@ module ParseLib =
     if args.IsEmpty then 
       settings
     elif args |> List.contains "-ld" || args |> List.contains "--listell-default" then  // TODO - there's a few settings (like SourcePath) these shouldn't override
-      UpdateSettings PrimellConfiguration.Listell (args |> List.filter(fun arg -> arg.Equals("-ld") |> not))
+      UpdateSettings PrimellConfiguration.Listell (args |> List.filter(fun arg -> arg = "-ld" || arg = "--listell-default" |> not))
     elif args |> List.contains "-pd" || args |> List.contains "--primell-default" then 
-      UpdateSettings PrimellConfiguration.PrimellDefault (args |> List.filter(fun arg -> arg.Equals("-pd") |> not))
+      UpdateSettings PrimellConfiguration.PrimellDefault (args |> List.filter(fun arg -> arg = "-pd" || arg = "--primell-default" |> not))
     else 
       match args[0].ToLowerInvariant() with
       | "-b" | "--base" ->    
@@ -69,11 +69,21 @@ module ParseLib =
         UpdateSettings { settings with OutputBase = int args[1] } args.Tail.Tail
       | "-sb" | "--source-base" -> 
         UpdateSettings { settings with SourceBase = int args[1] } args.Tail.Tail
-      | "-rs" | "--restricted-source" -> 
+      | "-rs" | "--restricted-source" ->   // TODO - is there a way to clean up the code copy for optional settings?
         if args.Length > 1 && not <| args[1].StartsWith "-" then
           UpdateSettings { settings with RestrictedSource = args[1].ToLowerInvariant().StartsWith "y" } args.Tail.Tail
         else
           UpdateSettings { settings with RestrictedSource = not settings.RestrictedSource } args.Tail
+      | "-tp" | "--truth-prime" ->
+        if args.Length > 1 && not <| args[1].StartsWith "-" then
+          UpdateSettings { settings with PrimesAreTruth = args[1].ToLowerInvariant().StartsWith "y" } args.Tail.Tail
+        else
+          UpdateSettings { settings with PrimesAreTruth = not settings.RestrictedSource } args.Tail
+      | "-ta" | "--truth-all" ->
+        if args.Length > 1 && not <| args[1].StartsWith "-" then
+          UpdateSettings { settings with RequireAllTruth = args[1].ToLowerInvariant().StartsWith "y" } args.Tail.Tail
+        else
+          UpdateSettings { settings with RequireAllTruth = not settings.RestrictedSource } args.Tail
       | "-sf" | "--source-filepath" ->
         if args.Length > 1 && not <| args[1].StartsWith "-" then
           UpdateSettings { settings with SourceFilePath = args[1] } args.Tail.Tail

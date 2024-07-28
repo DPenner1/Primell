@@ -4,8 +4,7 @@ open System.Text
 
 type TruthDefinition = 
   {
-    PrimesAreTruth: bool;  // If true, only primes are true, if false, non-zero is true
-    EmptyIsTruth: bool;
+    PrimesAreTruth: bool;  // If true, only primes are true, if false, non-zero., non-NaN is true
     RequireAllTruth: bool;
   }
 
@@ -13,7 +12,8 @@ type PrimellConfiguration =
   {
     RestrictedSource: bool;
     UsePrimeOperators: bool;
-    TruthDefinition: TruthDefinition;
+    PrimesAreTruth: bool;  // If true, only primes are true, if false, non-zero., non-NaN is true
+    RequireAllTruth: bool;
     InputBase: int;
     OutputBase: int;
     SourceBase: int;
@@ -27,7 +27,8 @@ type PrimellConfiguration =
     {
       RestrictedSource = true
       UsePrimeOperators = true
-      TruthDefinition = { PrimesAreTruth = true; EmptyIsTruth = false; RequireAllTruth = true }
+      PrimesAreTruth = true
+      RequireAllTruth = true
       InputBase = 10
       OutputBase = 10
       SourceBase = 10
@@ -44,7 +45,8 @@ type PrimellConfiguration =
     {
       RestrictedSource = false
       UsePrimeOperators = false
-      TruthDefinition = { PrimesAreTruth = false; EmptyIsTruth = false; RequireAllTruth = false }
+      PrimesAreTruth = false
+      RequireAllTruth = false
       InputBase = 10
       OutputBase = 10
       SourceBase = 10
