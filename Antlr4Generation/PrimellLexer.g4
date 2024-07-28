@@ -25,7 +25,7 @@ OPMOD_FOLD : '!' ;
 
 COMMENT_START : '~~' ;
 
-OP_READ_CODE : ':_' ;
+OP_READ_CODE : '_:' ;
 OP_READ_STR : ':"' ;
 OP_READ_CSV : ':,' ;
 OP_GAMMA : 'Γ' ;

@@ -3,17 +3,11 @@ namespace dpenner1.Primell
 open System.Collections.Generic
 
 
-// note: as part of trying to get PReference to work, OperationLib was converted from module to class type
+// note: as part of trying to get references to work, OperationLib was converted from module to class type
 //       This may have the later benefit of being able to swap out operations dependent on control.UsePrimeOperators
 type OperationLib(control: PrimellProgramControl) =
 
     let control = control
-    
-    // very temporary, clearly things are going poorly
-    let GetInt(n: PNumber) = 
-      match n.Value with
-      | Rational r -> (round r).Numerator |> int
-      | _ -> System.NotImplementedException("Indexing is a little wonky right now") |> raise
 
     member private this.RaiseAtoms(plist: PrimellList) =
         plist |> Seq.map(fun x -> match x with 
@@ -30,14 +24,13 @@ type OperationLib(control: PrimellProgramControl) =
         | :? PAtom as a, _ -> this.Index(a :> PObject |> Seq.singleton |> PList) right
         | _, (:? PList as l) -> l |> Seq.map(fun x -> this.Index left x) |> PList :> PObject
         | _ -> PrimellProgrammerProblemException "Not possible" |> raise
-        
+    // for now these are immutable dicts, but they might be changed to mutable Dictionary on implementation of user-defined operators
     member this.NullaryOperators: IDictionary<string, unit->PObject> =
-      dict [":_", fun () -> control.GetCodeInput()
+      dict [
             ":\"", fun () -> control.GetStringInput()
             ":,", fun () -> control.GetCsvInput()
            ]
 
-    // for now these are immutable dicts, but they might be changed to mutable Dictionary on implementation of user-defined operators
     member this.UnaryNumericOperators: IDictionary<string, PNumber->PObject> = 
       dict ["~", fun n -> ExtendedBigRational.(~-) n.Value |> PNumber :> PObject
             "++", fun n -> PrimeLib.NextPrime n.Value |> PNumber :> PObject
@@ -49,6 +42,7 @@ type OperationLib(control: PrimellProgramControl) =
             "_>", fun (l: PrimellList) -> l.Tail()        
             "_~", fun (l: PrimellList) -> l.Reverse()
             "__", fun (l: PrimellList) -> this.Flatten(l)
+            "_:", fun (l: PrimellList) -> control.GetCodeInput(l)
            ]
 
     member this.BinaryNumericOperators: IDictionary<string, PNumber*PNumber->PObject> = 

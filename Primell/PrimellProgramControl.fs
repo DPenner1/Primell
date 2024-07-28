@@ -34,7 +34,7 @@ type PrimellProgramControl(settings: PrimellConfiguration, lines: string seq) =
       this.Variables.Add(name, PList.Empty)
     this.Variables[name] <- newValue
   
-  member this.GetCodeInput(): PObject =
+  member this.GetCodeInput(parameters: PList): PObject =
     System.NotImplementedException() |> raise
 
   member this.GetStringInput(): PObject =
