@@ -126,7 +126,9 @@ type PrimellRunner() =
         this.PromptForInput settings echo (if echo then "Program line executed." else "")
     with
     | :? Antlr4.Runtime.Misc.ParseCanceledException as ex -> this.PromptForInput settings echo $"Invalid syntax: {ex.Message}"
-    | :? NotImplementedException as ex-> this.PromptForInput settings echo $"Primell's programmer hasn't implemented that yet: {ex.Message}"
+    | :? NotImplementedException as ex -> this.PromptForInput settings echo $"Primell's programmer hasn't implemented that yet: {ex.Message}"
+    | :? InvalidCastException as ex -> this.PromptForInput settings echo $"Primell's programmer hasn't implemented that yet: {ex.Message}"
+         // invalid case is basically same as not implemented in this solution - they are hacks to temporarly not do the harder datatype
     | PrimellInvalidSyntaxException msg -> this.PromptForInput settings echo $"Invalid Syntax: {msg}"
     | PrimellProgrammerProblemException _ -> this.PromptForInput settings echo "Error in Primell's programmer's brain"
     | NonPrimeDectectionException _ -> printfn "NON-PRIME DETECTED!"  // purposeful exit
