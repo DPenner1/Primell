@@ -5,6 +5,7 @@ INFINITY : '∞' ;
 IDENTIFIER : [,]+ ;
 
 RTL : '$' ;
+LTR : '€' ;
 
 CONCAT : ';' ;
 

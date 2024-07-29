@@ -3,7 +3,7 @@
 let runner = PrimellRunner()
 runner.InteractiveMode()
 
-//let control = runner.Run "(2 (3 5) 7) = 11" PrimellConfiguration.PrimellDefault
+//let control = runner.Run ", = (2 3)\n, = 5\n," PrimellConfiguration.PrimellDefault
 //let control = runner.RunFromFile { PrimellConfiguration.PrimellDefault with SourceFilePath = "./../../../../Examples/Turing.pll" }
 //let control = runner.Run "5/0" PrimellConfiguration.Listell
 

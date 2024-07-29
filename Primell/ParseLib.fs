@@ -35,7 +35,7 @@ module ParseLib =
     else
       BigRational(ParseInteger' text b 0 0I, 1) |> Rational
 
-  let rec ParseOperationModifiers' (opModText: string) (opMods: list<OperationModifier>) =
+  let rec private ParseOperationModifiers' (opModText: string) (opMods: list<OperationModifier>) =
     if opModText.Length = 0 then 
       opMods
     else

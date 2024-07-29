@@ -62,7 +62,12 @@ let ``Test Assign``() =
   TestProgram(", = (2 3)\n,", PrimellConfiguration.PrimellDefault, "2 3")
   TestProgram(", = (2 3)\n, = 5\n,", PrimellConfiguration.PrimellDefault, "5 5")
   TestProgram(", = (2 3)\n, = ()\n,", PrimellConfiguration.PrimellDefault, "() ()")
-  TestProgram("(, ,,) = (2 3)\n,\n,,", PrimellConfiguration.PrimellDefault, "2\n3")
+
+  TestProgram("(, ,,) = (2 3)\n, ,,", PrimellConfiguration.PrimellDefault, "2 3")
+  TestProgram(", = ,, = 3\n, ,,", PrimellConfiguration.PrimellDefault, "3 3")
+  TestProgram(", = 2 3\n,", PrimellConfiguration.PrimellDefault, "2 3\n2") // assignment isnt last op, concat is
+  TestProgram(", = ,, = 3\n,=5\n, ,,", PrimellConfiguration.PrimellDefault, "5 3")
+  TestProgram(", = ,, = 3\n,,=5\n, ,,", PrimellConfiguration.PrimellDefault, "3 5")
   
   TestProgram(", = (2 3 5)\n, = (7 11 13)\n,", PrimellConfiguration.PrimellDefault, "7 11 13")
   TestProgram(", = (2 3 5)\n, = (7 11)\n,", PrimellConfiguration.PrimellDefault, "7 11 5")

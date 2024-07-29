@@ -46,8 +46,9 @@ type PrimellVisitor(control: PrimellProgramControl) =
 
   override this.VisitTermSeq context =
 
-    (Seq.empty, context.concatRtlTerm()) ||> Seq.fold(fun retval concatMulTerm ->
-      match concatMulTerm.CONCAT(), this.Visit(concatMulTerm.rtlTerm()) with
+    (Seq.empty, context.concatRtlTerm()) ||> Seq.fold(fun retval concatRtlTerm ->
+      control.LastOperationWasAssignment <- false   // putting this here is either genius or deranged
+      match concatRtlTerm.CONCAT(), this.Visit(concatRtlTerm.rtlTerm()) with
       | null, (_ as pobj) ->
           Seq.append retval (Seq.singleton pobj)
       | _, (:? PAtom as a) -> 
@@ -69,8 +70,8 @@ type PrimellVisitor(control: PrimellProgramControl) =
     number |> PNumber :> PObject
 
   override this.VisitInfinity context = Infinity Positive |> PNumber :> PObject
+  
   override this.VisitNullaryOp context =
-    control.LastOperationWasAssignment <- false
 
     let opText = context.baseNullaryOp().GetText()
     let operator =
@@ -82,16 +83,12 @@ type PrimellVisitor(control: PrimellProgramControl) =
     operationLib.ApplyNullaryOperation operator []
           
   // TODO - switch this to UnaryNumeric in the grammar for consistency...
-  override this.VisitNumericUnaryOperation context = 
-    control.LastOperationWasAssignment <- false
+  override this.VisitNumericUnaryOperation context =  
     let operator = operationLib.UnaryNumericOperators[context.numUnaryOp().baseNumUnaryOp().GetText()]
-    
     operationLib.ApplyUnaryNumericOperation (this.Visit(context.mulTerm())) operator []
 
   override this.VisitListUnaryOperation context =
-    control.LastOperationWasAssignment <- false  
     let operator = operationLib.UnaryListOperators[context.listUnaryOp().baseListUnaryOp().GetText()]
-    
     operationLib.ApplyUnaryListOperation (this.Visit(context.mulTerm())) operator []
 
   (*
@@ -253,7 +250,6 @@ type PrimellVisitor(control: PrimellProgramControl) =
     // now this is absolutely horrid recursion, because you need recurse down the data structure (normal for operators in Primell)
     // but once values are assigned, you need to make those assignments stick (in C# mutable, they would just be modified in place)
     // In F# immutable Primell, we need to recurse up the reference chain (which isn't the same as the nested list data structure!)
-
     match left, (assignMods |> List.contains Power) with
     | _, true | :? PAtom, _ ->
         this.PerformAtomicAssign(left, right)
@@ -262,7 +258,33 @@ type PrimellVisitor(control: PrimellProgramControl) =
     | :? PList as l, _ ->
         this.PerformListAssign(l, right, assignMods)
     | _ -> PrimellProgrammerProblemException("not possible") |> raise
+    // Note: in case you get the bright idea to stick the control.LastOperationWasAssignment here again, lazy eval
+  
+  override this.VisitStdAssign context =
+    let opMods = 
+      match context.binaryAssign().assignMods() with
+      | null -> []
+      | _ as x -> ParseLib.ParseOperationModifiers (x.GetText())
 
+    let right = // must execute right side first
+      match context.rtlTerm() with
+      | null -> this.Visit(context.termSeq())
+      | _ as rtlCtxt -> this.Visit(rtlCtxt)
+    let left = this.Visit(context.mulTerm())
+
+    let interimResult =
+      match context.binaryAssign().binaryOp() with
+      | null -> right
+      | _ as opContext -> this.ApplyBinaryOperation left right opContext
+
+    control.LastOperationWasAssignment <- true
+    this.PerformAssign(left, interimResult, opMods)
+
+  override this.VisitForEachLeftAssign context = 
+    System.NotImplementedException "Assign foreach not implemented" |> raise
+  
+  override this.VisitForEachRightAssign context = 
+    System.NotImplementedException "Assign foreach not implemented" |> raise
 
   member this.ConditionalBranch (left: PObject) (right: PObject) (negate: bool) (isForward: bool) =
       if operationLib.IsTruth(left, control.Settings.PrimesAreTruth, control.Settings.RequireAllTruth) <> negate then
@@ -283,56 +305,28 @@ type PrimellVisitor(control: PrimellProgramControl) =
       else operationLib.ApplyUnaryListOperation right operationLib.UnaryListOperators["_>"] []
 
   member this.ApplyBinaryOperation left right (context: PrimellParser.BinaryOpContext) =
-    let isAssign = context.ASSIGN() |> isNull |> not
 
-    // TODO - more grammar work to make this if/else go away
-    let interimResult =
-      if context.baseNumBinaryOp() |> isNull |> not then
-        let operator = operationLib.BinaryNumericOperators[context.baseNumBinaryOp().GetText()]
-        operationLib.ApplyBinaryNumericOperation left right operator []
-      elif context.baseListBinaryOp() |> isNull |> not then
-        let opText = context.baseListBinaryOp().GetText()
-        if opText.StartsWith "?" then  // TODO - conditional stuff needs to not execute both branches
-          if opText.Contains "/" || opText.Contains("\\") then
-            this.ConditionalBranch left right (opText.Contains "~") (opText.Contains "/")
-          else
-            let operator = operationLib.Conditional left right (opText.Contains "~")
-            operationLib.ApplyUnaryListOperation right operator []   //head or tail operator
+    let opText = context.baseBinaryOp().GetText()
+    let retval =
+      if opText.StartsWith "?" then  // TODO - conditional stuff needs to not visit both branches, may need grammar work to help
+        if opText.Contains "/" || opText.Contains("\\") then
+          this.ConditionalBranch left right (opText.Contains "~") (opText.Contains "/")
         else
-          let operator = operationLib.BinaryListOperators[context.baseListBinaryOp().GetText()]
-          operationLib.ApplyBinaryListOperation left right operator []
-      elif context.baseListNumericOp() |> isNull |> not then
-        let opText = context.baseListNumericOp().GetText()
-        let operator = operationLib.ListNumericOperators[opText]
-        let tempValue = operationLib.ApplyListNumericOperation left right operator []
-        if opText = "@" then  // index needs special handling for the whole reference-assign
-          tempValue.WithReference(Reference(left, right))
-        else 
-          tempValue
-      elif context.baseNumericListOp() |> isNull |> not then
-        let operator = operationLib.NumericListOperators[context.baseNumericListOp().GetText()]
-        operationLib.ApplyNumericListOperation left right operator []
-      else 
-        right
-
-    control.LastOperationWasAssignment <- isAssign
+          let operator = operationLib.Conditional left right (opText.Contains "~")
+          operationLib.ApplyUnaryListOperation right operator []   //head or tail operator
+      else
+        operationLib.ApplyBinaryOperation left right opText []
       
-    if isAssign then
-      let mods = if context.assignMods() |> isNull then "" else context.assignMods().GetText()
-      this.PerformAssign(left, interimResult, ParseLib.ParseOperationModifiers mods)
-      // TODO - ideally we'd have it such that at this point interimResult is necessarily dereferenced from the binary op
+    if opText = "@" then  // index needs special handling for the whole reference-assign
+      retval.WithReference(Reference(left, right))
     else 
-      interimResult
+      retval
 
-  // TODO - did this one needed direct overriding? maybe could just override the deeper Numeric/List binary Operations
-  //        also a bit ugly with the the ApplyBinaryOperation having Operation stuff and Parsing stuff
   override this.VisitBinaryOperation context =
     let left = this.Visit(context.mulTerm())
     
     // TODO - really need to adjust grammar to section off conditional, its a mess otherwise
     // TODO - here we need to handle conditional, and not visit head/tail of right, depending on the result
-    // TODO - isn't this match just equivalent to VisitChildren()? 
-    // TODO - basically all this sucks right now
     let right = match context.termSeq() with
                 | null -> this.Visit(context.atomTerm())
                 | _ as x -> this.Visit(x)
@@ -348,7 +342,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
         l |> Seq.map(fun pobj -> operationLib.ApplyUnaryListOperation pobj operator []) |> PList :> PObject
     | _ -> PrimellProgrammerProblemException "not possible" |> raise
 
-  override this.VisitForEachBinary context =
+  override this.VisitForEachLeftBinary context =
     let left = this.Visit(context.termSeq()[0])
     let right = 
       match context.atomTerm() with
@@ -364,7 +358,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
         this.ApplyBinaryOperation a right (context.binaryOp())
     | _ -> PrimellProgrammerProblemException "not possible" |> raise
 
-  override this.VisitForEachRightTerm context =
+  override this.VisitForEachRightBinary context =
     let left = this.Visit(context.mulTerm())
 
     match this.Visit(context.termSeq()) with

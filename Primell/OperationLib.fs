@@ -129,6 +129,18 @@ type OperationLib(control: PrimellProgramControl) =
             this.ApplyListNumericOperation (n :> PObject |> Seq.singleton |> PList) l operator opMods
         | _ -> PrimellProgrammerProblemException("Not possible") |> raise
 
+    member this.ApplyBinaryOperation (left: PObject) (right: PObject) (opText: string) opMods : PObject =
+      if this.BinaryListOperators.ContainsKey(opText) then
+        this.ApplyBinaryListOperation left right (this.BinaryListOperators[opText]) opMods
+      elif this.BinaryNumericOperators.ContainsKey(opText) then
+        this.ApplyBinaryNumericOperation left right (this.BinaryNumericOperators[opText]) opMods
+      elif this.ListNumericOperators.ContainsKey(opText) then
+        this.ApplyListNumericOperation left right (this.ListNumericOperators[opText]) opMods
+      elif this.NumericListOperators.ContainsKey(opText) then
+        this.ApplyNumericListOperation left right (this.NumericListOperators[opText]) opMods
+      else
+        PrimellProgrammerProblemException "Unrecognized operator" |> raise
+
     member this.IsTruth(pobj: PObject, primesAreTruth: bool, requireAllTruth: bool) =
       match pobj with
       | :? PList as l when l.IsEmpty -> false

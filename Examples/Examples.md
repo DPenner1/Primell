@@ -23,23 +23,23 @@ Note that the range is inclusive on the lower bound, exclusive on the upper boun
 More difficult in Primell is to find all numbers from 1 to 100. To do so we need some clever tricks.
 
 	, =$ 2*2*5*5
-	, -= 2
+	, =- 2
 	,, =^$ 2/2
 
-	,, =^ (,,_< + 3 - 2 ;,,)_< - , ?~/ (2-2 ,,_~)
+	(,, =^ (,,_< + 3 - 2 ;,,))_< - , ?~/ (2-2 ,,_~)
 
 Let's go step by step:
 
  1. `, =$ 2*2*5*5`: This is simply initializing the `,` variable to 100. Any *n* can be put here. Note that the $ sign means evaluate everything to the right of it first.
- 2. `, -= 2`: Decrement the value of `,` by 2. We do this to avoid an off-by-2 error in step 4, which is common to make in Primell.
+ 2. `, =- 2`: Decrement the value of `,` by 2. We do this to avoid an off-by-2 error in step 4, which is common to make in Primell.
  3. `,, =$ 2/2`: Assign the `,,` variable the value 1. The `^` modifier prevents the entire list from being assigned the value 1. Note that `2/2` is the standard way of writing the number 1 in Primell. 
- 4. `,, =^ (,,_< + 3 - 2 ;,,)_< - , ?~/ (2-2 ,,_~)`: Generate all numbers 1 to 100.
+ 4. `(,, =^ (,,_< + 3 - 2 ;,,))_< - , ?~/ (2-2 ,,_~)`: Generate all numbers 1 to 100.
 
 While not as easy generating the primes, it is still quite doable.
 
 Wait, you want more explanation for step 4? Here's a more detailed breakdown then:
 
- 1. `,, =^ (,,_< + 3 - 2 ;,,)`: Create a list with members `,,_< + 3-2` and `,,`, assigning it back to `,,`. The `^` assignment modifier performs a replacement assignment rather than a parallel list assignment. Let's assume that `,,` has the value `(2 1)`. This will then create the list `(3 (2 1))`.
+ 1. `(,, =^ (,,_< + 3 - 2 ;,,))_<`: Create a list with members `,,_< + 3-2` and `,,`, assigning it back to `,,`. The `^` assignment modifier performs a replacement assignment rather than a parallel list assignment. Let's assume that `,,` has the value `(2 1)`. This will then create the list `(3 (2 1))`.
  2. `_<`: Return the head of the list.
  3. `- ,`: Subtract `,` from the value obtained in step 2. In our example, this is 3 - 98 = -95. Note that once we reach our desired value of 100, we will have 100 - 98 = 2.
  4. `?~/ (2-2 ,,_~)`: The `?~/` is the "if false branch forward" operator. In short, if the given value is false, then it executes the current line again (Note that `2-2` is the standard way of writing 0 in Primell). See the "Branches of Truth" article for more details. Given the info in step 3, we know that a prime number will not occur until we hit 100 (since negative numbers, 0, and 1, are not considered prime). At this point, `,,_~` is returned. 

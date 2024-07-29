@@ -54,12 +54,11 @@ type PrimellRunner() =
     control.TrySetVariable(",,,", PList.Empty, PList(Seq.initInfinite(fun _ -> PList.Empty :> PObject), Infinity Positive |> PNumber)) |> ignore
     control.TrySetVariable(",,,,,", PList.Empty, PList(Seq.initInfinite(fun _ -> ExtendedBigRational.Zero |> PNumber :> PObject), Infinity Positive |> PNumber)) |> ignore
 
-    // resetting LastOperationWasAssignment here is a temporary hack
     // also this has just been cobbled together over time, this could definitely be cleaner
     for i in 0..(control.LineResults.Length - 1) do
       control.CurrentLine <- i
       let result, doOutput = this.ExecuteLine control.LineResults[i].Text control, not control.LastOperationWasAssignment
-      control.LastOperationWasAssignment <- false
+      control.LastOperationWasAssignment <- false  // reset for next line
       control.LineResults[i] <-
         { control.LineResults[i] with Result = Some result; Output = if doOutput then Some (this.GetResultString result control) else None }
       if doOutput then printfn "%s" <| control.LineResults[i].Output.Value
