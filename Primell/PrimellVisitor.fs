@@ -278,9 +278,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
                 PrimellVisitor(control).VisitLine(parser.line())
 
         | :? PList as l ->
-            // Original C# didn't have nested list implemented, since I'm recursing because it's easiest but not necessarily correct.
-            // While executing all lines it just returned last value, i'm mimicking that for now
-            l |> Seq.map (fun x -> this.ConditionalBranch left x negate isForward) |> Seq.last
+            l |> Seq.map (fun x -> this.ConditionalBranch left x negate isForward) |> PList :> PObject
         | _ -> System.NotImplementedException "You're doing crazy stuff" |> raise
       else operationLib.ApplyUnaryListOperation right operationLib.UnaryListOperators["_>"] []
 
