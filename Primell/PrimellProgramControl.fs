@@ -39,13 +39,11 @@ type PrimellProgramControl(settings: PrimellConfiguration, lines: string seq) =
   // a variable we mean to set has already been set by a different recursive branch
   // so we first check that that hasn't happened with a Object.Reference equality
   member this.TrySetVariable(name: string, oldValue: PObject, newValue: PObject) = 
-  // TODO - learn byrefs and whether matching on TryGetValue works
+
     if this.Variables.ContainsKey name then
-      match obj.ReferenceEquals(oldValue, this.Variables[name]) with
-      | true ->  // fresh value
-          this.Variables[name] <- newValue.WithReference(Variable name)
-          true
-      | false -> false
+      let valid = obj.ReferenceEquals(oldValue, this.Variables[name])
+      if valid then this.Variables[name] <- newValue.WithReference(Variable name) 
+      valid
     else 
       this.Variables[name] <- newValue.WithReference(Variable name)
       true
