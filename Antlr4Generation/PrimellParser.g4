@@ -8,16 +8,23 @@ line : termSeq outputSpec? COMMENT? EOF;
 
 outputSpec : OUT_INV | OUT_DEF | OUT_STR ;
 
-termSeq : concatMulterm+ ;
+termSeq : concatRtlTerm+ ;
 
-concatMulterm : CONCAT? mulTerm ;
+concatRtlTerm : CONCAT? rtlTerm ;
+
+rtlTerm : mulTerm ;
+//mulTerm binaryAssign rtlTerm                              
+//      | termSeq FOREACH_LEFT binaryAssign termSeq FOREACH_RIGHT
+//        ;
+
+//binaryAssign : ASSIGN assignMods binaryOp? ;
 
 mulTerm : atomTerm                                                              #atom
         | mulTerm numUnaryOp                                                    #numericUnaryOperation 
         | mulTerm listUnaryOp                                                   #listUnaryOperation
         | mulTerm binaryOp (atomTerm | RTL termSeq)                             #binaryOperation
         | FOREACH_LEFT termSeq FOREACH_RIGHT listUnaryOp                        #forEachListUnary
-        | FOREACH_LEFT termSeq FOREACH_RIGHT binaryOp (atomTerm | RTL termSeq)  #forEachBinary
+        | FOREACH_LEFT termSeq binaryOp FOREACH_RIGHT (atomTerm | RTL termSeq)  #forEachBinary
         | mulTerm FOREACH_LEFT binaryOp termSeq FOREACH_RIGHT                   #forEachRightTerm
         ;             
 

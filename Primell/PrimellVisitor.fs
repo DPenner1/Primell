@@ -46,8 +46,8 @@ type PrimellVisitor(control: PrimellProgramControl) =
 
   override this.VisitTermSeq context =
 
-    (Seq.empty, context.concatMulterm()) ||> Seq.fold(fun retval concatMulTerm ->
-      match concatMulTerm.CONCAT(), this.Visit(concatMulTerm.mulTerm()) with
+    (Seq.empty, context.concatRtlTerm()) ||> Seq.fold(fun retval concatMulTerm ->
+      match concatMulTerm.CONCAT(), this.Visit(concatMulTerm.rtlTerm()) with
       | null, (_ as pobj) ->
           Seq.append retval (Seq.singleton pobj)
       | _, (:? PAtom as a) -> 
