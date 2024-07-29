@@ -22,7 +22,7 @@ _This overview presents high-level highlights of Primell, see the [wiki](https:/
 
 Primell has but two data types:
 
-- Numbers (arbitrary precision rational, IEEE 754-like support of infinity and NaN)
+- Numbers (arbitrary precision rational, IEEE 754-like support of infinity, signed-zero and NaN)
 - "Lists" of these two datatypes (including infinite length lists)
 	
 Other familiar data types are only simulated with these. For example:
@@ -33,7 +33,7 @@ Other familiar data types are only simulated with these. For example:
 
 With the Latin alphabet being reserved for use as base-64 numbers, operators are completely made of symbols. Most of them are intuitive though. Really. Especially with stretches of imagination.
 
-Since Primell is not very familiar with how operators work, Primell for the most part executes them in strict left-to-right order. There are 4 exceptions: 
+Since Primell is not very familiar with how operators work, Primell for the most part executes them in strict left-to-right order. There are a few exceptions: 
 
 - Parentheses may be used naturally like in math.
 - Square brackets also group similar to parentheses, but have the semantic meaning of specifying a for-each loop.
@@ -64,9 +64,7 @@ Programs may have multiple lines and the lines are executed from top to bottom i
 
 # Running Primell #
 
-At the moment, the interpreter engine supports running code from a file and a limited REPL mode (single line input, no memory maintained).
-
-Interpreter commands are prefixed with `?`, which on its own pulls up the help menu. To run a file, use:
+Console commands are prefixed with `?`, which on its own pulls up the help menu. To run a file, use:
 
     ?run <file path>
 
@@ -74,10 +72,13 @@ For example, included example programs can be run with the following (Linux file
 
     ?run ../Examples/HelloWorld.prime
 
+Input not starting with `?` are taken to be code and executed immediately on the console.
+
 # Notes on the source code #
 
 Don't look at it. It's painful. If you choose not to heed that warning, read on. Though I guess that was implicit.
 
-- This was originally coded around 2017 in a C# solution. Seven years later, I came back to it and ported it to F#, mainly for better infinite sequence support and to bring Primell in a more functional direction (though the mutable assignment function in Primell proved far harder than anticipated).
+- This was originally coded around 2017 in a C# solution. Seven years later, I came back to it and ported it to F#, mainly for better infinite sequence support and to bring Primell in a more functional direction (though the mutable assignment function in Primell proved far more challenging than anticipated). F# was new to me, I selected it over other functional languages so I still had familiar territory with .NET and ANTLR's C# target.
+- I was speed learning F#, I opted to glaze over access modifiers for the most part, I couldn't usually remember what the default access modifier was for a given context. Partially for that reason, I stuck to C# naming and casing conventions, but also I wasn't initially sure if the entire implementation would be F# or just the data structures. 
 - On naming, I had originally simply called the language Prime, but changed to avoid potential trademark issue with HP Prime. Primell was derived as Prime List Language.
-- I opted not to add the Antlr4 generated files to the `.gitignore` to allow for users to run the project without self-generating the files.
+- I opted not to add the Antlr4 generated source files to the `.gitignore` to allow for users to run the project without self-generating the files.
