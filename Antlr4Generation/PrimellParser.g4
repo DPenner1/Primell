@@ -21,12 +21,14 @@ rtlTerm : mulTerm                                                               
 binaryAssign : ASSIGN assignMods binaryOp? ;
 
 mulTerm : atomTerm                                                              #passThrough
-        | mulTerm unaryOp                                                       #unaryOperation
+        | mulTerm unaryAssign? unaryOp                                          #unaryOperation
         | mulTerm binaryOp (atomTerm | RTL termSeq)                             #binaryOperation
         | FOREACH_LEFT termSeq FOREACH_RIGHT unaryOp                            #forEachUnary
         | FOREACH_LEFT termSeq binaryOp FOREACH_RIGHT (atomTerm | RTL termSeq)  #forEachLeftBinary
         | mulTerm FOREACH_LEFT binaryOp termSeq FOREACH_RIGHT                   #forEachRightBinary
-        ;             
+        ;
+
+unaryAssign : ASSIGN assignMods ;             
 
 atomTerm : INT                      #integer
          | INFINITY                 #infinity

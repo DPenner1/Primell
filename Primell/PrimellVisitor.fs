@@ -92,7 +92,12 @@ type PrimellVisitor(control: PrimellProgramControl) =
     operationLib.ApplyUnaryOperation pobj opText opMods
   
   override this.VisitUnaryOperation context =
-    this.ApplyUnaryOperation (this.Visit(context.mulTerm())) (context.unaryOp())
+    let originalValue = this.Visit(context.mulTerm())
+    let result = this.ApplyUnaryOperation originalValue (context.unaryOp())
+    
+    match context.unaryAssign() with
+    | null -> result
+    | _ as uaCtxt -> this.PerformAssign(originalValue, result, ParseLib.ParseOperationModifiers(uaCtxt.assignMods().GetText()))
 
   (*
     interesting issue came up with previous implementation of referencing simply being an object and an index *number* Consider:

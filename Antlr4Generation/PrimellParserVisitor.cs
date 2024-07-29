@@ -132,6 +132,12 @@ public interface IPrimellParserVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitForEachUnary([NotNull] PrimellParser.ForEachUnaryContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="PrimellParser.unaryAssign"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitUnaryAssign([NotNull] PrimellParser.UnaryAssignContext context);
+	/// <summary>
 	/// Visit a parse tree produced by the <c>integer</c>
 	/// labeled alternative in <see cref="PrimellParser.atomTerm"/>.
 	/// </summary>
