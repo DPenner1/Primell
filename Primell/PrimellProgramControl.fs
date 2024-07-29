@@ -28,11 +28,6 @@ type PrimellProgramControl(settings: PrimellConfiguration, lines: string seq) =
     if not <| this.Variables.ContainsKey(name) then
       this.Variables.Add(name, PrimellList(Seq.empty, ExtendedBigRational.Zero |> PNumber, Variable name)) |> ignore
     this.Variables[name]
-  
-  member internal this.CreateNewVariable(name: string, newValue: PObject) = 
-    if this.Variables.ContainsKey name then 
-      PrimellProgrammerProblemException "variable already exists" |> raise
-    this.Variables[name] <- newValue
 
   // hopefully this works, but the idea is that with so much recursion potentially going on
   // (and cycles are probably possible, and definitely possible after first-class operators)

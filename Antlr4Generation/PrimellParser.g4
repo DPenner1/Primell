@@ -39,10 +39,14 @@ baseNumBinaryOp : OP_ADD | OP_SUB | OP_MUL | OP_DIV | OP_MOD | OP_POW | OP_LOG |
 baseListUnaryOp : OP_HEAD | OP_TAIL | OP_DISTINCT | OP_REV | OP_FLATTEN | OP_SORT | OP_READ_CODE 
                 ;
 
-baseListBinaryOp : OP_COND | OP_NEG_COND | OP_INDEX | OP_INDEX_OF
+baseListBinaryOp : OP_COND | OP_NEG_COND | OP_INDEX_OF
                  | OP_JUMP | OP_JUMP_BACK | OP_NEG_JUMP | OP_NEG_JUMP_BACK
                  | OP_LIST_DIFF | OP_INTERSECT
                  ;
+
+baseListNumericOp : OP_INDEX ;
+
+baseNumericListOp : OP_CONS ;
 
 // Coming back to this after years, plural makes me think I intended multiple mods possible at once
 // but never got around to implementing that. Also no idea whey opMods and assignMods are both here and the same.
@@ -60,6 +64,8 @@ listUnaryOp : baseListUnaryOp opMods ;
 binaryOp : ASSIGN assignMods
          | baseNumBinaryOp opMods (ASSIGN assignMods)?
          | baseListBinaryOp opMods (ASSIGN assignMods)?
+         | baseListNumericOp opMods (ASSIGN assignMods)?
+         | baseNumericListOp opMods (ASSIGN assignMods)?
          ;
 
 

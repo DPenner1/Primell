@@ -170,6 +170,18 @@ public interface IPrimellParserVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitBaseListBinaryOp([NotNull] PrimellParser.BaseListBinaryOpContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="PrimellParser.baseListNumericOp"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitBaseListNumericOp([NotNull] PrimellParser.BaseListNumericOpContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="PrimellParser.baseNumericListOp"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitBaseNumericListOp([NotNull] PrimellParser.BaseNumericListOpContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="PrimellParser.opMods"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

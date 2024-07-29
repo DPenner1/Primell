@@ -55,7 +55,7 @@ type OperationLib(control: PrimellProgramControl) =
  
     // TODO - none implemented yet
     member this.NumericListOperators: IDictionary<string, PNumber*PList->PObject> = 
-      dict ["::",  fun (left: PNumber, right: PList) -> PList.Empty
+      dict ["::",  fun (left: PNumber, right: PList) -> right.Cons left
            ]
 
     member this.ListNumericOperators: IDictionary<string, PList*PNumber->PObject> = 
@@ -103,6 +103,18 @@ type OperationLib(control: PrimellProgramControl) =
             this.ApplyBinaryListOperation left (n :> PObject |> Seq.singleton |> PList) operator opMods
         | (:? PNumber as n1), (:? PNumber as n2) -> 
             this.ApplyBinaryListOperation (n1 :> PObject |> Seq.singleton |> PList) (n2 :> PObject |> Seq.singleton |> PList) operator opMods
+        | _ -> PrimellProgrammerProblemException("Not possible") |> raise
+
+    member this.ApplyNumericListOperation (pNumber: PObject) (pList: PObject) operator opMods : PObject =
+        match pNumber, pList with
+        | (:? PList as l), (:? PNumber as n) -> 
+            this.ApplyNumericListOperation l (n :> PObject |> Seq.singleton |> PList) operator opMods
+        | (:? PList as l1), (:? PList as l2) -> 
+            l1 |> Seq.map(fun x -> this.ApplyNumericListOperation x l2 operator opMods) |> PList :> PObject
+        | (:? PNumber as n1), (:? PNumber as n2) -> 
+            this.ApplyNumericListOperation n1 (n2 :> PObject |> Seq.singleton |> PList) operator opMods
+        | (:? PNumber as n), (:? PList as l) -> 
+            operator(n, l)
         | _ -> PrimellProgrammerProblemException("Not possible") |> raise
 
     member this.ApplyListNumericOperation (pList: PObject) (pNumber: PObject) operator opMods : PObject =

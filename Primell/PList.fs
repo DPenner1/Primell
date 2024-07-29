@@ -86,6 +86,8 @@ type PrimellList(sequence: seq<PObject>, ?length: PNumber, ?refersTo: Reference)
             else
               main |> Seq.skip (int r.Numerator) |> Seq.head
 
+  member this.Cons(pnum: PNumber) =
+    main |> Seq.insertAt 0 pnum |> PrimellList
   
   override this.ToString() =  // TODO - surely there's a cleaner way than the nested concat abomination I came up with
     String.concat "" ["("; String.concat " " (main |> Seq.map(fun obj -> obj.ToString())); ")"]

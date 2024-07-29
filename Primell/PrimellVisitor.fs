@@ -287,16 +287,14 @@ type PrimellVisitor(control: PrimellProgramControl) =
   member this.ApplyBinaryOperation left right (context: PrimellParser.BinaryOpContext) =
     let isAssign = context.ASSIGN() |> isNull |> not
 
+    // TODO - more grammar work to make this if/else go away
     let interimResult =
       if context.baseNumBinaryOp() |> isNull |> not then
         let operator = operationLib.BinaryNumericOperators[context.baseNumBinaryOp().GetText()]
         operationLib.ApplyBinaryNumericOperation left right operator []
       elif context.baseListBinaryOp() |> isNull |> not then
         let opText = context.baseListBinaryOp().GetText()
-        if opText = "@" then  // index needs special handling for the whole reference-assign
-          let operator = operationLib.ListNumericOperators["@"]
-          (operationLib.ApplyListNumericOperation left right operator []).WithReference(Reference(left, right))
-        elif opText.StartsWith "?" then  // TODO - conditional stuff needs to not execute both branches
+        if opText.StartsWith "?" then  // TODO - conditional stuff needs to not execute both branches
           if opText.Contains "/" || opText.Contains("\\") then
             this.ConditionalBranch left right (opText.Contains "~") (opText.Contains "/")
           else
@@ -305,6 +303,17 @@ type PrimellVisitor(control: PrimellProgramControl) =
         else
           let operator = operationLib.BinaryListOperators[context.baseListBinaryOp().GetText()]
           operationLib.ApplyBinaryListOperation left right operator []
+      elif context.baseListNumericOp() |> isNull |> not then
+        let opText = context.baseListNumericOp().GetText()
+        let operator = operationLib.ListNumericOperators[opText]
+        let tempValue = operationLib.ApplyListNumericOperation left right operator []
+        if opText = "@" then  // index needs special handling for the whole reference-assign
+          tempValue.WithReference(Reference(left, right))
+        else 
+          tempValue
+      elif context.baseNumericListOp() |> isNull |> not then
+        let operator = operationLib.NumericListOperators[context.baseNumericListOp().GetText()]
+        operationLib.ApplyNumericListOperation left right operator []
       else 
         right
 
@@ -339,7 +348,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
         operationLib.ApplyUnaryListOperation a operator []
     | :? PList as l ->
         l |> Seq.map(fun pobj -> operationLib.ApplyUnaryListOperation pobj operator []) |> PList :> PObject
-    | _ -> PrimellProgrammerProblemException("not possible") |> raise
+    | _ -> PrimellProgrammerProblemException "not possible" |> raise
 
   override this.VisitForEachBinary context =
     let left = this.Visit(context.termSeq()[0])
@@ -352,7 +361,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
     | :? PList as l when l.IsEmpty -> 
         this.ApplyBinaryOperation l right (context.binaryOp())
     | :? PList as l -> 
-        l |> Seq.map(fun pobj -> this.ApplyBinaryOperation l right (context.binaryOp())) |> PList :> PObject 
+        l |> Seq.map(fun pobj -> this.ApplyBinaryOperation pobj right (context.binaryOp())) |> PList :> PObject 
     | :? PAtom as a ->
         this.ApplyBinaryOperation a right (context.binaryOp())
     | _ -> PrimellProgrammerProblemException "not possible" |> raise
