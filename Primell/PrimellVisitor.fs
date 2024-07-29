@@ -82,14 +82,17 @@ type PrimellVisitor(control: PrimellProgramControl) =
 
     operationLib.ApplyNullaryOperation operator []
           
-  // TODO - switch this to UnaryNumeric in the grammar for consistency...
-  override this.VisitNumericUnaryOperation context =  
-    let operator = operationLib.UnaryNumericOperators[context.numUnaryOp().baseNumUnaryOp().GetText()]
-    operationLib.ApplyUnaryNumericOperation (this.Visit(context.mulTerm())) operator []
+  member private this.ApplyUnaryOperation (pobj: PObject) (context: PrimellParser.UnaryOpContext) =
+    let opText = context.baseUnaryOp().GetText()
+    let opMods = 
+      match context.opMods() with
+      | null -> []
+      | _ as opModCtxt -> ParseLib.ParseOperationModifiers (opModCtxt.GetText())
 
-  override this.VisitListUnaryOperation context =
-    let operator = operationLib.UnaryListOperators[context.listUnaryOp().baseListUnaryOp().GetText()]
-    operationLib.ApplyUnaryListOperation (this.Visit(context.mulTerm())) operator []
+    operationLib.ApplyUnaryOperation pobj opText opMods
+  
+  override this.VisitUnaryOperation context =
+    this.ApplyUnaryOperation (this.Visit(context.mulTerm())) (context.unaryOp())
 
   (*
     interesting issue came up with previous implementation of referencing simply being an object and an index *number* Consider:
@@ -333,13 +336,12 @@ type PrimellVisitor(control: PrimellProgramControl) =
 
     this.ApplyBinaryOperation left right (context.binaryOp())
 
-  override this.VisitForEachListUnary context =
-    let operator = operationLib.UnaryListOperators[context.listUnaryOp().baseListUnaryOp().GetText()]
+  override this.VisitForEachUnary context =
     match this.Visit(context.termSeq()) with
     | :? PAtom as a ->
-        operationLib.ApplyUnaryListOperation a operator []
+        this.ApplyUnaryOperation a (context.unaryOp())
     | :? PList as l ->
-        l |> Seq.map(fun pobj -> operationLib.ApplyUnaryListOperation pobj operator []) |> PList :> PObject
+        l |> Seq.map(fun pobj -> this.ApplyUnaryOperation pobj (context.unaryOp())) |> PList :> PObject
     | _ -> PrimellProgrammerProblemException "not possible" |> raise
 
   override this.VisitForEachLeftBinary context =

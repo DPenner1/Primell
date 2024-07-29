@@ -20,11 +20,10 @@ rtlTerm : mulTerm                                                               
 
 binaryAssign : ASSIGN assignMods binaryOp? ;
 
-mulTerm : atomTerm                                                              #passThroughMulTerm
-        | mulTerm numUnaryOp                                                    #numericUnaryOperation 
-        | mulTerm listUnaryOp                                                   #listUnaryOperation
+mulTerm : atomTerm                                                              #passThrough
+        | mulTerm unaryOp                                                       #unaryOperation
         | mulTerm binaryOp (atomTerm | RTL termSeq)                             #binaryOperation
-        | FOREACH_LEFT termSeq FOREACH_RIGHT listUnaryOp                        #forEachListUnary
+        | FOREACH_LEFT termSeq FOREACH_RIGHT unaryOp                            #forEachUnary
         | FOREACH_LEFT termSeq binaryOp FOREACH_RIGHT (atomTerm | RTL termSeq)  #forEachLeftBinary
         | mulTerm FOREACH_LEFT binaryOp termSeq FOREACH_RIGHT                   #forEachRightBinary
         ;             
@@ -36,9 +35,11 @@ atomTerm : INT                      #integer
          | LPAREN termSeq RPAREN    #parens
          ;
 
-baseNullaryOp : IDENTIFIER | OP_READ_STR | OP_READ_CSV;
+baseNullaryOp : IDENTIFIER | OP_READ_STR | OP_READ_CSV
+              ;
 
-baseNumUnaryOp : OP_GAMMA | OP_NEXT | OP_PREV | OP_ROUND | OP_NEGATE | OP_BIN_NOT;
+baseNumUnaryOp : OP_GAMMA | OP_NEXT | OP_PREV | OP_ROUND | OP_NEGATE | OP_BIN_NOT 
+               ;
 
 baseNumBinaryOp : OP_ADD | OP_SUB | OP_MUL | OP_DIV | OP_MOD | OP_POW | OP_LOG | OP_SMALL | OP_BIG
                 | OP_INC_RANGE | OP_RANGE | OP_BIN_AND | OP_BIN_OR | OP_BIN_XOR 
@@ -56,18 +57,17 @@ baseListNumericOp : OP_INDEX ;
 
 baseNumericListOp : OP_CONS ;
 
-// Coming back to this after years, plural makes me think I intended multiple mods possible at once
-// but never got around to implementing that. Also no idea whey opMods and assignMods are both here and the same.
-
 opMods : (OPMOD_CUT | OPMOD_POW)? ;
 
 assignMods : (OPMOD_CUT | OPMOD_POW)? ;
 
 nullaryOp : baseNullaryOp opMods ;
 
-numUnaryOp : baseNumUnaryOp opMods ;
+unaryOp : baseUnaryOp opMods ;
 
-listUnaryOp : baseListUnaryOp opMods ;
+baseUnaryOp : baseNumUnaryOp
+            | baseListUnaryOp
+            ;
 
 binaryOp : baseBinaryOp opMods ;
 
