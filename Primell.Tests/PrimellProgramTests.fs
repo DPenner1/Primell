@@ -100,9 +100,9 @@ let ``Test Conditional``() =
 
 [<Fact>]
 let ``Test Foreach Binary``() =
-  TestProgram("2[::(3 5)(7 11)]", PrimellConfiguration.PrimellDefault, "(2 3 5) (2 7 11)")
-  TestProgram("3 2[::(3 5)(7 11)]", PrimellConfiguration.PrimellDefault, "3 ((2 3 5) (2 7 11))")
-  TestProgram("3 ; 2[::(3 5)(7 11)]", PrimellConfiguration.PrimellDefault, "3 (2 3 5) (2 7 11)")
+  TestProgram("2[<::(3 5)(7 11)]", PrimellConfiguration.PrimellDefault, "(2 3 5) (2 7 11)")
+  TestProgram("3 2[<::(3 5)(7 11)]", PrimellConfiguration.PrimellDefault, "3 ((2 3 5) (2 7 11))")
+  TestProgram("3 ; 2[<::(3 5)(7 11)]", PrimellConfiguration.PrimellDefault, "3 (2 3 5) (2 7 11)")
 
   TestProgram("[(2 3 5 7)(11 13 17) 19]@2", PrimellConfiguration.PrimellDefault, "5 17 ()")
   TestProgram("[(2 3 5 7)(11 13 17) 19]@2 3", PrimellConfiguration.PrimellDefault, "(5 17 ()) 3")
@@ -115,6 +115,6 @@ let ``Test Foreach Unary``() =
 [<Fact>]
 let ``Test Foreach Chain``() =
   TestProgram("[(2 3 5)(7 11 13) | _~_<]", PrimellConfiguration.PrimellDefault, "5 13")
-  TestProgram("[(2 3 5)(7 11 13) | _<[::(23 29)(31 37)]]", PrimellConfiguration.PrimellDefault, "((2 23 29) (2 31 37)) ((7 23 29) (7 31 37))")
+  TestProgram("[(2 3 5)(7 11 13) | _<[<::(23 29)(31 37)]]", PrimellConfiguration.PrimellDefault, "((2 23 29) (2 31 37)) ((7 23 29) (7 31 37))")
 
   

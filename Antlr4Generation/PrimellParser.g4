@@ -39,32 +39,29 @@ atomTerm : INT                      #integer
          | INFINITY                 #infinity
          | nullaryOp                #nullaryOperation
          | LPAREN RPAREN            #emptyList
-         | LBRACK RBRACK            #emptyList
-         | LBRACE RBRACE            #emptyList  // i don't think it ever matters which
+         | LBRACK RBRACK            #emptyList  // i don't think it ever matters which
          | LPAREN termSeq RPAREN    #parens
          ;
 
+// Note; numeric/list op distinction isn't syntactical, it's functional!
 baseNullaryOp : IDENTIFIER | OP_READ_STR | OP_READ_CSV
               ;
 
-baseNumUnaryOp : OP_GAMMA | OP_NEXT | OP_PREV | OP_ROUND | OP_NEGATE | OP_BIN_NOT 
-               ;
-
-baseNumBinaryOp : OP_ADD | OP_SUB | OP_MUL | OP_DIV | OP_MOD | OP_POW | OP_LOG | OP_SMALL | OP_BIG
-                | OP_INC_RANGE | OP_RANGE | OP_BIN_AND | OP_BIN_OR | OP_BIN_XOR 
-                ;
-
-baseListUnaryOp : OP_HEAD | OP_TAIL | OP_DISTINCT | OP_REV | OP_FLATTEN | OP_SORT | OP_READ_CODE 
-                ;
-
-baseListBinaryOp : OP_COND | OP_NEG_COND | OP_INDEX_OF
-                 | OP_JUMP | OP_JUMP_BACK | OP_NEG_JUMP | OP_NEG_JUMP_BACK
-                 | OP_LIST_DIFF | OP_INTERSECT
-                 ;
-
-baseListNumericOp : OP_INDEX ;
-
-baseNumericListOp : OP_CONS ;
+baseUnaryOp : OP_GAMMA | OP_NEXT | OP_PREV | OP_ROUND | OP_NEGATE | OP_BIT_NOT   // numeric unary
+            | OP_HEAD | OP_TAIL | OP_DISTINCT | OP_REV | OP_FLATTEN | OP_SORT | OP_READ_CODE   // list unary
+            ;
+            
+baseBinaryOp : OP_ADD | OP_SUB | OP_MUL | OP_DIV | OP_MOD | OP_POW | OP_LOG   // num binary (math)
+             | OP_BIT_AND | OP_BIT_OR | OP_BIT_XOR                            // num binary (bitwise)
+             | OP_INC_RANGE | OP_RANGE | OP_SMALL | OP_BIG                    // num binary (misc)
+             | OP_LIST_DIFF | OP_INTERSECT | OP_INDEX_OF | OP_CONCAT          // list binary
+             | OP_INDEX | OP_APPEND                                           // list numeric
+             | OP_CONS                                                        // numeric list
+                // Conditionals (list binary, but I may have to section them off later for easier handling)
+             | OP_COND | OP_NEG_COND 
+             | OP_JUMP | OP_JUMP_BACK | OP_NEG_JUMP | OP_NEG_JUMP_BACK
+             | OP_WHILE | OP_NEG_WHILE | OP_DO_WHILE | OP_NEG_DO_WHILE
+             ;
 
 opMods : (OPMOD_CUT | OPMOD_POW)? ;
 
@@ -76,17 +73,7 @@ unaryOp : unaryAssign? baseUnaryOp opMods ;
 
 unaryAssign : ASSIGN assignMods ;   
 
-baseUnaryOp : baseNumUnaryOp
-            | baseListUnaryOp
-            ;
-
 binaryOp : baseBinaryOp opMods ;
-
-baseBinaryOp : baseNumBinaryOp
-             | baseListBinaryOp
-             | baseListNumericOp
-             | baseNumericListOp
-             ;
 
 
 

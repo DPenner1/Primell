@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generated from /home/darrell/Projects/Prime/Antlr4Generation/PrimellParser.g4 by ANTLR 4.13.1
+// Generated from /home/darrell/Projects/Primell/Antlr4Generation/PrimellParser.g4 by ANTLR 4.13.1
 
 // Unreachable code detected
 #pragma warning disable 0162
@@ -185,41 +185,17 @@ public interface IPrimellParserVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitBaseNullaryOp([NotNull] PrimellParser.BaseNullaryOpContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="PrimellParser.baseNumUnaryOp"/>.
+	/// Visit a parse tree produced by <see cref="PrimellParser.baseUnaryOp"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitBaseNumUnaryOp([NotNull] PrimellParser.BaseNumUnaryOpContext context);
+	Result VisitBaseUnaryOp([NotNull] PrimellParser.BaseUnaryOpContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="PrimellParser.baseNumBinaryOp"/>.
+	/// Visit a parse tree produced by <see cref="PrimellParser.baseBinaryOp"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitBaseNumBinaryOp([NotNull] PrimellParser.BaseNumBinaryOpContext context);
-	/// <summary>
-	/// Visit a parse tree produced by <see cref="PrimellParser.baseListUnaryOp"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitBaseListUnaryOp([NotNull] PrimellParser.BaseListUnaryOpContext context);
-	/// <summary>
-	/// Visit a parse tree produced by <see cref="PrimellParser.baseListBinaryOp"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitBaseListBinaryOp([NotNull] PrimellParser.BaseListBinaryOpContext context);
-	/// <summary>
-	/// Visit a parse tree produced by <see cref="PrimellParser.baseListNumericOp"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitBaseListNumericOp([NotNull] PrimellParser.BaseListNumericOpContext context);
-	/// <summary>
-	/// Visit a parse tree produced by <see cref="PrimellParser.baseNumericListOp"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitBaseNumericListOp([NotNull] PrimellParser.BaseNumericListOpContext context);
+	Result VisitBaseBinaryOp([NotNull] PrimellParser.BaseBinaryOpContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="PrimellParser.opMods"/>.
 	/// </summary>
@@ -251,21 +227,9 @@ public interface IPrimellParserVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitUnaryAssign([NotNull] PrimellParser.UnaryAssignContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="PrimellParser.baseUnaryOp"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitBaseUnaryOp([NotNull] PrimellParser.BaseUnaryOpContext context);
-	/// <summary>
 	/// Visit a parse tree produced by <see cref="PrimellParser.binaryOp"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitBinaryOp([NotNull] PrimellParser.BinaryOpContext context);
-	/// <summary>
-	/// Visit a parse tree produced by <see cref="PrimellParser.baseBinaryOp"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitBaseBinaryOp([NotNull] PrimellParser.BaseBinaryOpContext context);
 }

@@ -19,8 +19,7 @@ type OperationLib(control: PrimellProgramControl) =
       this.RaiseAtoms plist |> Seq.concat |> PrimellList
 
     member this.NullaryOperators: IDictionary<string, unit->PObject> =
-      dict [
-            ":\"", fun () -> control.GetStringInput()
+      dict [":\"", fun () -> control.GetStringInput()
             ":,", fun () -> control.GetCsvInput()
            ]
 
@@ -48,18 +47,17 @@ type OperationLib(control: PrimellProgramControl) =
             "<",  fun (left, right) -> ExtendedBigRational.Min(left.Value, right.Value) |> PNumber :> PObject
            ]
     
-    // TODO - I don't have any Binary List Operators implemented yet
     member this.BinaryListOperators: IDictionary<string, PList*PList->PObject> = 
-      dict ["\\",  fun (left: PList, right: PList) -> PList.Empty
+      dict ["<::>",  fun (left: PList, right: PList) -> left.AppendAll right
            ]
  
-    // TODO - none implemented yet
     member this.NumericListOperators: IDictionary<string, PNumber*PList->PObject> = 
-      dict ["::",  fun (left: PNumber, right: PList) -> right.Cons left
+      dict ["<::",  fun (left: PNumber, right: PList) -> right.Cons left
            ]
 
     member this.ListNumericOperators: IDictionary<string, PList*PNumber->PObject> = 
-      dict ["@",  fun (left: PList, right: PNumber) -> left.Index right
+      dict ["::>", fun (left: PList, right: PNumber) -> left.Append right
+            "@",   fun (left: PList, right: PNumber) -> left.Index right
            ]
 
     // opMods for consistency, but I don't think Primell will have any need for opMods on nullary operators
