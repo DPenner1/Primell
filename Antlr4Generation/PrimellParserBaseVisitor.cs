@@ -129,17 +129,6 @@ public partial class PrimellParserBaseVisitor<Result> : AbstractParseTreeVisitor
 	/// <return>The visitor result.</return>
 	public virtual Result VisitBinaryAssign([NotNull] PrimellParser.BinaryAssignContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by the <c>forEachRightBinary</c>
-	/// labeled alternative in <see cref="PrimellParser.mulTerm"/>.
-	/// <para>
-	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
-	/// on <paramref name="context"/>.
-	/// </para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	public virtual Result VisitForEachRightBinary([NotNull] PrimellParser.ForEachRightBinaryContext context) { return VisitChildren(context); }
-	/// <summary>
 	/// Visit a parse tree produced by the <c>binaryOperation</c>
 	/// labeled alternative in <see cref="PrimellParser.mulTerm"/>.
 	/// <para>
@@ -162,17 +151,6 @@ public partial class PrimellParserBaseVisitor<Result> : AbstractParseTreeVisitor
 	/// <return>The visitor result.</return>
 	public virtual Result VisitForEachLeftBinary([NotNull] PrimellParser.ForEachLeftBinaryContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by the <c>unaryOperation</c>
-	/// labeled alternative in <see cref="PrimellParser.mulTerm"/>.
-	/// <para>
-	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
-	/// on <paramref name="context"/>.
-	/// </para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	public virtual Result VisitUnaryOperation([NotNull] PrimellParser.UnaryOperationContext context) { return VisitChildren(context); }
-	/// <summary>
 	/// Visit a parse tree produced by the <c>forEachChain</c>
 	/// labeled alternative in <see cref="PrimellParser.mulTerm"/>.
 	/// <para>
@@ -183,6 +161,17 @@ public partial class PrimellParserBaseVisitor<Result> : AbstractParseTreeVisitor
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	public virtual Result VisitForEachChain([NotNull] PrimellParser.ForEachChainContext context) { return VisitChildren(context); }
+	/// <summary>
+	/// Visit a parse tree produced by the <c>unaryOperation</c>
+	/// labeled alternative in <see cref="PrimellParser.mulTerm"/>.
+	/// <para>
+	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
+	/// on <paramref name="context"/>.
+	/// </para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	public virtual Result VisitUnaryOperation([NotNull] PrimellParser.UnaryOperationContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by the <c>passThroughMulTerm</c>
 	/// labeled alternative in <see cref="PrimellParser.mulTerm"/>.
@@ -205,6 +194,16 @@ public partial class PrimellParserBaseVisitor<Result> : AbstractParseTreeVisitor
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	public virtual Result VisitForEachUnary([NotNull] PrimellParser.ForEachUnaryContext context) { return VisitChildren(context); }
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="PrimellParser.binaryOpWithRS"/>.
+	/// <para>
+	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
+	/// on <paramref name="context"/>.
+	/// </para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	public virtual Result VisitBinaryOpWithRS([NotNull] PrimellParser.BinaryOpWithRSContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="PrimellParser.unaryOrBinaryOp"/>.
 	/// <para>

@@ -17,6 +17,7 @@ LPAREN : '(' ;
 RPAREN : ')' ;
 LBRACE : '{' ;
 RBRACE : '}' ;
+VERT_BAR : '|' ;
 
 OUT_INV : '"~' ;
 OUT_DEF : '""' ;

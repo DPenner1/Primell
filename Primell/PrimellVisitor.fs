@@ -329,16 +329,37 @@ type PrimellVisitor(control: PrimellProgramControl) =
     else 
       retval
 
-  override this.VisitBinaryOperation context =
-    let left = this.Visit(context.mulTerm())
-    
+  member private this.GetLeftRightBinaryOperands (leftContext: ParserRuleContext)(rightContext: PrimellParser.BinaryOpWithRSContext) =
+    // visit order matters in case of mutable assignment!
+    let isRtl = rightContext.RTL() |> isNull |> not
     // TODO - really need to adjust grammar to section off conditional, its a mess otherwise
     // TODO - here we need to handle conditional, and not visit head/tail of right, depending on the result
-    let right = match context.termSeq() with
-                | null -> this.Visit(context.atomTerm())
-                | _ as x -> this.Visit(x)
+    let firstObj = 
+      if isRtl then this.Visit(rightContext.termSeq()) 
+      else this.Visit(leftContext)
 
-    this.ApplyBinaryOperation left right (context.binaryOp())
+    let secondObj =
+      if isRtl then this.Visit(leftContext)
+      else match rightContext.termSeq() with
+           | null -> this.Visit(rightContext.atomTerm())
+           | _ as x -> this.Visit(x)
+
+    if isRtl then secondObj, firstObj else firstObj, secondObj
+
+  member private this.ApplyBinaryRhsOperation (left: PObject)(right: PObject)(context: PrimellParser.BinaryOpWithRSContext) =
+    match context.LBRACK() with  // presence of bracket indicates for-each right side
+    | null ->
+        this.ApplyBinaryOperation left right (context.binaryOp())
+    | _ -> 
+        match right with
+        | :? PList as l -> l |> Seq.map(fun x -> this.ApplyBinaryOperation left x (context.binaryOp())) |> PList :> PObject
+        | _ -> this.ApplyBinaryOperation left right (context.binaryOp())
+
+
+  override this.VisitBinaryOperation context =
+    let left, right = this.GetLeftRightBinaryOperands (context.mulTerm()) (context.binaryOpWithRS())
+    this.ApplyBinaryRhsOperation left right (context.binaryOpWithRS())
+   
 
   override this.VisitForEachUnary context =
     match this.Visit(context.termSeq()) with
@@ -349,43 +370,33 @@ type PrimellVisitor(control: PrimellProgramControl) =
     | _ -> PrimellProgrammerProblemException "not possible" |> raise
 
   override this.VisitForEachLeftBinary context =
-    let left = this.Visit(context.termSeq()[0])
-    let right = 
-      match context.atomTerm() with
-      | null -> this.Visit(context.termSeq()[1])
-      | _ as a -> this.Visit(a)
+    let rhsCtxt = context.binaryOpWithRS()
+    let left, right = this.GetLeftRightBinaryOperands (context.termSeq()) rhsCtxt
 
     match left with
-    | :? PList as l when l.IsEmpty -> 
-        this.ApplyBinaryOperation l right (context.binaryOp())
     | :? PList as l -> 
-        l |> Seq.map(fun pobj -> this.ApplyBinaryOperation pobj right (context.binaryOp())) |> PList :> PObject 
-    | :? PAtom as a ->
-        this.ApplyBinaryOperation a right (context.binaryOp())
-    | _ -> PrimellProgrammerProblemException "not possible" |> raise
-
-  override this.VisitForEachRightBinary context =
-    let left = this.Visit(context.mulTerm())
-
-    match this.Visit(context.termSeq()) with
-    | :? PAtom as robj ->
-        this.ApplyBinaryOperation left robj (context.binaryOp())
-    | :? PList as l ->
-        l |> Seq.map(fun robj -> this.ApplyBinaryOperation left robj (context.binaryOp())) |> PList :> PObject
-    | _ -> PrimellProgrammerProblemException("not possible") |> raise
+        l |> Seq.map(fun pobj -> this.ApplyBinaryRhsOperation pobj right rhsCtxt) |> PList :> PObject 
+    | _ ->
+        this.ApplyBinaryRhsOperation left right rhsCtxt
 
   member private this.OpChain (pobj: PObject) (context: PrimellParser.UnaryOrBinaryOpContext seq) =
     (pobj, context) ||> Seq.fold (fun p op ->
-      match op.binaryOp() with
-      | null -> this.ApplyUnaryOperation p (op.unaryOp())
-      | _ as boCtxt -> this.ApplyBinaryOperation p (this.Visit(op.atomTerm())) boCtxt)
+      match op.binaryOpWithRS() with
+      | null -> 
+          this.ApplyUnaryOperation p (op.unaryOp())
+      | _ as boCtxt -> 
+            match boCtxt.termSeq() with
+            | null ->                  
+                this.ApplyBinaryRhsOperation p (this.Visit(boCtxt.atomTerm())) boCtxt
+            | _ as x ->
+                this.ApplyBinaryRhsOperation p (this.Visit(x)) boCtxt
+    )
 
   override this.VisitForEachChain context =
-
-    match this.Visit(context.mulTerm()) with
-    | :? PAtom as a -> this.OpChain a (context.unaryOrBinaryOp())
+    let left = this.Visit(context.termSeq())
+    match left with
     | :? PList as l -> l |> Seq.map(fun x -> this.OpChain x (context.unaryOrBinaryOp())) |> PList :> PObject
-    | _ -> PrimellProgrammerProblemException "not possible" |> raise
+    | _ -> this.OpChain left (context.unaryOrBinaryOp())
      
 
 (* Old referential assignment which might be useful later on with lazier eval
