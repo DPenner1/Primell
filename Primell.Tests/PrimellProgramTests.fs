@@ -94,22 +94,26 @@ let ``Test Index + Assign``() =
 let ``Test Conditional``() =
   TestProgram("2?(2 3 5)", PrimellConfiguration.PrimellDefault, "2")
   TestProgram("2?~(2 3 5)", PrimellConfiguration.PrimellDefault, "3 5")
-  TestProgram("(2+2)?(2 3 5)", PrimellConfiguration.PrimellDefault, "3 5")
+  TestProgram("2+2 ?(2 3 5)", PrimellConfiguration.PrimellDefault, "3 5")
 
-  TestProgram("(2+2)?~(2 3 5)", PrimellConfiguration.PrimellDefault, "2")
+  TestProgram("2+2 ?~(2 3 5)", PrimellConfiguration.PrimellDefault, "2")
 
 [<Fact>]
 let ``Test Foreach Binary``() =
-  TestProgram("2[::(3 5)(7 11)]", PrimellConfiguration.PrimellDefault, "(2 3 5) (2 7 11)")
-  TestProgram("3 2[::(3 5)(7 11)]", PrimellConfiguration.PrimellDefault, "3 ((2 3 5) (2 7 11))")
-  TestProgram("3 ; 2[::(3 5)(7 11)]", PrimellConfiguration.PrimellDefault, "3 (2 3 5) (2 7 11)")
+  TestProgram("2::{(3 5)(7 11)}", PrimellConfiguration.PrimellDefault, "(2 3 5) (2 7 11)")
+  TestProgram("3 2::{(3 5)(7 11)}", PrimellConfiguration.PrimellDefault, "3 ((2 3 5) (2 7 11))")
+  TestProgram("3 ; 2::{(3 5)(7 11)}", PrimellConfiguration.PrimellDefault, "3 (2 3 5) (2 7 11)")
 
-  TestProgram("[(2 3 5 7)(11 13 17) 19 @]2", PrimellConfiguration.PrimellDefault, "5 17 ()")
-  TestProgram("[(2 3 5 7)(11 13 17) 19 @]2 3", PrimellConfiguration.PrimellDefault, "(5 17 ()) 3")
-  TestProgram(";[(2 3 5 7)(11 13 17) 19 @]2 3", PrimellConfiguration.PrimellDefault, "5 17 () 3")
+  TestProgram("[(2 3 5 7)(11 13 17) 19]@2", PrimellConfiguration.PrimellDefault, "5 17 ()")
+  TestProgram("[(2 3 5 7)(11 13 17) 19]@2 3", PrimellConfiguration.PrimellDefault, "(5 17 ()) 3")
+  TestProgram(";[(2 3 5 7)(11 13 17) 19]@2 3", PrimellConfiguration.PrimellDefault, "5 17 () 3")
 
 [<Fact>]
 let ``Test Foreach Unary``() =
   TestProgram("[(3 5)(7 11)]_~", PrimellConfiguration.PrimellDefault, "(5 3) (11 7)")
+
+[<Fact>]
+let ``Test Foreach Chain``() =
+  TestProgram("((2 3 5)(7 11 13))[_~_<]", PrimellConfiguration.PrimellDefault, "5 13")
 
   

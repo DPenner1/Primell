@@ -11,10 +11,12 @@ CONCAT : ';' ;
 
 ASSIGN : '=' ;
 
-FOREACH_LEFT : '[' ;
-FOREACH_RIGHT : ']' ;
+LBRACK : '[' ;
+RBRACK : ']' ;
 LPAREN : '(' ;
 RPAREN : ')' ;
+LBRACE : '{' ;
+RBRACE : '}' ;
 
 OUT_INV : '"~' ;
 OUT_DEF : '""' ;
@@ -23,8 +25,6 @@ OUT_STR : '"' ;
 OPMOD_POW : '^' ;
 OPMOD_CUT : '`' ;
 OPMOD_FOLD : '!' ;
-
-COMMENT_START : '~~' ;
 
 OP_READ_CODE : '_:' ;
 OP_READ_STR : ':"' ;

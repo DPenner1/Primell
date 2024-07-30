@@ -90,13 +90,6 @@ public interface IPrimellParserVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitBinaryAssign([NotNull] PrimellParser.BinaryAssignContext context);
 	/// <summary>
-	/// Visit a parse tree produced by the <c>passThrough</c>
-	/// labeled alternative in <see cref="PrimellParser.mulTerm"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitPassThrough([NotNull] PrimellParser.PassThroughContext context);
-	/// <summary>
 	/// Visit a parse tree produced by the <c>forEachRightBinary</c>
 	/// labeled alternative in <see cref="PrimellParser.mulTerm"/>.
 	/// </summary>
@@ -125,6 +118,20 @@ public interface IPrimellParserVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitUnaryOperation([NotNull] PrimellParser.UnaryOperationContext context);
 	/// <summary>
+	/// Visit a parse tree produced by the <c>forEachChain</c>
+	/// labeled alternative in <see cref="PrimellParser.mulTerm"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitForEachChain([NotNull] PrimellParser.ForEachChainContext context);
+	/// <summary>
+	/// Visit a parse tree produced by the <c>passThroughMulTerm</c>
+	/// labeled alternative in <see cref="PrimellParser.mulTerm"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitPassThroughMulTerm([NotNull] PrimellParser.PassThroughMulTermContext context);
+	/// <summary>
 	/// Visit a parse tree produced by the <c>forEachUnary</c>
 	/// labeled alternative in <see cref="PrimellParser.mulTerm"/>.
 	/// </summary>
@@ -132,11 +139,11 @@ public interface IPrimellParserVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitForEachUnary([NotNull] PrimellParser.ForEachUnaryContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="PrimellParser.unaryAssign"/>.
+	/// Visit a parse tree produced by <see cref="PrimellParser.unaryOrBinaryOp"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitUnaryAssign([NotNull] PrimellParser.UnaryAssignContext context);
+	Result VisitUnaryOrBinaryOp([NotNull] PrimellParser.UnaryOrBinaryOpContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>integer</c>
 	/// labeled alternative in <see cref="PrimellParser.atomTerm"/>.
@@ -238,6 +245,12 @@ public interface IPrimellParserVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitUnaryOp([NotNull] PrimellParser.UnaryOpContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="PrimellParser.unaryAssign"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitUnaryAssign([NotNull] PrimellParser.UnaryAssignContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="PrimellParser.baseUnaryOp"/>.
 	/// </summary>

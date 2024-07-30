@@ -14,21 +14,22 @@ concatRtlTerm : CONCAT? rtlTerm ;
 
 rtlTerm : mulTerm                                                                   #passThroughRtl
         | mulTerm binaryAssign (rtlTerm | RTL termSeq)                              #stdAssign
-        | mulTerm FOREACH_LEFT binaryAssign termSeq FOREACH_RIGHT                   #forEachRightAssign
-        | FOREACH_LEFT termSeq binaryAssign FOREACH_RIGHT (rtlTerm | RTL termSeq)   #forEachLeftAssign
-        ;
+        | mulTerm binaryAssign LBRACK termSeq RBRACK                   #forEachRightAssign
+        | LBRACE termSeq RBRACE binaryAssign (rtlTerm | RTL termSeq)   #forEachLeftAssign
+        ; 
 
 binaryAssign : ASSIGN assignMods binaryOp? ;
 
-mulTerm : atomTerm                                                              #passThrough
-        | mulTerm unaryAssign? unaryOp                                          #unaryOperation
-        | mulTerm binaryOp (atomTerm | RTL termSeq)                             #binaryOperation
-        | FOREACH_LEFT termSeq FOREACH_RIGHT unaryOp                            #forEachUnary
-        | FOREACH_LEFT termSeq binaryOp FOREACH_RIGHT (atomTerm | RTL termSeq)  #forEachLeftBinary
-        | mulTerm FOREACH_LEFT binaryOp termSeq FOREACH_RIGHT                   #forEachRightBinary
-        ;
+mulTerm : atomTerm                                                 #passThroughMulTerm
+        | mulTerm unaryOp                                          #unaryOperation
+        | mulTerm binaryOp (atomTerm | RTL termSeq)                #binaryOperation
+        | LBRACK termSeq RBRACK unaryOp                            #forEachUnary
+        | LBRACK termSeq RBRACK binaryOp (atomTerm | RTL termSeq)  #forEachLeftBinary
+        | mulTerm LBRACK unaryOrBinaryOp+ RBRACK                   #forEachChain
+        | mulTerm binaryOp LBRACE termSeq RBRACE                   #forEachRightBinary
+        ;          
 
-unaryAssign : ASSIGN assignMods ;             
+unaryOrBinaryOp : unaryOp | (binaryOp atomTerm) ;
 
 atomTerm : INT                      #integer
          | INFINITY                 #infinity
@@ -65,7 +66,9 @@ assignMods : (OPMOD_CUT | OPMOD_POW)? ;
 
 nullaryOp : baseNullaryOp opMods ;
 
-unaryOp : baseUnaryOp opMods ;
+unaryOp : unaryAssign? baseUnaryOp opMods ;
+
+unaryAssign : ASSIGN assignMods ;   
 
 baseUnaryOp : baseNumUnaryOp
             | baseListUnaryOp

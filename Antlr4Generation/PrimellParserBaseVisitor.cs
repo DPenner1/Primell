@@ -129,17 +129,6 @@ public partial class PrimellParserBaseVisitor<Result> : AbstractParseTreeVisitor
 	/// <return>The visitor result.</return>
 	public virtual Result VisitBinaryAssign([NotNull] PrimellParser.BinaryAssignContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by the <c>passThrough</c>
-	/// labeled alternative in <see cref="PrimellParser.mulTerm"/>.
-	/// <para>
-	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
-	/// on <paramref name="context"/>.
-	/// </para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	public virtual Result VisitPassThrough([NotNull] PrimellParser.PassThroughContext context) { return VisitChildren(context); }
-	/// <summary>
 	/// Visit a parse tree produced by the <c>forEachRightBinary</c>
 	/// labeled alternative in <see cref="PrimellParser.mulTerm"/>.
 	/// <para>
@@ -184,6 +173,28 @@ public partial class PrimellParserBaseVisitor<Result> : AbstractParseTreeVisitor
 	/// <return>The visitor result.</return>
 	public virtual Result VisitUnaryOperation([NotNull] PrimellParser.UnaryOperationContext context) { return VisitChildren(context); }
 	/// <summary>
+	/// Visit a parse tree produced by the <c>forEachChain</c>
+	/// labeled alternative in <see cref="PrimellParser.mulTerm"/>.
+	/// <para>
+	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
+	/// on <paramref name="context"/>.
+	/// </para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	public virtual Result VisitForEachChain([NotNull] PrimellParser.ForEachChainContext context) { return VisitChildren(context); }
+	/// <summary>
+	/// Visit a parse tree produced by the <c>passThroughMulTerm</c>
+	/// labeled alternative in <see cref="PrimellParser.mulTerm"/>.
+	/// <para>
+	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
+	/// on <paramref name="context"/>.
+	/// </para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	public virtual Result VisitPassThroughMulTerm([NotNull] PrimellParser.PassThroughMulTermContext context) { return VisitChildren(context); }
+	/// <summary>
 	/// Visit a parse tree produced by the <c>forEachUnary</c>
 	/// labeled alternative in <see cref="PrimellParser.mulTerm"/>.
 	/// <para>
@@ -195,7 +206,7 @@ public partial class PrimellParserBaseVisitor<Result> : AbstractParseTreeVisitor
 	/// <return>The visitor result.</return>
 	public virtual Result VisitForEachUnary([NotNull] PrimellParser.ForEachUnaryContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="PrimellParser.unaryAssign"/>.
+	/// Visit a parse tree produced by <see cref="PrimellParser.unaryOrBinaryOp"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
 	/// on <paramref name="context"/>.
@@ -203,7 +214,7 @@ public partial class PrimellParserBaseVisitor<Result> : AbstractParseTreeVisitor
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitUnaryAssign([NotNull] PrimellParser.UnaryAssignContext context) { return VisitChildren(context); }
+	public virtual Result VisitUnaryOrBinaryOp([NotNull] PrimellParser.UnaryOrBinaryOpContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by the <c>integer</c>
 	/// labeled alternative in <see cref="PrimellParser.atomTerm"/>.
@@ -369,6 +380,16 @@ public partial class PrimellParserBaseVisitor<Result> : AbstractParseTreeVisitor
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	public virtual Result VisitUnaryOp([NotNull] PrimellParser.UnaryOpContext context) { return VisitChildren(context); }
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="PrimellParser.unaryAssign"/>.
+	/// <para>
+	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
+	/// on <paramref name="context"/>.
+	/// </para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	public virtual Result VisitUnaryAssign([NotNull] PrimellParser.UnaryAssignContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="PrimellParser.baseUnaryOp"/>.
 	/// <para>

@@ -44,7 +44,7 @@ Operators may only take up to two arguments. Though all operators are able to wo
 
 ## Program Flow 
 
-Every program must start with a number or a list so that Primell has something to work with. Then, a sequence of operations are applied to get new values. Here is an single-line example:
+Every program must start with a number, list, or implicitly declared variable so that Primell has something to work with. Then, a sequence of operations are applied to get new values. Here is an single-line example:
 
     (2 3 5) + 2 _~ _> * 3 
 

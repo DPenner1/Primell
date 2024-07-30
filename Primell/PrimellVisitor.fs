@@ -92,7 +92,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
     let originalValue = this.Visit(context.mulTerm())
     let result = this.ApplyUnaryOperation originalValue (context.unaryOp())
     
-    match context.unaryAssign() with
+    match context.unaryOp().unaryAssign() with
     | null -> result
     | _ as uaCtxt -> 
         control.LastOperationWasAssignment <- true
@@ -374,6 +374,19 @@ type PrimellVisitor(control: PrimellProgramControl) =
         l |> Seq.map(fun robj -> this.ApplyBinaryOperation left robj (context.binaryOp())) |> PList :> PObject
     | _ -> PrimellProgrammerProblemException("not possible") |> raise
 
+  member private this.OpChain (pobj: PObject) (context: PrimellParser.UnaryOrBinaryOpContext seq) =
+    (pobj, context) ||> Seq.fold (fun p op ->
+      match op.binaryOp() with
+      | null -> this.ApplyUnaryOperation p (op.unaryOp())
+      | _ as boCtxt -> this.ApplyBinaryOperation p (this.Visit(op.atomTerm())) boCtxt)
+
+  override this.VisitForEachChain context =
+
+    match this.Visit(context.mulTerm()) with
+    | :? PAtom as a -> this.OpChain a (context.unaryOrBinaryOp())
+    | :? PList as l -> l |> Seq.map(fun x -> this.OpChain x (context.unaryOrBinaryOp())) |> PList :> PObject
+    | _ -> PrimellProgrammerProblemException "not possible" |> raise
+     
 
 (* Old referential assignment which might be useful later on with lazier eval
 
