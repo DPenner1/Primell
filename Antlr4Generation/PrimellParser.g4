@@ -47,21 +47,24 @@ atomTerm : INT                      #integer
 baseNullaryOp : IDENTIFIER | OP_READ_STR | OP_READ_CSV
               ;
 
-baseUnaryOp : OP_GAMMA | OP_NEXT | OP_PREV | OP_ROUND | OP_NEGATE | OP_BIT_NOT   // numeric unary
+baseUnaryOp : OP_GAMMA | OP_NEXT | OP_PREV | OP_ROUND | op_neg | OP_BIT_NOT   // numeric unary
             | OP_HEAD | OP_TAIL | OP_DISTINCT | OP_REV | OP_FLATTEN | OP_SORT | OP_READ_CODE   // list unary
             ;
             
-baseBinaryOp : OP_ADD | OP_SUB | OP_MUL | OP_DIV | OP_MOD | OP_POW | OP_LOG   // num binary (math)
+baseBinaryOp : op_add | OP_SUB | op_mul | op_div | OP_MOD | OP_POW | OP_LOG   // num binary (math)
              | OP_BIT_AND | OP_BIT_OR | OP_BIT_XOR                            // num binary (bitwise)
-             | OP_INC_RANGE | OP_RANGE | OP_SMALL | OP_BIG                    // num binary (misc)
-             | OP_LIST_DIFF | OP_INTERSECT | OP_INDEX_OF | OP_CONCAT          // list binary
+             | OP_INC_RANGE | OP_RANGE | OP_MIN | op_max                      // num binary (misc)
+             | op_list_diff | OP_INTERSECT | OP_INDEX_OF | OP_CONCAT          // list binary
              | OP_INDEX | OP_APPEND                                           // list numeric
              | OP_CONS                                                        // numeric list
-                // Conditionals (list binary, but I may have to section them off later for easier handling)
-             | OP_COND | OP_NEG_COND 
-             | OP_JUMP | OP_JUMP_BACK | OP_NEG_JUMP | OP_NEG_JUMP_BACK
-             | OP_WHILE | OP_NEG_WHILE | OP_DO_WHILE | OP_NEG_DO_WHILE
+             | conditionalOp   // separate for easier handling
              ;
+
+conditionalOp : OP_COND condMods ;
+
+condMods : cond_mod_neg? condFuncMod? cond_mod_tail? ;
+
+condFuncMod : cond_mod_jump | cond_mod_back_jump | cond_mod_while | cond_mod_do_while ;
 
 opMods : (OPMOD_CUT | OPMOD_POW)? ;
 
@@ -76,4 +79,22 @@ unaryAssign : ASSIGN assignMods ;
 binaryOp : baseBinaryOp opMods ;
 
 
+// a few symbols get used in different contexts so need to be distinguished by parser
 
+op_list_diff : B_SLASH ;
+cond_mod_back_jump : B_SLASH ;
+
+op_div : F_SLASH ;
+cond_mod_jump : F_SLASH ;
+
+op_max : TAIL ;
+cond_mod_tail : TAIL ;
+
+op_mul :  STAR ;
+cond_mod_while : STAR ;
+
+op_add : PLUS ;
+cond_mod_do_while : PLUS ;
+
+op_neg : NEGATE ;
+cond_mod_neg : NEGATE ;
