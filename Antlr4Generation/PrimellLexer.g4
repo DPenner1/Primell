@@ -11,12 +11,12 @@ CONCAT : ';' ;
 
 ASSIGN : '=' ;
 
-LBRACK : '[' ;
-RBRACK : ']' ;
-LPAREN : '(' ;
-RPAREN : ')' ;
-LBRACE : '{' ;
-RBRACE : '}' ;
+L_BRACK : '[' ;
+R_BRACK : ']' ;
+L_PAREN : '(' ;
+R_PAREN : ')' ;
+L_BRACE : '{' ;
+R_BRACE : '}' ;
 VERT_BAR : '|' ;
 
 OUT_INV : '"~' ;

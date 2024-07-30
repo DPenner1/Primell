@@ -36,16 +36,17 @@ public partial class PrimellParser : Parser {
 	protected static DFA[] decisionToDFA;
 	protected static PredictionContextCache sharedContextCache = new PredictionContextCache();
 	public const int
-		INT=1, INFINITY=2, IDENTIFIER=3, RTL=4, LTR=5, CONCAT=6, ASSIGN=7, LBRACK=8, 
-		RBRACK=9, LPAREN=10, RPAREN=11, LBRACE=12, RBRACE=13, VERT_BAR=14, OUT_INV=15, 
-		OUT_DEF=16, OUT_STR=17, OPMOD_POW=18, OPMOD_CUT=19, OPMOD_FOLD=20, OP_READ_CODE=21, 
-		OP_READ_STR=22, OP_READ_CSV=23, OP_GAMMA=24, OP_NEXT=25, OP_PREV=26, OP_ROUND=27, 
-		OP_HEAD=28, OP_TAIL=29, OP_DISTINCT=30, OP_FLATTEN=31, OP_PURGE=32, OP_REV=33, 
-		OP_SORT=34, OP_SUB=35, OP_MOD=36, OP_POW=37, OP_LOG=38, OP_INC_RANGE=39, 
-		OP_RANGE=40, OP_MIN=41, OP_BIT_AND=42, OP_BIT_OR=43, OP_BIT_XOR=44, OP_BIT_NOT=45, 
-		OP_INDEX=46, OP_INDEX_OF=47, OP_FILT=48, OP_NEG_FILT=49, OP_INTERSECT=50, 
-		OP_CONS=51, OP_APPEND=52, OP_CONCAT=53, OP_COND=54, TAIL=55, PLUS=56, 
-		STAR=57, NEGATE=58, F_SLASH=59, B_SLASH=60, WS=61, COMMENT=62;
+		INT=1, INFINITY=2, IDENTIFIER=3, RTL=4, LTR=5, CONCAT=6, ASSIGN=7, L_BRACK=8, 
+		R_BRACK=9, L_PAREN=10, R_PAREN=11, LBRACE=12, RBRACE=13, VERT_BAR=14, 
+		OUT_INV=15, OUT_DEF=16, OUT_STR=17, OPMOD_POW=18, OPMOD_CUT=19, OPMOD_FOLD=20, 
+		OP_READ_CODE=21, OP_READ_STR=22, OP_READ_CSV=23, OP_GAMMA=24, OP_NEXT=25, 
+		OP_PREV=26, OP_ROUND=27, OP_HEAD=28, OP_TAIL=29, OP_DISTINCT=30, OP_FLATTEN=31, 
+		OP_PURGE=32, OP_REV=33, OP_SORT=34, OP_SUB=35, OP_MOD=36, OP_POW=37, OP_LOG=38, 
+		OP_INC_RANGE=39, OP_RANGE=40, OP_MIN=41, OP_BIT_AND=42, OP_BIT_OR=43, 
+		OP_BIT_XOR=44, OP_BIT_NOT=45, OP_INDEX=46, OP_INDEX_OF=47, OP_FILT=48, 
+		OP_NEG_FILT=49, OP_INTERSECT=50, OP_CONS=51, OP_APPEND=52, OP_CONCAT=53, 
+		OP_COND=54, TAIL=55, PLUS=56, STAR=57, NEGATE=58, F_SLASH=59, B_SLASH=60, 
+		WS=61, COMMENT=62;
 	public const int
 		RULE_line = 0, RULE_outputSpec = 1, RULE_termSeq = 2, RULE_concatRtlTerm = 3, 
 		RULE_rtlTerm = 4, RULE_binaryAssign = 5, RULE_mulTerm = 6, RULE_binaryOpWithRS = 7, 
@@ -78,7 +79,7 @@ public partial class PrimellParser : Parser {
 	};
 	private static readonly string[] _SymbolicNames = {
 		null, "INT", "INFINITY", "IDENTIFIER", "RTL", "LTR", "CONCAT", "ASSIGN", 
-		"LBRACK", "RBRACK", "LPAREN", "RPAREN", "LBRACE", "RBRACE", "VERT_BAR", 
+		"L_BRACK", "R_BRACK", "L_PAREN", "R_PAREN", "LBRACE", "RBRACE", "VERT_BAR", 
 		"OUT_INV", "OUT_DEF", "OUT_STR", "OPMOD_POW", "OPMOD_CUT", "OPMOD_FOLD", 
 		"OP_READ_CODE", "OP_READ_STR", "OP_READ_CSV", "OP_GAMMA", "OP_NEXT", "OP_PREV", 
 		"OP_ROUND", "OP_HEAD", "OP_TAIL", "OP_DISTINCT", "OP_FLATTEN", "OP_PURGE", 
@@ -411,11 +412,11 @@ public partial class PrimellParser : Parser {
 		[System.Diagnostics.DebuggerNonUserCode] public BinaryAssignContext binaryAssign() {
 			return GetRuleContext<BinaryAssignContext>(0);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LBRACK() { return GetToken(PrimellParser.LBRACK, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode L_BRACK() { return GetToken(PrimellParser.L_BRACK, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public TermSeqContext termSeq() {
 			return GetRuleContext<TermSeqContext>(0);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode RBRACK() { return GetToken(PrimellParser.RBRACK, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode R_BRACK() { return GetToken(PrimellParser.R_BRACK, 0); }
 		public ForEachRightAssignContext(RtlTermContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
@@ -467,8 +468,8 @@ public partial class PrimellParser : Parser {
 				case INT:
 				case INFINITY:
 				case IDENTIFIER:
-				case LBRACK:
-				case LPAREN:
+				case L_BRACK:
+				case L_PAREN:
 				case LBRACE:
 				case OP_READ_STR:
 				case OP_READ_CSV:
@@ -499,11 +500,11 @@ public partial class PrimellParser : Parser {
 				State = 98;
 				binaryAssign();
 				State = 99;
-				Match(LBRACK);
+				Match(L_BRACK);
 				State = 100;
 				termSeq();
 				State = 101;
-				Match(RBRACK);
+				Match(R_BRACK);
 				}
 				break;
 			case 4:
@@ -524,8 +525,8 @@ public partial class PrimellParser : Parser {
 				case INT:
 				case INFINITY:
 				case IDENTIFIER:
-				case LBRACK:
-				case LPAREN:
+				case L_BRACK:
+				case L_PAREN:
 				case LBRACE:
 				case OP_READ_STR:
 				case OP_READ_CSV:
@@ -644,11 +645,11 @@ public partial class PrimellParser : Parser {
 		}
 	}
 	public partial class ForEachLeftBinaryContext : MulTermContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LBRACK() { return GetToken(PrimellParser.LBRACK, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode L_BRACK() { return GetToken(PrimellParser.L_BRACK, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public TermSeqContext termSeq() {
 			return GetRuleContext<TermSeqContext>(0);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode RBRACK() { return GetToken(PrimellParser.RBRACK, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode R_BRACK() { return GetToken(PrimellParser.R_BRACK, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public BinaryOpWithRSContext binaryOpWithRS() {
 			return GetRuleContext<BinaryOpWithRSContext>(0);
 		}
@@ -661,12 +662,12 @@ public partial class PrimellParser : Parser {
 		}
 	}
 	public partial class ForEachChainContext : MulTermContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LBRACK() { return GetToken(PrimellParser.LBRACK, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode L_BRACK() { return GetToken(PrimellParser.L_BRACK, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public TermSeqContext termSeq() {
 			return GetRuleContext<TermSeqContext>(0);
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode VERT_BAR() { return GetToken(PrimellParser.VERT_BAR, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode RBRACK() { return GetToken(PrimellParser.RBRACK, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode R_BRACK() { return GetToken(PrimellParser.R_BRACK, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public UnaryOrBinaryOpContext[] unaryOrBinaryOp() {
 			return GetRuleContexts<UnaryOrBinaryOpContext>();
 		}
@@ -709,11 +710,11 @@ public partial class PrimellParser : Parser {
 		}
 	}
 	public partial class ForEachUnaryContext : MulTermContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LBRACK() { return GetToken(PrimellParser.LBRACK, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode L_BRACK() { return GetToken(PrimellParser.L_BRACK, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public TermSeqContext termSeq() {
 			return GetRuleContext<TermSeqContext>(0);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode RBRACK() { return GetToken(PrimellParser.RBRACK, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode R_BRACK() { return GetToken(PrimellParser.R_BRACK, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public UnaryOpContext unaryOp() {
 			return GetRuleContext<UnaryOpContext>(0);
 		}
@@ -762,11 +763,11 @@ public partial class PrimellParser : Parser {
 				Context = _localctx;
 				_prevctx = _localctx;
 				State = 121;
-				Match(LBRACK);
+				Match(L_BRACK);
 				State = 122;
 				termSeq();
 				State = 123;
-				Match(RBRACK);
+				Match(R_BRACK);
 				State = 124;
 				unaryOp();
 				}
@@ -777,11 +778,11 @@ public partial class PrimellParser : Parser {
 				Context = _localctx;
 				_prevctx = _localctx;
 				State = 126;
-				Match(LBRACK);
+				Match(L_BRACK);
 				State = 127;
 				termSeq();
 				State = 128;
-				Match(RBRACK);
+				Match(R_BRACK);
 				State = 129;
 				binaryOpWithRS();
 				}
@@ -792,7 +793,7 @@ public partial class PrimellParser : Parser {
 				Context = _localctx;
 				_prevctx = _localctx;
 				State = 131;
-				Match(LBRACK);
+				Match(L_BRACK);
 				State = 132;
 				termSeq();
 				State = 133;
@@ -812,7 +813,7 @@ public partial class PrimellParser : Parser {
 					_la = TokenStream.LA(1);
 				} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & 2304998579973915008L) != 0) );
 				State = 139;
-				Match(RBRACK);
+				Match(R_BRACK);
 				}
 				break;
 			}
@@ -880,8 +881,8 @@ public partial class PrimellParser : Parser {
 		[System.Diagnostics.DebuggerNonUserCode] public TermSeqContext termSeq() {
 			return GetRuleContext<TermSeqContext>(0);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LBRACK() { return GetToken(PrimellParser.LBRACK, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode RBRACK() { return GetToken(PrimellParser.RBRACK, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode L_BRACK() { return GetToken(PrimellParser.L_BRACK, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode R_BRACK() { return GetToken(PrimellParser.R_BRACK, 0); }
 		public BinaryOpWithRSContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -927,13 +928,13 @@ public partial class PrimellParser : Parser {
 				EnterOuterAlt(_localctx, 3);
 				{
 				State = 159;
-				Match(LBRACK);
+				Match(L_BRACK);
 				State = 160;
 				binaryOp();
 				State = 161;
 				termSeq();
 				State = 162;
-				Match(RBRACK);
+				Match(R_BRACK);
 				}
 				break;
 			}
@@ -997,7 +998,7 @@ public partial class PrimellParser : Parser {
 				unaryOp();
 				}
 				break;
-			case LBRACK:
+			case L_BRACK:
 			case OP_SUB:
 			case OP_MOD:
 			case OP_POW:
@@ -1066,10 +1067,10 @@ public partial class PrimellParser : Parser {
 		}
 	}
 	public partial class EmptyListContext : AtomTermContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LPAREN() { return GetToken(PrimellParser.LPAREN, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode RPAREN() { return GetToken(PrimellParser.RPAREN, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LBRACK() { return GetToken(PrimellParser.LBRACK, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode RBRACK() { return GetToken(PrimellParser.RBRACK, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode L_PAREN() { return GetToken(PrimellParser.L_PAREN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode R_PAREN() { return GetToken(PrimellParser.R_PAREN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode L_BRACK() { return GetToken(PrimellParser.L_BRACK, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode R_BRACK() { return GetToken(PrimellParser.R_BRACK, 0); }
 		public EmptyListContext(AtomTermContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
@@ -1079,11 +1080,11 @@ public partial class PrimellParser : Parser {
 		}
 	}
 	public partial class ParensContext : AtomTermContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LPAREN() { return GetToken(PrimellParser.LPAREN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode L_PAREN() { return GetToken(PrimellParser.L_PAREN, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public TermSeqContext termSeq() {
 			return GetRuleContext<TermSeqContext>(0);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode RPAREN() { return GetToken(PrimellParser.RPAREN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode R_PAREN() { return GetToken(PrimellParser.R_PAREN, 0); }
 		public ParensContext(AtomTermContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
@@ -1150,9 +1151,9 @@ public partial class PrimellParser : Parser {
 				EnterOuterAlt(_localctx, 4);
 				{
 				State = 173;
-				Match(LPAREN);
+				Match(L_PAREN);
 				State = 174;
-				Match(RPAREN);
+				Match(R_PAREN);
 				}
 				break;
 			case 5:
@@ -1160,9 +1161,9 @@ public partial class PrimellParser : Parser {
 				EnterOuterAlt(_localctx, 5);
 				{
 				State = 175;
-				Match(LBRACK);
+				Match(L_BRACK);
 				State = 176;
-				Match(RBRACK);
+				Match(R_BRACK);
 				}
 				break;
 			case 6:
@@ -1170,11 +1171,11 @@ public partial class PrimellParser : Parser {
 				EnterOuterAlt(_localctx, 6);
 				{
 				State = 177;
-				Match(LPAREN);
+				Match(L_PAREN);
 				State = 178;
 				termSeq();
 				State = 179;
-				Match(RPAREN);
+				Match(R_PAREN);
 				}
 				break;
 			}

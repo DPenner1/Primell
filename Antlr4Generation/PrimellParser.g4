@@ -14,7 +14,7 @@ concatRtlTerm : CONCAT? rtlTerm ;
 
 rtlTerm : mulTerm                                                                   #passThroughRtl
         | mulTerm binaryAssign (rtlTerm | RTL termSeq)                              #stdAssign
-        | mulTerm binaryAssign LBRACK termSeq RBRACK                   #forEachRightAssign
+        | mulTerm binaryAssign L_BRACK termSeq R_BRACK                   #forEachRightAssign
         | LBRACE termSeq RBRACE binaryAssign (rtlTerm | RTL termSeq)   #forEachLeftAssign
         ; // TODO : rtl assign stuff hasn't been updated with the latest mulTerm mirrors
 
@@ -23,14 +23,14 @@ binaryAssign : ASSIGN assignMods binaryOp? ;
 mulTerm : atomTerm                                          #passThroughMulTerm
         | mulTerm unaryOp                                   #unaryOperation
         | mulTerm binaryOpWithRS                            #binaryOperation
-        | LBRACK termSeq RBRACK unaryOp                     #forEachUnary
-        | LBRACK termSeq RBRACK binaryOpWithRS              #forEachLeftBinary
-        | LBRACK termSeq VERT_BAR unaryOrBinaryOp+ RBRACK   #forEachChain
+        | L_BRACK termSeq R_BRACK unaryOp                     #forEachUnary
+        | L_BRACK termSeq R_BRACK binaryOpWithRS              #forEachLeftBinary
+        | L_BRACK termSeq VERT_BAR unaryOrBinaryOp+ R_BRACK   #forEachChain
         ;          
 
 binaryOpWithRS : binaryOp atomTerm
                | binaryOp RTL termSeq
-               | LBRACK binaryOp termSeq RBRACK
+               | L_BRACK binaryOp termSeq R_BRACK
                ;
 
 unaryOrBinaryOp : unaryOp | binaryOpWithRS ;
@@ -38,9 +38,9 @@ unaryOrBinaryOp : unaryOp | binaryOpWithRS ;
 atomTerm : INT                      #integer
          | INFINITY                 #infinity
          | nullaryOp                #nullaryOperation
-         | LPAREN RPAREN            #emptyList
-         | LBRACK RBRACK            #emptyList  // i don't think it ever matters which
-         | LPAREN termSeq RPAREN    #parens
+         | L_PAREN R_PAREN            #emptyList
+         | L_BRACK R_BRACK            #emptyList  // i don't think it ever matters which
+         | L_PAREN termSeq R_PAREN    #parens
          ;
 
 // Note; numeric/list op distinction isn't syntactical, it's functional!

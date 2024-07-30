@@ -347,7 +347,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
     if isRtl then secondObj, firstObj else firstObj, secondObj
 
   member private this.ApplyBinaryRhsOperation (left: PObject)(right: PObject)(context: PrimellParser.BinaryOpWithRSContext) =
-    match context.LBRACK() with  // presence of bracket indicates for-each right side
+    match context.L_BRACK() with  // presence of bracket indicates for-each right side
     | null ->
         this.ApplyBinaryOperation left right (context.binaryOp())
     | _ -> 
