@@ -15,10 +15,10 @@ type OperationLib(control: PrimellProgramControl) =
            ]
 
     member this.UnaryNumericOperators: IDictionary<string, PNumber->PObject> = 
-      dict ["~", fun n -> ExtendedBigRational.(~-) n.Value |> PNumber :> PObject
-            "++", fun n -> PPrimeLib.NextPrime n :> PObject
-            "--", fun n -> PPrimeLib.PrevPrime n :> PObject
-            "+-", fun n -> PPrimeLib.NearestPrime n :> PObject
+      dict ["~",  fun n -> ExtendedBigRational.(~-) n.Value |> PNumber :> PObject
+            "++", fun n -> if control.Settings.UsePrimeOperators then PPrimeLib.NextPrime n else n.Value + ExtendedBigRational.One |> PNumber :> PObject
+            "--", fun n -> if control.Settings.UsePrimeOperators then PPrimeLib.PrevPrime n else n.Value - ExtendedBigRational.One |> PNumber :> PObject
+            "+-", fun n -> if control.Settings.UsePrimeOperators then PPrimeLib.NearestPrime n else round n.Value |> PNumber :> PObject
            ]
 
     member this.UnaryListOperators: IDictionary<string, PList->PObject> = 
@@ -30,13 +30,17 @@ type OperationLib(control: PrimellProgramControl) =
            ]
 
     member this.BinaryNumericOperators: IDictionary<string, PNumber*PNumber->PObject> = 
-      dict ["..", fun (left, right) -> PPrimeLib.PrimeRange left.Value right.Value :> PObject
-            "+",  fun (left, right) -> ExtendedBigRational.(+)(left.Value, right.Value) |> PNumber :> PObject
+      dict ["+",  fun (left, right) -> ExtendedBigRational.(+)(left.Value, right.Value) |> PNumber :> PObject
             "-",  fun (left, right) -> ExtendedBigRational.(-)(left.Value, right.Value) |> PNumber :> PObject
             "*",  fun (left, right) -> ExtendedBigRational.( * )(left.Value, right.Value) |> PNumber :> PObject
             "/",  fun (left, right) -> ExtendedBigRational.( / )(left.Value, right.Value) |> PNumber :> PObject
             ">",  fun (left, right) -> ExtendedBigRational.Max(left.Value, right.Value) |> PNumber :> PObject
             "<",  fun (left, right) -> ExtendedBigRational.Min(left.Value, right.Value) |> PNumber :> PObject
+            "..", fun (left, right) -> 
+                    if control.Settings.UsePrimeOperators then 
+                      PPrimeLib.PrimeRange left.Value right.Value :> PObject
+                    else 
+                      ExtendedBigRational.Range left.Value right.Value |> Seq.map(fun x -> x |> PNumber :> PObject) |> PList :> PObject
            ]
     
     member this.BinaryListOperators: IDictionary<string, PList*PList->PObject> = 

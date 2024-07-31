@@ -54,6 +54,7 @@ module ParseLib =
     ParseOperationModifiers' opModText []
 
 
+  // you know, its just occurred to me that I have Antlr in this project already, I could use that to parse the settings...
   let rec UpdateSettings (settings: PrimellConfiguration) (args: List<string>) =
     if args.IsEmpty then 
       settings
@@ -80,6 +81,11 @@ module ParseLib =
           UpdateSettings { settings with RestrictedSource = args[1].ToLowerInvariant().StartsWith "y" } args.Tail.Tail
         else
           UpdateSettings { settings with RestrictedSource = not settings.RestrictedSource } args.Tail
+      | "-po" | "--use-prime-operators" ->
+        if args.Length > 1 && not <| args[1].StartsWith "-" then
+          UpdateSettings { settings with UsePrimeOperators = args[1].ToLowerInvariant().StartsWith "y" } args.Tail.Tail
+        else
+          UpdateSettings { settings with UsePrimeOperators = not settings.RestrictedSource } args.Tail
       | "-tp" | "--truth-prime" ->
         if args.Length > 1 && not <| args[1].StartsWith "-" then
           UpdateSettings { settings with PrimesAreTruth = args[1].ToLowerInvariant().StartsWith "y" } args.Tail.Tail
