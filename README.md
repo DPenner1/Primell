@@ -17,7 +17,45 @@ Primell was created as an experiment. I had intended on creating a more serious 
 # Overview
 
 _This overview presents high-level highlights of Primell, see the [wiki](https://github.com/DPenner1/Primell/wiki) for details._
- 
+
+## Unique Features (probably)
+
+While never intended to be serious, there are two things in Primell/Listell that I think are legitimately useful, and _as far as I am aware_ are unique to it.
+
+### 1. List multi-indexing 
+
+No, not the Pandas kind, but that did make it hard to search for other examples. Listell's index operator `@` generalizes list indexing concisely; it is effectively a way to select any items from a list and in any order:
+
+    (5 10 11 14 17 19 20)@(3 2)
+    = 14 11
+
+This was not explicitly designed for, but is just a result of how operators in Listell automatically apply a for-each approach when given a list instead of a numeric argument. This generality meant it could then be combined elegantly with the range operator `..` for achieve Python-like list slicing _without_ any dedicated list slicing implementation code:
+
+    (5 10 11 14 17 19 20)@(2..6)
+    = 11 14 17 19
+
+And while the implementation for this is currently broken, negative numbers will allow the ability to wrap around a list in either direction (due to syntax quirk, -1 is written as `1~`):
+
+    (5 10 11 14 17 19 20)@(1~..2)
+    = 20 5 10 11
+    (5 10 11 14 17 19 20)@(2..(1~))
+    = 11 10 5 20
+
+_(of course while functionally nice, I can imagine that implementing this in a production programming language in a performant manner might be challenging)_
+
+### 2. Concise functional mapping sequence syntax
+
+Or in more procedural language, apply a sequence of functions for each element in a list. In general, the syntax is `[ list to be mapped | mapping function sequence ]`. The following example takes a 2-item list, each itself nested with 3-item lists and applies a sequence of functions to it (including a binary operator).
+
+    [(2 3 5)(7 11 13) | reverse tail +(3 5)]
+    = (6 7) (14 12)
+
+Step by step, it reverses each list `(5 3 2)(13 11 7)`, takes the tail of each list `(3 2)(11 7)` then adds `(3 5)` to each list, which itself adds across like-indexes to produce the final result of `(6 7) (14 12)`. Of course I wanted to show how the syntax might look in a "serious" language, but Primell/Listell makes heavy use of symbols in it's operators so it actually looks like this:
+
+    [(2 3 5)(7 11 13) | _~ _> +(3 5)]
+
+This of course is entirely possible to achieve in many programming languages, I'm just not aware of any that does it so concisely while still being fairly readable.
+
 ## Data types
 
 Primell has but two data types:
@@ -28,6 +66,10 @@ Primell has but two data types:
 Other familiar data types are only simulated with these. For example:
 - Boolean: A non-empty list consisting of only prime numbers is considered true. Anything else is false. (This is the truest truth, but alternative truths are configurable.)
 - There aren't really others yet.
+
+
+
+ 1. List multi-indexing (no, not the Pandas kind, but that did make it hard to search for examples):
 
 ## Operators
 
