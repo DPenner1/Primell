@@ -14,12 +14,11 @@ type PrimellVisitor(control: PrimellProgramControl) =
   let operationLib = new OperationLib(control)
 
   // TODO - get rid of this
-  //let GetInt(n: PNumber) = 
-    //match n.Value with
-   // | Rational r when r >= BigRational.Zero -> (round r).Numerator |> int
-   // | _ -> System.NotImplementedException("Index only with positive finite values for now") |> raise
+  let GetInt(n: PNumber) = 
+    match n.Value with
+    | Rational r when r >= BigRational.Zero -> (round r).Numerator |> int
+    | _ -> PrimellProgrammerProblemException("Get Int should only be called with positive rational") |> raise
   
-   
   
   static member GetParser (line: string) =
     let stream = AntlrInputStream line
@@ -166,7 +165,12 @@ type PrimellVisitor(control: PrimellProgramControl) =
             |> Seq.insertAt (GetInt cValueIndex) newValue
             |> PList :> PObject
     | :? PList as l ->
-        l |> Seq.mapi (fun i x -> if i = GetInt cValueIndex then newValue else x) |> PList :> PObject
+        l |> Seq.mapi (fun i x -> 
+            match round cValueIndex.Value with
+            | Rational _ -> if i = GetInt cValueIndex then newValue else x
+            | _ -> x
+        )
+          |> PList :> PObject
     | _ -> System.NotImplementedException "nested ref/var" |> raise
 
   member private this.GetReplacementObject(cValue: PObject)(cValueIndex: PObject)(newValue: PObject) =
