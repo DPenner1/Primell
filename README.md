@@ -4,11 +4,11 @@ Primell is a language that likes prime numbers. So much in fact, that it is the 
 
  - Symbols are allowed in source code.
  - All numbers are permitted to be computed, though only primes may exist in source code.
- - Because humans almost universally use base 10, that is the default though all bases up to 64 are allowed.
- - Lists are allowed. Primell in fact quite likes lists because it allows more storage of prime numbers
- - Primell doesn't make mistakes: All valid programs either execute in a fully defined manner or execute infinitely, there are no runtime errors
+ - Because humans almost universally use base 10, that is the unfortunately non-prime default, though all bases up to 64 are allowed.
+ - Lists are allowed. Primell in fact quite likes lists because it allows more storage of prime numbers and so allows for infinite lists.
+ - Primell doesn't make mistakes: All valid programs either execute in a fully defined manner or execute infinitely, there are no runtime errors.
 
-*A "serious" version is being planned for which doesn't have source restriction.*
+Note: A "serious" version called Listell without the source restriction is configurable.
 
 # Why?
 
@@ -40,7 +40,7 @@ Since Primell is not very familiar with how operators work, Primell for the most
 - The `$` symbol acts like in Haskell, that is, executes everything to the right of it first. This is mainly syntactic sugar to avoid too many nested parentheses.
 - The "default" operator is concatenation. Placing multiple lists/numbers next to each other creates a single list containing those elements. This is the lowest priority operation.
 
-Operators may only take up to two arguments. Though all operators are able to work on both numbers and lists, it is convenient to define them in terms of one or the other. See wiki for a list of the operators.
+Operators may only take up to two arguments. Though all operators are able to work on both numbers and lists, it is convenient to define them in terms of one or the other. See the [List of Operators](https://github.com/DPenner1/Primell/wiki/List-of-Operators) on the wiki for the full list.
 
 ## Program Flow 
 

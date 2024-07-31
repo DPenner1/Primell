@@ -20,9 +20,11 @@ type PrimellRunner() =
   let consoleSettings = [ "-of   OR  --output-filepath <file-path>?", "Directs Primell to output to given file. If no file is specified, output is to console."
                           "-sf   OR  --source-filepath <file-path>?", "Sets the default source code file path for the ?run command."
                           "-b    OR  --base <base>", "Sets the base globally to given value."
-                          "-ib   OR  --input-base <base>", "Sets the base that Primell expects the user to write in for the list read (:_) operator."
-                          "-ob   OR  --output-base <base>", "Sets the base that Primell outputs in."
-                          "-sb   OR  --source-base <base>", "Sets the base that Primell expects the source code to be in."
+                          "-ib   OR  --input-base <integer>", "Sets the base that Primell expects the user to write in for the list read (:_) operator."
+                          "-ob   OR  --output-base <integer>", "Sets the base that Primell outputs in."
+                          "-sb   OR  --source-base <ingeger>", "Sets the base that Primell expects the source code to be in."
+                          "-c63  OR  --character-63 <char>", "Sets the 63rd character for base 63/64 (value 62). Must be alphanumeric, but not in [0-9a-zA-Z]."
+                          "-c64  OR  --character-64 <char>", "Sets the 64th character for base 64 (value 63). Must be alphanumeric, but not in [0-9a-zA-Z]."
                           "-rs   OR  --restricted-source <Y/N>?", "Sets whether non-prime values are allowed."
                           "-tp   OR  --truth-prime <Y/N>?", "Sets that primes are the truth for boolean operators."
                           "-ta   OR  --truth-all <Y/N>?", "Sets whether all list items must be truth for boolean operators."
@@ -111,7 +113,7 @@ type PrimellRunner() =
               try
                 this.PromptForInput (ParseLib.UpdateSettings settings (newSettings |> Array.toList)) echo (if echo then "Settings updated." else "")
               with
-              | :? ArgumentException -> this.PromptForInput settings echo "Invalid setting"
+              | :? ArgumentException | :? InvalidCastException -> this.PromptForInput settings echo "Invalid setting"
         | "echo" -> 
             this.PromptForInput settings (not echo) (if echo then "" else "Echo turned on. on. on.")
         | "clear" -> 
@@ -131,7 +133,7 @@ type PrimellRunner() =
          // invalid case is basically same as not implemented in this solution - they are hacks to temporarly not do the harder datatype
     | PrimellInvalidSyntaxException msg -> this.PromptForInput settings echo $"Invalid Syntax: {msg}"
     | PrimellProgrammerProblemException _ -> this.PromptForInput settings echo "Error in Primell's programmer's brain"
-    | NonPrimeDectectionException _ -> printfn "NON-PRIME DETECTED!"  // purposeful exit
+    | NonPrimeDectectionException msg -> printfn $"NON-PRIME DETECTED! ({msg})"  // purposeful exit
     
   
   member private this.HelpSpiel() =
