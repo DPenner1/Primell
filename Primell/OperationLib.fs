@@ -16,8 +16,9 @@ type OperationLib(control: PrimellProgramControl) =
 
     member this.UnaryNumericOperators: IDictionary<string, PNumber->PObject> = 
       dict ["~", fun n -> ExtendedBigRational.(~-) n.Value |> PNumber :> PObject
-            "++", fun n -> PPrimeLib.NextPrime n.Value |> PNumber :> PObject
-            "--", fun n -> PPrimeLib.PrevPrime n.Value |> PNumber :> PObject
+            "++", fun n -> PPrimeLib.NextPrime n :> PObject
+            "--", fun n -> PPrimeLib.PrevPrime n :> PObject
+            "+-", fun n -> PPrimeLib.NearestPrime n :> PObject
            ]
 
     member this.UnaryListOperators: IDictionary<string, PList->PObject> = 
@@ -149,7 +150,7 @@ type OperationLib(control: PrimellProgramControl) =
             l |> Seq.exists(fun x -> this.IsTruth(x, primesAreTruth, requireAllTruth))
       | :? PNumber as n -> 
           if primesAreTruth then
-            PPrimeLib.IsPrime n.Value
+            PPrimeLib.IsPrime n
           else
             match n.Value with
             | NaN -> false

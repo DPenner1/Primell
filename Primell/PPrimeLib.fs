@@ -1,29 +1,25 @@
 namespace dpenner1.Primell
 
-open System.Collections.Generic
-
-// Really, an external library probably exists for this, but this is for fun and learning F#
-
-// The public interface takes PNumber and mostly serves to filter to positive integers, 
-// private members are bigint and are the real work (and can more easily be copied for more serious use...)
+// adapt the more Primell-neutral PrimeLib to PNumber
 module PPrimeLib =
 
-  let IsPrime x = 
-    match x with
+  let IsPrime (x: PNumber) = 
+    match x.Value with
     | Rational r when r.IsInteger && r.Sign > 0 -> 
         PrimeLib.IsPrime r.Numerator
     | _ -> false
 
-  let NextPrime x =
-    match x with
+  let NextPrime (x: PNumber) =
+    match x.Value with
     | NaN -> NaN
     | Infinity Positive -> Infinity Positive
     | Infinity Negative -> ExtendedBigRational.Two
     | Rational r when r.Sign < 1 -> ExtendedBigRational.Two
     | Rational r -> BigRational(PrimeLib.NextPrime ((floor r).Numerator), 1) |> Rational
+    |> PNumber
 
-  let PrevPrime x = 
-    match x with
+  let PrevPrime (x: PNumber) = 
+    match x.Value with
     | NaN -> NaN
     | Infinity Positive -> Infinity Positive
     | Infinity Negative -> NaN
@@ -33,10 +29,28 @@ module PPrimeLib =
         match result with 
         | None -> NaN
         | Some p -> BigRational(p, 1) |> Rational
+    |> PNumber
+
+  let NearestPrime (x: PNumber) =
+    match x.Value with
+    | NaN -> NaN
+    | Infinity Positive -> Infinity Positive
+    | Infinity Negative -> ExtendedBigRational.Two
+    | Rational _ as r -> 
+        if IsPrime x then r
+        else
+          let prevPrime = PrevPrime x
+          let nextPrime = NextPrime x
+          // no real idea what to do in case of ties here
+          if (r - prevPrime.Value) < (nextPrime.Value - r) 
+            then prevPrime.Value 
+          else nextPrime.Value
+    |> PNumber
+
 
   let private PrimeConvert(s: ExtendedBigRational seq, length: PNumber option) =
     let result = 
-      s |> Seq.filter IsPrime
+      s |> Seq.filter(fun x -> IsPrime (x |> PNumber))
         |> Seq.map(fun x -> x |> PNumber :> PObject) 
     PList(result, ?length=length)
     

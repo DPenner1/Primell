@@ -30,10 +30,12 @@ module ParseLib =
 
   let ParseInteger (text:string) (``base``:int) =
     let b = ``base``
-    if b = 1 then
-      BigRational(text.Length, 1) |> Rational 
-    else
-      BigRational(ParseInteger' text b 0 0I, 1) |> Rational
+    let result = 
+      if b = 1 then
+        BigRational(text.Length, 1)
+      else
+        BigRational(ParseInteger' text b 0 0I, 1) 
+    result |> Rational |> PNumber
 
   let rec private ParseOperationModifiers' (opModText: string) (opMods: list<OperationModifier>) =
     if opModText.Length = 0 then 

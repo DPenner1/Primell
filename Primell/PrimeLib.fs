@@ -4,8 +4,6 @@ open System.Collections.Generic
 
 // Really, an external library probably exists for this, but this was for fun and learning F#
 
-// The public interface takes PNumber and mostly serves to filter to positive integers, 
-// private members are bigint and are the real work (and can more easily be copied for more serious use...)
 module PrimeLib =
 
   // memoization

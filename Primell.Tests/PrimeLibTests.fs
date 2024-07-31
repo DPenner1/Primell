@@ -6,7 +6,7 @@ open dpenner1.Primell
 
 let TestRange(range, primes) =
   range |> List.iter(fun i ->
-    Assert.Equal(List.contains i primes, PPrimeLib.IsPrime(BigRational(i, 1I) |> Rational))
+    Assert.Equal(List.contains i primes, PPrimeLib.IsPrime(BigRational(i, 1I) |> Rational |> PNumber))
   )
 
 [<Fact>]
@@ -23,15 +23,15 @@ let ``Test Is Prime 999950-1000000`` () =
 
 [<Fact>]
 let ``Test Is Prime Special Cases`` () =
-  Assert.False <| PPrimeLib.IsPrime NaN
-  Assert.False <| PPrimeLib.IsPrime(Infinity Positive)
-  Assert.False <| PPrimeLib.IsPrime(Infinity Negative)
+  Assert.False <| PPrimeLib.IsPrime(NaN |> PNumber)
+  Assert.False <| PPrimeLib.IsPrime(Infinity Positive |> PNumber)
+  Assert.False <| PPrimeLib.IsPrime(Infinity Negative |> PNumber)
   
-  Assert.False <| PPrimeLib.IsPrime(BigRational(1, -1) |> Rational)
-  Assert.False <| PPrimeLib.IsPrime(BigRational(0, 1) |> Rational)
-  Assert.False <| PPrimeLib.IsPrime(BigRational(1, 1) |> Rational)
+  Assert.False <| PPrimeLib.IsPrime(BigRational(1, -1) |> Rational |> PNumber)
+  Assert.False <| PPrimeLib.IsPrime(BigRational(0, 1) |> Rational |> PNumber)
+  Assert.False <| PPrimeLib.IsPrime(BigRational(1, 1) |> Rational |> PNumber)
 
-  Assert.True <| PPrimeLib.IsPrime(BigRational(2, 1) |> Rational)
+  Assert.True <| PPrimeLib.IsPrime(BigRational(2, 1) |> Rational |> PNumber)
 
-  Assert.False <| PPrimeLib.IsPrime(BigRational(5, 2) |> Rational)
-  Assert.False <| PPrimeLib.IsPrime(BigRational(5, -2) |> Rational)
+  Assert.False <| PPrimeLib.IsPrime(BigRational(5, 2) |> Rational |> PNumber)
+  Assert.False <| PPrimeLib.IsPrime(BigRational(5, -2) |> Rational |> PNumber)

@@ -4,7 +4,7 @@ open System.Collections.Generic
 open Antlr4.Runtime
 
 
-exception NonPrimeDectectionException of ExtendedBigRational
+exception NonPrimeDectectionException of PNumber
 // TODO - port from original C# code, very mutable stuff, see if you can get rid of non-functional stuff later
 
 type PrimellVisitor(control: PrimellProgramControl) = 
@@ -66,7 +66,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
     if control.Settings.RestrictedSource && not(PPrimeLib.IsPrime number) then
       NonPrimeDectectionException number |> raise
     
-    number |> PNumber :> PObject
+    number
 
   override this.VisitInfinity context = Infinity Positive |> PNumber :> PObject
   

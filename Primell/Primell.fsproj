@@ -6,9 +6,9 @@
   <ItemGroup>
     <Compile Include="BigRational.fs" />
     <Compile Include="ExtendedBigRational.fs" />
+    <Compile Include="PrimeLib.fs" />
     <Compile Include="PObject.fs" />
     <Compile Include="PNumber.fs" />
-    <Compile Include="PrimeLib.fs" />
     <Compile Include="PList.fs" />
     <Compile Include="PPrimeLib.fs" />
     <Compile Include="PrimellConfiguration.fs" />
