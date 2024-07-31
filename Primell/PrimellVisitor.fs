@@ -14,10 +14,10 @@ type PrimellVisitor(control: PrimellProgramControl) =
   let operationLib = new OperationLib(control)
 
   // TODO - get rid of this
-  let GetInt(n: PNumber) = 
-    match n.Value with
-    | Rational r when r >= BigRational.Zero -> (round r).Numerator |> int
-    | _ -> System.NotImplementedException("Index only with positive finite values for now") |> raise
+  //let GetInt(n: PNumber) = 
+    //match n.Value with
+   // | Rational r when r >= BigRational.Zero -> (round r).Numerator |> int
+   // | _ -> System.NotImplementedException("Index only with positive finite values for now") |> raise
   
    
   
@@ -64,7 +64,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
     let text = context.GetText()
     let number = ParseLib.ParseInteger text control.Settings.SourceBase
 
-    if control.Settings.RestrictedSource && not(PrimeLib.IsPrime number) then
+    if control.Settings.RestrictedSource && not(PPrimeLib.IsPrime number) then
       NonPrimeDectectionException number |> raise
     
     number |> PNumber :> PObject

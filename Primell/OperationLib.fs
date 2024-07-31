@@ -9,15 +9,6 @@ type OperationLib(control: PrimellProgramControl) =
 
     let control = control
 
-    member private this.RaiseAtoms(plist: PrimellList) =
-        plist |> Seq.map(fun x -> match x with 
-                                  | :? PAtom as a -> Seq.singleton (a :> PObject)
-                                  | :? PrimellList as l -> l
-                                  | _ -> PrimellProgrammerProblemException("not possible") |> raise)
-
-    member this.Flatten(plist: PrimellList) =
-      this.RaiseAtoms plist |> Seq.concat |> PrimellList
-
     member this.NullaryOperators: IDictionary<string, unit->PObject> =
       dict [":\"", fun () -> control.GetStringInput()
             ":,", fun () -> control.GetCsvInput()
@@ -25,20 +16,20 @@ type OperationLib(control: PrimellProgramControl) =
 
     member this.UnaryNumericOperators: IDictionary<string, PNumber->PObject> = 
       dict ["~", fun n -> ExtendedBigRational.(~-) n.Value |> PNumber :> PObject
-            "++", fun n -> PrimeLib.NextPrime n.Value |> PNumber :> PObject
-            "--", fun n -> PrimeLib.PrevPrime n.Value |> PNumber :> PObject
+            "++", fun n -> PPrimeLib.NextPrime n.Value |> PNumber :> PObject
+            "--", fun n -> PPrimeLib.PrevPrime n.Value |> PNumber :> PObject
            ]
 
     member this.UnaryListOperators: IDictionary<string, PList->PObject> = 
       dict ["_<", fun (l: PrimellList) -> l.Head()
             "_>", fun (l: PrimellList) -> l.Tail()        
             "_~", fun (l: PrimellList) -> l.Reverse()
-            "__", fun (l: PrimellList) -> this.Flatten(l)
+            "__", fun (l: PrimellList) -> l.Flatten()
             "_:", fun (l: PrimellList) -> control.GetCodeInput(l)
            ]
 
     member this.BinaryNumericOperators: IDictionary<string, PNumber*PNumber->PObject> = 
-      dict ["..", fun (left, right) -> PrimeLib.PrimeRange left.Value right.Value |> Seq.map(fun n -> n |> PNumber :> PObject) |> PList :> PObject
+      dict ["..", fun (left, right) -> PPrimeLib.PrimeRange left.Value right.Value :> PObject
             "+",  fun (left, right) -> ExtendedBigRational.(+)(left.Value, right.Value) |> PNumber :> PObject
             "-",  fun (left, right) -> ExtendedBigRational.(-)(left.Value, right.Value) |> PNumber :> PObject
             "*",  fun (left, right) -> ExtendedBigRational.( * )(left.Value, right.Value) |> PNumber :> PObject
@@ -158,7 +149,7 @@ type OperationLib(control: PrimellProgramControl) =
             l |> Seq.exists(fun x -> this.IsTruth(x, primesAreTruth, requireAllTruth))
       | :? PNumber as n -> 
           if primesAreTruth then
-            PrimeLib.IsPrime n.Value
+            PPrimeLib.IsPrime n.Value
           else
             match n.Value with
             | NaN -> false

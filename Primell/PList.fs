@@ -22,11 +22,12 @@ type PrimellList(sequence: seq<PObject>, ?length: PNumber, ?refersTo: Reference)
     | _ -> ()
     length.Value
 
+  member val private OptLength = length with get
+
   member this.IsGreaterOrEqualThanLength(value: int) =
     match main |> Seq.tryItem value with
     | None -> true
     | _ -> false
-    
 
   member this.IsEmpty with get() = Seq.isEmpty main   // avoid calling this.Length due to potential long computation
 
@@ -44,27 +45,57 @@ type PrimellList(sequence: seq<PObject>, ?length: PNumber, ?refersTo: Reference)
     match this.IsEmpty with
     | true -> PrimellList.Empty :> PObject
     | false -> 
-        let tail = Seq.tail main |> PrimellList
+        let newLength = 
+          match length with 
+          | None -> length 
+          | Some l -> Some(l.Value - ExtendedBigRational.One |> PNumber)
+        let tail = PrimellList(Seq.tail main, ?length = newLength)
+
         match Seq.tryHead tail with
         | Some head when Seq.isEmpty (Seq.tail tail) -> // tail had one item in it, Primell unboxes it
             head
         | _ -> tail
 
 
-  // TODO - in future, could have a constructor which has the reversed list as an argument, for infinite sequences
-  member this.Reverse() = Seq.rev main |> PrimellList
+  member this.Reverse() = PrimellList(Seq.rev main, ?length = length)
 
   // TODO - i know Lists are O(1) on prepend and not append, but how do Seqs behave on append vs prepend?
   // TODO - the Seq.singleton causes some incorrect boxing thats masked by a later Normalize
-  member this.Append (pobj: PObject) = Seq.append this (Seq.singleton pobj) |> PrimellList
+  member this.Append (pobj: PObject) = 
+    let newLength = 
+      match length with 
+      | None -> length 
+      | Some l -> Some(l.Value + ExtendedBigRational.One |> PNumber)
+    
+    PrimellList(Seq.append this (Seq.singleton pobj), ?length = newLength)
 
-  // TODO - is there a way to more cleanly do this without drilling into types?
+
   member this.AppendAll (pobj: PObject) =
     match pobj with
-    | :? PrimellList as l -> Seq.append this l |> PrimellList
-    | _ -> pobj |> Seq.singleton |> PrimellList |> this.AppendAll
+    | :? PrimellList as l -> 
+        let newLength = 
+          match length, l.OptLength with
+          | Some x, Some y -> Some(x.Value + y.Value |> PNumber)  // known lengths, just add them
+          // if one is known to be infinite length, that overrides
+          | Some x, _ -> 
+              match x.Value with 
+              | Infinity Positive -> Some(Infinity Positive |> PNumber) 
+              | _ -> None
+          | _, Some y ->
+              match y.Value with
+              | Infinity Positive -> Some(Infinity Positive |> PNumber) 
+              | _ -> None
+          | _ -> None
+        // reference 
+        PrimellList(Seq.append this l, ?length = newLength)  
+    | _ -> 
+        let newLength = 
+          match length with 
+          | None -> length 
+          | Some l -> Some(l.Value + ExtendedBigRational.One |> PNumber)
 
-  
+        PrimellList(Seq.append main (Seq.singleton pobj), ?length = newLength)
+
 
   member this.Index(index: PNumber) =
     match ExtendedBigRational.Round index.Value with
@@ -80,14 +111,22 @@ type PrimellList(sequence: seq<PObject>, ?length: PNumber, ?refersTo: Reference)
             else 
               this.Reverse() |> Seq.skip (int r.Numerator - 1) |> Seq.head
           else
-            let effectiveIndex =  r.Numerator |> BigRational |> Rational
             if this.IsGreaterOrEqualThanLength(int r.Numerator) then 
               PrimellList.Empty :> PObject 
             else
               main |> Seq.skip (int r.Numerator) |> Seq.head
 
-  member this.Cons(pnum: PNumber) =
-    main |> Seq.insertAt 0 pnum |> PrimellList
+  member this.Cons(pObj: PObject) =
+    main |> Seq.insertAt 0 pObj |> PrimellList
+
+  member private this.RaiseAtoms() =
+    main |> Seq.map(fun x -> 
+      match x with 
+      | :? PrimellList as l -> l :> seq<PObject>
+      | _ as x -> Seq.singleton x)
+
+  member this.Flatten() =
+    this.RaiseAtoms() |> Seq.concat |> PrimellList
   
   override this.ToString() =  // TODO - surely there's a cleaner way than the nested concat abomination I came up with
     String.concat "" ["("; String.concat " " (main |> Seq.map(fun obj -> obj.ToString())); ")"]

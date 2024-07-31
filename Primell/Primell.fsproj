@@ -10,6 +10,7 @@
     <Compile Include="PNumber.fs" />
     <Compile Include="PrimeLib.fs" />
     <Compile Include="PList.fs" />
+    <Compile Include="PPrimeLib.fs" />
     <Compile Include="PrimellConfiguration.fs" />
     <Compile Include="ParseLib.fs" />
     <Compile Include="PrimellProgramControl.fs" />
