@@ -2,12 +2,6 @@ namespace dpenner1.Primell
 
 open System.Text
 
-type TruthDefinition = 
-  {
-    PrimesAreTruth: bool;  // If true, only primes are true, if false, non-zero., non-NaN is true
-    RequireAllTruth: bool;
-  }
-
 type PrimellConfiguration =
   {
     RestrictedSource: bool;
@@ -17,6 +11,8 @@ type PrimellConfiguration =
     InputBase: int;
     OutputBase: int;
     SourceBase: int;
+    Character63: char;
+    Character64: char;
     InputEncoding: Encoding;
     OutputEncoding: Encoding;
     SourceEncoding: Encoding;
@@ -32,6 +28,8 @@ type PrimellConfiguration =
       InputBase = 10
       OutputBase = 10
       SourceBase = 10
+      Character63 = 'Þ'
+      Character64 = 'þ'
       // The encoding stuff might change (eg. surely a terminal's encoding should override)
       InputEncoding = Encoding.UTF8
       OutputEncoding = Encoding.UTF8
@@ -50,6 +48,8 @@ type PrimellConfiguration =
       InputBase = 10
       OutputBase = 10
       SourceBase = 10
+      Character63 = 'Þ'
+      Character64 = 'þ'
       // The encoding stuff might change (eg. surely a terminal's encoding should override)
       InputEncoding = Encoding.UTF8
       OutputEncoding = Encoding.UTF8

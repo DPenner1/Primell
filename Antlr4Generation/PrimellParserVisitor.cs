@@ -144,12 +144,12 @@ public interface IPrimellParserVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitUnaryOrBinaryOp([NotNull] PrimellParser.UnaryOrBinaryOpContext context);
 	/// <summary>
-	/// Visit a parse tree produced by the <c>integer</c>
+	/// Visit a parse tree produced by the <c>integerOrIdentifier</c>
 	/// labeled alternative in <see cref="PrimellParser.atomTerm"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitInteger([NotNull] PrimellParser.IntegerContext context);
+	Result VisitIntegerOrIdentifier([NotNull] PrimellParser.IntegerOrIdentifierContext context);
 	/// <summary>
 	/// Visit a parse tree produced by the <c>infinity</c>
 	/// labeled alternative in <see cref="PrimellParser.atomTerm"/>.
@@ -179,6 +179,12 @@ public interface IPrimellParserVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitParens([NotNull] PrimellParser.ParensContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="PrimellParser.intOrId"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitIntOrId([NotNull] PrimellParser.IntOrIdContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="PrimellParser.baseNullaryOp"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -203,17 +209,11 @@ public interface IPrimellParserVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitConditionalOp([NotNull] PrimellParser.ConditionalOpContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="PrimellParser.condMods"/>.
+	/// Visit a parse tree produced by <see cref="PrimellParser.condFunc"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitCondMods([NotNull] PrimellParser.CondModsContext context);
-	/// <summary>
-	/// Visit a parse tree produced by <see cref="PrimellParser.condFuncMod"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitCondFuncMod([NotNull] PrimellParser.CondFuncModContext context);
+	Result VisitCondFunc([NotNull] PrimellParser.CondFuncContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="PrimellParser.opMods"/>.
 	/// </summary>

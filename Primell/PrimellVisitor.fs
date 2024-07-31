@@ -4,7 +4,7 @@ open System.Collections.Generic
 open Antlr4.Runtime
 
 
-exception NonPrimeDectectionException of PNumber
+exception NonPrimeDectectionException of string
 // TODO - port from original C# code, very mutable stuff, see if you can get rid of non-functional stuff later
 
 type PrimellVisitor(control: PrimellProgramControl) = 
@@ -59,27 +59,31 @@ type PrimellVisitor(control: PrimellProgramControl) =
     |> PList 
     |> PrimellVisitor.Normalize
 
-  override this.VisitInteger context =
-    let text = context.GetText()
-    let number = ParseLib.ParseInteger text control.Settings.SourceBase
+  override this.VisitIntegerOrIdentifier context =
+    let text = context.GetText() 
 
-    if control.Settings.RestrictedSource && not(PPrimeLib.IsPrime number) then
-      NonPrimeDectectionException number |> raise
-    
-    number
+    let number =  // TODO - really hacky
+      try ParseLib.ParseInteger control.Settings text |> Some
+      with | PrimellInvalidSyntaxException _ -> None
+
+    match number with
+    | Some n ->
+        if control.Settings.RestrictedSource && not(PPrimeLib.IsPrime n) then
+          NonPrimeDectectionException (n.ToString()) |> raise
+        n
+    | None -> // implicitly an identifier
+        if control.Settings.RestrictedSource then  // TODO - temporary, too euro-centric, need to block way more chars
+          let regex = System.Text.RegularExpressions.Regex($"[0-9a-zA-Z{control.Settings.Character63}{control.Settings.Character64}]")
+          if regex.IsMatch(text) then
+            NonPrimeDectectionException text |> raise
+
+        control.GetVariable(text)
+
 
   override this.VisitInfinity context = Infinity Positive |> PNumber :> PObject
   
   override this.VisitNullaryOp context =
-
-    let opText = context.baseNullaryOp().GetText()
-    let operator =
-      if operationLib.NullaryOperators.ContainsKey(opText) then
-        operationLib.NullaryOperators[opText]
-      else  // implicitly assumed to be a variable
-        fun () -> control.GetVariable(opText)
-
-    operationLib.ApplyNullaryOperation operator []
+    operationLib.ApplyNullaryOperation (context.baseNullaryOp().GetText()) []
           
   member private this.ApplyUnaryOperation (pobj: PObject) (context: PrimellParser.UnaryOpContext) =
     let opText = context.baseUnaryOp().GetText()

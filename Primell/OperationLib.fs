@@ -52,24 +52,21 @@ type OperationLib(control: PrimellProgramControl) =
             "@",   fun (left: PList, right: PNumber) -> left.Index right
            ]
 
-    // opMods for consistency, but I don't think Primell will have any need for opMods on nullary operators
-    member this.ApplyNullaryOperation operator opMods : PObject =
-      operator()
-
     // opMods for consistency, but I don't think Primell will have any need for opMods on unary numeric operators
-    member this.ApplyUnaryNumericOperation (pobj: PObject) operator opMods =
+    member private this.ApplyUnaryNumericOperation (pobj: PObject) operator opMods =
         match pobj with
         | :? PNumber as n -> operator n
         | :? PList as l -> l |> Seq.map(fun x -> this.ApplyUnaryNumericOperation x operator opMods) |> PList :> PObject
         | _ -> PrimellProgrammerProblemException("Not possible") |> raise
         
+    // TODO - make this private when the references in Visitor are removed
     member this.ApplyUnaryListOperation (pobj: PObject) operator opMods : PObject =
         match pobj with
         | :? PList as l -> operator l
         | :? PNumber as n -> this.ApplyUnaryListOperation (n :> PObject |> Seq.singleton |> PList) operator opMods
         | _ -> PrimellProgrammerProblemException("Not possible") |> raise
 
-    member this.ApplyBinaryNumericOperation (left: PObject) (right: PObject) operator opMods : PObject =
+    member private this.ApplyBinaryNumericOperation (left: PObject) (right: PObject) operator opMods : PObject =
         match left, right with
         | (:? PNumber as n1), (:? PNumber as n2) -> 
             operator(n1, n2)
@@ -83,7 +80,7 @@ type OperationLib(control: PrimellProgramControl) =
             // Interesting solution provided here that could be adapted: https://stackoverflow.com/a/2840062/1607043
         | _ -> PrimellProgrammerProblemException("Not possible") |> raise
 
-    member this.ApplyBinaryListOperation (left: PObject) (right: PObject) operator opMods : PObject =
+    member private this.ApplyBinaryListOperation (left: PObject) (right: PObject) operator opMods : PObject =
         match left, right with
         | (:? PList as l1), (:? PList as l2) -> 
             operator(l1, l2)
@@ -95,7 +92,7 @@ type OperationLib(control: PrimellProgramControl) =
             this.ApplyBinaryListOperation (n1 :> PObject |> Seq.singleton |> PList) (n2 :> PObject |> Seq.singleton |> PList) operator opMods
         | _ -> PrimellProgrammerProblemException("Not possible") |> raise
 
-    member this.ApplyNumericListOperation (pNumber: PObject) (pList: PObject) operator opMods : PObject =
+    member private this.ApplyNumericListOperation (pNumber: PObject) (pList: PObject) operator opMods : PObject =
         match pNumber, pList with
         | (:? PList as l), (:? PNumber as n) -> 
             this.ApplyNumericListOperation l (n :> PObject |> Seq.singleton |> PList) operator opMods
@@ -107,7 +104,7 @@ type OperationLib(control: PrimellProgramControl) =
             operator(n, l)
         | _ -> PrimellProgrammerProblemException("Not possible") |> raise
 
-    member this.ApplyListNumericOperation (pList: PObject) (pNumber: PObject) operator opMods : PObject =
+    member private this.ApplyListNumericOperation (pList: PObject) (pNumber: PObject) operator opMods : PObject =
         match pList, pNumber with
         | (:? PList as l), (:? PNumber as n) -> 
             operator(l, n)
@@ -118,6 +115,12 @@ type OperationLib(control: PrimellProgramControl) =
         | (:? PNumber as n), (:? PList as l) -> 
             this.ApplyListNumericOperation (n :> PObject |> Seq.singleton |> PList) l operator opMods
         | _ -> PrimellProgrammerProblemException("Not possible") |> raise
+
+    member this.ApplyNullaryOperation (opText: string) opMods =
+      if this.NullaryOperators.ContainsKey opText then
+        this.NullaryOperators[opText]()
+      else
+        PrimellProgrammerProblemException "Unrecognized operator" |> raise
 
     member this.ApplyUnaryOperation (pobj: PObject) (opText: string) opMods : PObject =
       if this.UnaryNumericOperators.ContainsKey opText then

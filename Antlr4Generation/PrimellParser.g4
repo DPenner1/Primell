@@ -4,6 +4,8 @@ options {
   tokenVocab = PrimellLexer;
 }
 
+// TODO : at some point learn how to prevent whitespace in certain contexts
+
 line : termSeq outputSpec? COMMENT? EOF;
 
 outputSpec : OUT_INV | OUT_DEF | OUT_STR ;
@@ -15,7 +17,7 @@ concatRtlTerm : CONCAT? rtlTerm ;
 rtlTerm : mulTerm                                                                   #passThroughRtl
         | mulTerm binaryAssign (rtlTerm | RTL termSeq)                              #stdAssign
         | mulTerm binaryAssign L_BRACK termSeq R_BRACK                   #forEachRightAssign
-        | LBRACE termSeq RBRACE binaryAssign (rtlTerm | RTL termSeq)   #forEachLeftAssign
+        | L_BRACK termSeq R_BRACK binaryAssign (rtlTerm | RTL termSeq)   #forEachLeftAssign
         ; // TODO : rtl assign stuff hasn't been updated with the latest mulTerm mirrors
 
 binaryAssign : ASSIGN assignMods binaryOp? ;
@@ -35,19 +37,21 @@ binaryOpWithRS : binaryOp atomTerm
 
 unaryOrBinaryOp : unaryOp | binaryOpWithRS ;
 
-atomTerm : INT                      #integer
-         | INFINITY                 #infinity
-         | nullaryOp                #nullaryOperation
+atomTerm : intOrId                    #integerOrIdentifier   // the silly one
+         | INFINITY                   #infinity
+         | nullaryOp                  #nullaryOperation
          | L_PAREN R_PAREN            #emptyList
          | L_BRACK R_BRACK            #emptyList  // i don't think it ever matters which
          | L_PAREN termSeq R_PAREN    #parens
          ;
 
+intOrId : INT_OR_ID (DOT INT_OR_ID)* ;
+
 // Note; numeric/list op distinction isn't syntactical, it's functional!
-baseNullaryOp : IDENTIFIER | OP_READ_STR | OP_READ_CSV
+baseNullaryOp : OP_READ_STR | OP_READ_CSV
               ;
 
-baseUnaryOp : OP_GAMMA | OP_NEXT | OP_PREV | OP_ROUND | op_neg | OP_BIT_NOT   // numeric unary
+baseUnaryOp : OP_NEXT | OP_PREV | OP_ROUND | op_neg | OP_BIT_NOT                               // numeric unary
             | OP_HEAD | OP_TAIL | OP_DISTINCT | OP_REV | OP_FLATTEN | OP_SORT | OP_READ_CODE   // list unary
             ;
             
@@ -60,11 +64,9 @@ baseBinaryOp : op_add | OP_SUB | op_mul | op_div | OP_MOD | OP_POW | OP_LOG   //
              | conditionalOp   // separate for easier handling
              ;
 
-conditionalOp : OP_COND condMods ;
+conditionalOp : OP_COND condFunc? cond_mod_neg? cond_mod_tail? ;
 
-condMods : cond_mod_neg? condFuncMod? cond_mod_tail? ;
-
-condFuncMod : cond_mod_jump | cond_mod_back_jump | cond_mod_while | cond_mod_do_while ;
+condFunc : cond_mod_jump | cond_mod_back_jump | cond_mod_while | cond_mod_do_while ;
 
 opMods : (OPMOD_CUT | OPMOD_POW)? ;
 

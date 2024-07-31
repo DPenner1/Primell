@@ -1,8 +1,6 @@
 lexer grammar PrimellLexer;
 
-INT : [0-9A-Za-zÞþ]+ ; 
 INFINITY : '∞' ;
-IDENTIFIER : [,]+ ;
 
 RTL : '$' ;
 LTR : '€' ;
@@ -30,7 +28,6 @@ OPMOD_FOLD : '!' ;
 OP_READ_CODE : '_:' ;
 OP_READ_STR : ':"' ;
 OP_READ_CSV : ':,' ;
-OP_GAMMA : 'Γ' ;
 OP_NEXT : '++';
 OP_PREV : '--';
 OP_ROUND : '+-' ;
@@ -62,6 +59,7 @@ OP_APPEND : '::>' ;
 OP_CONCAT : '<::>' ;
 
 OP_COND : '?' ;
+DOT: '.' ;
 
 TAIL : '>' ;
 PLUS : '+' ;
@@ -70,6 +68,11 @@ NEGATE : '~' ;
 F_SLASH: '/' ;
 B_SLASH: '\\' ;
 
-WS : [ \t\r\n]+ -> skip ;
+WS : [ \t\r\n]+ -> channel(HIDDEN) ;
 
-COMMENT : '~~' ~[\r\n]* ;
+// this is objectively silly
+INT_OR_ID : INT_OR_ID_CHAR+ ;  
+fragment INT_OR_ID_CHAR : [0-9A-Za-zÞþ,] ;
+// TODO - later to be even less restrictive
+
+COMMENT : '~~'  ;

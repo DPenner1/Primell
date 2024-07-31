@@ -36,32 +36,30 @@ public partial class PrimellParser : Parser {
 	protected static DFA[] decisionToDFA;
 	protected static PredictionContextCache sharedContextCache = new PredictionContextCache();
 	public const int
-		INT=1, INFINITY=2, IDENTIFIER=3, RTL=4, LTR=5, CONCAT=6, ASSIGN=7, L_BRACK=8, 
-		R_BRACK=9, L_PAREN=10, R_PAREN=11, LBRACE=12, RBRACE=13, VERT_BAR=14, 
-		OUT_INV=15, OUT_DEF=16, OUT_STR=17, OPMOD_POW=18, OPMOD_CUT=19, OPMOD_FOLD=20, 
-		OP_READ_CODE=21, OP_READ_STR=22, OP_READ_CSV=23, OP_GAMMA=24, OP_NEXT=25, 
-		OP_PREV=26, OP_ROUND=27, OP_HEAD=28, OP_TAIL=29, OP_DISTINCT=30, OP_FLATTEN=31, 
-		OP_PURGE=32, OP_REV=33, OP_SORT=34, OP_SUB=35, OP_MOD=36, OP_POW=37, OP_LOG=38, 
-		OP_INC_RANGE=39, OP_RANGE=40, OP_MIN=41, OP_BIT_AND=42, OP_BIT_OR=43, 
-		OP_BIT_XOR=44, OP_BIT_NOT=45, OP_INDEX=46, OP_INDEX_OF=47, OP_FILT=48, 
-		OP_NEG_FILT=49, OP_INTERSECT=50, OP_CONS=51, OP_APPEND=52, OP_CONCAT=53, 
-		OP_COND=54, TAIL=55, PLUS=56, STAR=57, NEGATE=58, F_SLASH=59, B_SLASH=60, 
-		WS=61, COMMENT=62;
+		INFINITY=1, RTL=2, LTR=3, CONCAT=4, ASSIGN=5, L_BRACK=6, R_BRACK=7, L_PAREN=8, 
+		R_PAREN=9, L_BRACE=10, R_BRACE=11, VERT_BAR=12, OUT_INV=13, OUT_DEF=14, 
+		OUT_STR=15, OPMOD_POW=16, OPMOD_CUT=17, OPMOD_FOLD=18, OP_READ_CODE=19, 
+		OP_READ_STR=20, OP_READ_CSV=21, OP_NEXT=22, OP_PREV=23, OP_ROUND=24, OP_HEAD=25, 
+		OP_TAIL=26, OP_DISTINCT=27, OP_FLATTEN=28, OP_PURGE=29, OP_REV=30, OP_SORT=31, 
+		OP_SUB=32, OP_MOD=33, OP_POW=34, OP_LOG=35, OP_INC_RANGE=36, OP_RANGE=37, 
+		OP_MIN=38, OP_BIT_AND=39, OP_BIT_OR=40, OP_BIT_XOR=41, OP_BIT_NOT=42, 
+		OP_INDEX=43, OP_INDEX_OF=44, OP_FILT=45, OP_NEG_FILT=46, OP_INTERSECT=47, 
+		OP_CONS=48, OP_APPEND=49, OP_CONCAT=50, OP_COND=51, DOT=52, TAIL=53, PLUS=54, 
+		STAR=55, NEGATE=56, F_SLASH=57, B_SLASH=58, WS=59, INT_OR_ID=60, COMMENT=61;
 	public const int
 		RULE_line = 0, RULE_outputSpec = 1, RULE_termSeq = 2, RULE_concatRtlTerm = 3, 
 		RULE_rtlTerm = 4, RULE_binaryAssign = 5, RULE_mulTerm = 6, RULE_binaryOpWithRS = 7, 
-		RULE_unaryOrBinaryOp = 8, RULE_atomTerm = 9, RULE_baseNullaryOp = 10, 
-		RULE_baseUnaryOp = 11, RULE_baseBinaryOp = 12, RULE_conditionalOp = 13, 
-		RULE_condMods = 14, RULE_condFuncMod = 15, RULE_opMods = 16, RULE_assignMods = 17, 
-		RULE_nullaryOp = 18, RULE_unaryOp = 19, RULE_unaryAssign = 20, RULE_binaryOp = 21, 
-		RULE_op_list_diff = 22, RULE_cond_mod_back_jump = 23, RULE_op_div = 24, 
-		RULE_cond_mod_jump = 25, RULE_op_max = 26, RULE_cond_mod_tail = 27, RULE_op_mul = 28, 
-		RULE_cond_mod_while = 29, RULE_op_add = 30, RULE_cond_mod_do_while = 31, 
-		RULE_op_neg = 32, RULE_cond_mod_neg = 33;
+		RULE_unaryOrBinaryOp = 8, RULE_atomTerm = 9, RULE_intOrId = 10, RULE_baseNullaryOp = 11, 
+		RULE_baseUnaryOp = 12, RULE_baseBinaryOp = 13, RULE_conditionalOp = 14, 
+		RULE_condFunc = 15, RULE_opMods = 16, RULE_assignMods = 17, RULE_nullaryOp = 18, 
+		RULE_unaryOp = 19, RULE_unaryAssign = 20, RULE_binaryOp = 21, RULE_op_list_diff = 22, 
+		RULE_cond_mod_back_jump = 23, RULE_op_div = 24, RULE_cond_mod_jump = 25, 
+		RULE_op_max = 26, RULE_cond_mod_tail = 27, RULE_op_mul = 28, RULE_cond_mod_while = 29, 
+		RULE_op_add = 30, RULE_cond_mod_do_while = 31, RULE_op_neg = 32, RULE_cond_mod_neg = 33;
 	public static readonly string[] ruleNames = {
 		"line", "outputSpec", "termSeq", "concatRtlTerm", "rtlTerm", "binaryAssign", 
-		"mulTerm", "binaryOpWithRS", "unaryOrBinaryOp", "atomTerm", "baseNullaryOp", 
-		"baseUnaryOp", "baseBinaryOp", "conditionalOp", "condMods", "condFuncMod", 
+		"mulTerm", "binaryOpWithRS", "unaryOrBinaryOp", "atomTerm", "intOrId", 
+		"baseNullaryOp", "baseUnaryOp", "baseBinaryOp", "conditionalOp", "condFunc", 
 		"opMods", "assignMods", "nullaryOp", "unaryOp", "unaryAssign", "binaryOp", 
 		"op_list_diff", "cond_mod_back_jump", "op_div", "cond_mod_jump", "op_max", 
 		"cond_mod_tail", "op_mul", "cond_mod_while", "op_add", "cond_mod_do_while", 
@@ -69,25 +67,25 @@ public partial class PrimellParser : Parser {
 	};
 
 	private static readonly string[] _LiteralNames = {
-		null, null, "'\\u221E'", null, "'$'", "'\\u20AC'", "';'", "'='", "'['", 
-		"']'", "'('", "')'", "'{'", "'}'", "'|'", "'\"~'", "'\"\"'", "'\"'", "'^'", 
-		"'`'", "'!'", "'_:'", "':\"'", "':,'", "'\\u0393'", "'++'", "'--'", "'+-'", 
-		"'_<'", "'_>'", "'_*'", "'__'", "'_?'", "'_~'", "'_@'", "'-'", "'%'", 
-		"'**'", "'//'", "'\\u2026'", "'..'", "'<'", "'`&'", "'`|'", "'`^'", "'`~'", 
-		"'@'", "'@#'", "'*?'", "'*?~'", "'&'", "'<::'", "'::>'", "'<::>'", "'?'", 
-		"'>'", "'+'", "'*'", "'~'", "'/'", "'\\'"
+		null, "'\\u221E'", "'$'", "'\\u20AC'", "';'", "'='", "'['", "']'", "'('", 
+		"')'", "'{'", "'}'", "'|'", "'\"~'", "'\"\"'", "'\"'", "'^'", "'`'", "'!'", 
+		"'_:'", "':\"'", "':,'", "'++'", "'--'", "'+-'", "'_<'", "'_>'", "'_*'", 
+		"'__'", "'_?'", "'_~'", "'_@'", "'-'", "'%'", "'**'", "'//'", "'\\u2026'", 
+		"'..'", "'<'", "'`&'", "'`|'", "'`^'", "'`~'", "'@'", "'@#'", "'*?'", 
+		"'*?~'", "'&'", "'<::'", "'::>'", "'<::>'", "'?'", "'.'", "'>'", "'+'", 
+		"'*'", "'~'", "'/'", "'\\'", null, null, "'~~'"
 	};
 	private static readonly string[] _SymbolicNames = {
-		null, "INT", "INFINITY", "IDENTIFIER", "RTL", "LTR", "CONCAT", "ASSIGN", 
-		"L_BRACK", "R_BRACK", "L_PAREN", "R_PAREN", "LBRACE", "RBRACE", "VERT_BAR", 
-		"OUT_INV", "OUT_DEF", "OUT_STR", "OPMOD_POW", "OPMOD_CUT", "OPMOD_FOLD", 
-		"OP_READ_CODE", "OP_READ_STR", "OP_READ_CSV", "OP_GAMMA", "OP_NEXT", "OP_PREV", 
-		"OP_ROUND", "OP_HEAD", "OP_TAIL", "OP_DISTINCT", "OP_FLATTEN", "OP_PURGE", 
-		"OP_REV", "OP_SORT", "OP_SUB", "OP_MOD", "OP_POW", "OP_LOG", "OP_INC_RANGE", 
-		"OP_RANGE", "OP_MIN", "OP_BIT_AND", "OP_BIT_OR", "OP_BIT_XOR", "OP_BIT_NOT", 
-		"OP_INDEX", "OP_INDEX_OF", "OP_FILT", "OP_NEG_FILT", "OP_INTERSECT", "OP_CONS", 
-		"OP_APPEND", "OP_CONCAT", "OP_COND", "TAIL", "PLUS", "STAR", "NEGATE", 
-		"F_SLASH", "B_SLASH", "WS", "COMMENT"
+		null, "INFINITY", "RTL", "LTR", "CONCAT", "ASSIGN", "L_BRACK", "R_BRACK", 
+		"L_PAREN", "R_PAREN", "L_BRACE", "R_BRACE", "VERT_BAR", "OUT_INV", "OUT_DEF", 
+		"OUT_STR", "OPMOD_POW", "OPMOD_CUT", "OPMOD_FOLD", "OP_READ_CODE", "OP_READ_STR", 
+		"OP_READ_CSV", "OP_NEXT", "OP_PREV", "OP_ROUND", "OP_HEAD", "OP_TAIL", 
+		"OP_DISTINCT", "OP_FLATTEN", "OP_PURGE", "OP_REV", "OP_SORT", "OP_SUB", 
+		"OP_MOD", "OP_POW", "OP_LOG", "OP_INC_RANGE", "OP_RANGE", "OP_MIN", "OP_BIT_AND", 
+		"OP_BIT_OR", "OP_BIT_XOR", "OP_BIT_NOT", "OP_INDEX", "OP_INDEX_OF", "OP_FILT", 
+		"OP_NEG_FILT", "OP_INTERSECT", "OP_CONS", "OP_APPEND", "OP_CONCAT", "OP_COND", 
+		"DOT", "TAIL", "PLUS", "STAR", "NEGATE", "F_SLASH", "B_SLASH", "WS", "INT_OR_ID", 
+		"COMMENT"
 	};
 	public static readonly IVocabulary DefaultVocabulary = new Vocabulary(_LiteralNames, _SymbolicNames);
 
@@ -156,7 +154,7 @@ public partial class PrimellParser : Parser {
 			State = 70;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
-			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & 229376L) != 0)) {
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & 57344L) != 0)) {
 				{
 				State = 69;
 				outputSpec();
@@ -215,7 +213,7 @@ public partial class PrimellParser : Parser {
 			{
 			State = 77;
 			_la = TokenStream.LA(1);
-			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & 229376L) != 0)) ) {
+			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & 57344L) != 0)) ) {
 			ErrorHandler.RecoverInline(this);
 			}
 			else {
@@ -382,14 +380,14 @@ public partial class PrimellParser : Parser {
 		}
 	}
 	public partial class ForEachLeftAssignContext : RtlTermContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LBRACE() { return GetToken(PrimellParser.LBRACE, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode L_BRACK() { return GetToken(PrimellParser.L_BRACK, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public TermSeqContext[] termSeq() {
 			return GetRuleContexts<TermSeqContext>();
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public TermSeqContext termSeq(int i) {
 			return GetRuleContext<TermSeqContext>(i);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode RBRACE() { return GetToken(PrimellParser.RBRACE, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode R_BRACK() { return GetToken(PrimellParser.R_BRACK, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public BinaryAssignContext binaryAssign() {
 			return GetRuleContext<BinaryAssignContext>(0);
 		}
@@ -465,14 +463,12 @@ public partial class PrimellParser : Parser {
 				State = 95;
 				ErrorHandler.Sync(this);
 				switch (TokenStream.LA(1)) {
-				case INT:
 				case INFINITY:
-				case IDENTIFIER:
 				case L_BRACK:
 				case L_PAREN:
-				case LBRACE:
 				case OP_READ_STR:
 				case OP_READ_CSV:
+				case INT_OR_ID:
 					{
 					State = 92;
 					rtlTerm();
@@ -512,24 +508,22 @@ public partial class PrimellParser : Parser {
 				EnterOuterAlt(_localctx, 4);
 				{
 				State = 103;
-				Match(LBRACE);
+				Match(L_BRACK);
 				State = 104;
 				termSeq();
 				State = 105;
-				Match(RBRACE);
+				Match(R_BRACK);
 				State = 106;
 				binaryAssign();
 				State = 110;
 				ErrorHandler.Sync(this);
 				switch (TokenStream.LA(1)) {
-				case INT:
 				case INFINITY:
-				case IDENTIFIER:
 				case L_BRACK:
 				case L_PAREN:
-				case LBRACE:
 				case OP_READ_STR:
 				case OP_READ_CSV:
+				case INT_OR_ID:
 					{
 					State = 107;
 					rtlTerm();
@@ -597,7 +591,7 @@ public partial class PrimellParser : Parser {
 			State = 117;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
-			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & 2016732989400023040L) != 0)) {
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & 499789603180380160L) != 0)) {
 				{
 				State = 116;
 				binaryOp();
@@ -811,7 +805,7 @@ public partial class PrimellParser : Parser {
 					State = 137;
 					ErrorHandler.Sync(this);
 					_la = TokenStream.LA(1);
-				} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & 2304998579973915008L) != 0) );
+				} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & 571851599019245664L) != 0) );
 				State = 139;
 				Match(R_BRACK);
 				}
@@ -980,7 +974,6 @@ public partial class PrimellParser : Parser {
 			switch (TokenStream.LA(1)) {
 			case ASSIGN:
 			case OP_READ_CODE:
-			case OP_GAMMA:
 			case OP_NEXT:
 			case OP_PREV:
 			case OP_ROUND:
@@ -1054,6 +1047,18 @@ public partial class PrimellParser : Parser {
 			base.CopyFrom(context);
 		}
 	}
+	public partial class IntegerOrIdentifierContext : AtomTermContext {
+		[System.Diagnostics.DebuggerNonUserCode] public IntOrIdContext intOrId() {
+			return GetRuleContext<IntOrIdContext>(0);
+		}
+		public IntegerOrIdentifierContext(AtomTermContext context) { CopyFrom(context); }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			IPrimellParserVisitor<TResult> typedVisitor = visitor as IPrimellParserVisitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitIntegerOrIdentifier(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
 	public partial class NullaryOperationContext : AtomTermContext {
 		[System.Diagnostics.DebuggerNonUserCode] public NullaryOpContext nullaryOp() {
 			return GetRuleContext<NullaryOpContext>(0);
@@ -1103,16 +1108,6 @@ public partial class PrimellParser : Parser {
 			else return visitor.VisitChildren(this);
 		}
 	}
-	public partial class IntegerContext : AtomTermContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode INT() { return GetToken(PrimellParser.INT, 0); }
-		public IntegerContext(AtomTermContext context) { CopyFrom(context); }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimellParserVisitor<TResult> typedVisitor = visitor as IPrimellParserVisitor<TResult>;
-			if (typedVisitor != null) return typedVisitor.VisitInteger(this);
-			else return visitor.VisitChildren(this);
-		}
-	}
 
 	[RuleVersion(0)]
 	public AtomTermContext atomTerm() {
@@ -1123,11 +1118,11 @@ public partial class PrimellParser : Parser {
 			ErrorHandler.Sync(this);
 			switch ( Interpreter.AdaptivePredict(TokenStream,14,Context) ) {
 			case 1:
-				_localctx = new IntegerContext(_localctx);
+				_localctx = new IntegerOrIdentifierContext(_localctx);
 				EnterOuterAlt(_localctx, 1);
 				{
 				State = 170;
-				Match(INT);
+				intOrId();
 				}
 				break;
 			case 2:
@@ -1191,8 +1186,70 @@ public partial class PrimellParser : Parser {
 		return _localctx;
 	}
 
+	public partial class IntOrIdContext : ParserRuleContext {
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] INT_OR_ID() { return GetTokens(PrimellParser.INT_OR_ID); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode INT_OR_ID(int i) {
+			return GetToken(PrimellParser.INT_OR_ID, i);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] DOT() { return GetTokens(PrimellParser.DOT); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DOT(int i) {
+			return GetToken(PrimellParser.DOT, i);
+		}
+		public IntOrIdContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_intOrId; } }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			IPrimellParserVisitor<TResult> typedVisitor = visitor as IPrimellParserVisitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitIntOrId(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
+
+	[RuleVersion(0)]
+	public IntOrIdContext intOrId() {
+		IntOrIdContext _localctx = new IntOrIdContext(Context, State);
+		EnterRule(_localctx, 20, RULE_intOrId);
+		try {
+			int _alt;
+			EnterOuterAlt(_localctx, 1);
+			{
+			State = 183;
+			Match(INT_OR_ID);
+			State = 188;
+			ErrorHandler.Sync(this);
+			_alt = Interpreter.AdaptivePredict(TokenStream,15,Context);
+			while ( _alt!=2 && _alt!=global::Antlr4.Runtime.Atn.ATN.INVALID_ALT_NUMBER ) {
+				if ( _alt==1 ) {
+					{
+					{
+					State = 184;
+					Match(DOT);
+					State = 185;
+					Match(INT_OR_ID);
+					}
+					} 
+				}
+				State = 190;
+				ErrorHandler.Sync(this);
+				_alt = Interpreter.AdaptivePredict(TokenStream,15,Context);
+			}
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			ErrorHandler.ReportError(this, re);
+			ErrorHandler.Recover(this, re);
+		}
+		finally {
+			ExitRule();
+		}
+		return _localctx;
+	}
+
 	public partial class BaseNullaryOpContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IDENTIFIER() { return GetToken(PrimellParser.IDENTIFIER, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_READ_STR() { return GetToken(PrimellParser.OP_READ_STR, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_READ_CSV() { return GetToken(PrimellParser.OP_READ_CSV, 0); }
 		public BaseNullaryOpContext(ParserRuleContext parent, int invokingState)
@@ -1211,14 +1268,14 @@ public partial class PrimellParser : Parser {
 	[RuleVersion(0)]
 	public BaseNullaryOpContext baseNullaryOp() {
 		BaseNullaryOpContext _localctx = new BaseNullaryOpContext(Context, State);
-		EnterRule(_localctx, 20, RULE_baseNullaryOp);
+		EnterRule(_localctx, 22, RULE_baseNullaryOp);
 		int _la;
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 183;
+			State = 191;
 			_la = TokenStream.LA(1);
-			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & 12582920L) != 0)) ) {
+			if ( !(_la==OP_READ_STR || _la==OP_READ_CSV) ) {
 			ErrorHandler.RecoverInline(this);
 			}
 			else {
@@ -1239,7 +1296,6 @@ public partial class PrimellParser : Parser {
 	}
 
 	public partial class BaseUnaryOpContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_GAMMA() { return GetToken(PrimellParser.OP_GAMMA, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_NEXT() { return GetToken(PrimellParser.OP_NEXT, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_PREV() { return GetToken(PrimellParser.OP_PREV, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_ROUND() { return GetToken(PrimellParser.OP_ROUND, 0); }
@@ -1270,99 +1326,92 @@ public partial class PrimellParser : Parser {
 	[RuleVersion(0)]
 	public BaseUnaryOpContext baseUnaryOp() {
 		BaseUnaryOpContext _localctx = new BaseUnaryOpContext(Context, State);
-		EnterRule(_localctx, 22, RULE_baseUnaryOp);
+		EnterRule(_localctx, 24, RULE_baseUnaryOp);
 		try {
-			State = 198;
+			State = 205;
 			ErrorHandler.Sync(this);
 			switch (TokenStream.LA(1)) {
-			case OP_GAMMA:
+			case OP_NEXT:
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 185;
-				Match(OP_GAMMA);
-				}
-				break;
-			case OP_NEXT:
-				EnterOuterAlt(_localctx, 2);
-				{
-				State = 186;
+				State = 193;
 				Match(OP_NEXT);
 				}
 				break;
 			case OP_PREV:
-				EnterOuterAlt(_localctx, 3);
+				EnterOuterAlt(_localctx, 2);
 				{
-				State = 187;
+				State = 194;
 				Match(OP_PREV);
 				}
 				break;
 			case OP_ROUND:
-				EnterOuterAlt(_localctx, 4);
+				EnterOuterAlt(_localctx, 3);
 				{
-				State = 188;
+				State = 195;
 				Match(OP_ROUND);
 				}
 				break;
 			case NEGATE:
-				EnterOuterAlt(_localctx, 5);
+				EnterOuterAlt(_localctx, 4);
 				{
-				State = 189;
+				State = 196;
 				op_neg();
 				}
 				break;
 			case OP_BIT_NOT:
-				EnterOuterAlt(_localctx, 6);
+				EnterOuterAlt(_localctx, 5);
 				{
-				State = 190;
+				State = 197;
 				Match(OP_BIT_NOT);
 				}
 				break;
 			case OP_HEAD:
-				EnterOuterAlt(_localctx, 7);
+				EnterOuterAlt(_localctx, 6);
 				{
-				State = 191;
+				State = 198;
 				Match(OP_HEAD);
 				}
 				break;
 			case OP_TAIL:
-				EnterOuterAlt(_localctx, 8);
+				EnterOuterAlt(_localctx, 7);
 				{
-				State = 192;
+				State = 199;
 				Match(OP_TAIL);
 				}
 				break;
 			case OP_DISTINCT:
-				EnterOuterAlt(_localctx, 9);
+				EnterOuterAlt(_localctx, 8);
 				{
-				State = 193;
+				State = 200;
 				Match(OP_DISTINCT);
 				}
 				break;
 			case OP_REV:
-				EnterOuterAlt(_localctx, 10);
+				EnterOuterAlt(_localctx, 9);
 				{
-				State = 194;
+				State = 201;
 				Match(OP_REV);
 				}
 				break;
 			case OP_FLATTEN:
-				EnterOuterAlt(_localctx, 11);
+				EnterOuterAlt(_localctx, 10);
 				{
-				State = 195;
+				State = 202;
 				Match(OP_FLATTEN);
 				}
 				break;
 			case OP_SORT:
-				EnterOuterAlt(_localctx, 12);
+				EnterOuterAlt(_localctx, 11);
 				{
-				State = 196;
+				State = 203;
 				Match(OP_SORT);
 				}
 				break;
 			case OP_READ_CODE:
-				EnterOuterAlt(_localctx, 13);
+				EnterOuterAlt(_localctx, 12);
 				{
-				State = 197;
+				State = 204;
 				Match(OP_READ_CODE);
 				}
 				break;
@@ -1432,162 +1481,162 @@ public partial class PrimellParser : Parser {
 	[RuleVersion(0)]
 	public BaseBinaryOpContext baseBinaryOp() {
 		BaseBinaryOpContext _localctx = new BaseBinaryOpContext(Context, State);
-		EnterRule(_localctx, 24, RULE_baseBinaryOp);
+		EnterRule(_localctx, 26, RULE_baseBinaryOp);
 		try {
-			State = 222;
+			State = 229;
 			ErrorHandler.Sync(this);
 			switch (TokenStream.LA(1)) {
 			case PLUS:
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 200;
+				State = 207;
 				op_add();
 				}
 				break;
 			case OP_SUB:
 				EnterOuterAlt(_localctx, 2);
 				{
-				State = 201;
+				State = 208;
 				Match(OP_SUB);
 				}
 				break;
 			case STAR:
 				EnterOuterAlt(_localctx, 3);
 				{
-				State = 202;
+				State = 209;
 				op_mul();
 				}
 				break;
 			case F_SLASH:
 				EnterOuterAlt(_localctx, 4);
 				{
-				State = 203;
+				State = 210;
 				op_div();
 				}
 				break;
 			case OP_MOD:
 				EnterOuterAlt(_localctx, 5);
 				{
-				State = 204;
+				State = 211;
 				Match(OP_MOD);
 				}
 				break;
 			case OP_POW:
 				EnterOuterAlt(_localctx, 6);
 				{
-				State = 205;
+				State = 212;
 				Match(OP_POW);
 				}
 				break;
 			case OP_LOG:
 				EnterOuterAlt(_localctx, 7);
 				{
-				State = 206;
+				State = 213;
 				Match(OP_LOG);
 				}
 				break;
 			case OP_BIT_AND:
 				EnterOuterAlt(_localctx, 8);
 				{
-				State = 207;
+				State = 214;
 				Match(OP_BIT_AND);
 				}
 				break;
 			case OP_BIT_OR:
 				EnterOuterAlt(_localctx, 9);
 				{
-				State = 208;
+				State = 215;
 				Match(OP_BIT_OR);
 				}
 				break;
 			case OP_BIT_XOR:
 				EnterOuterAlt(_localctx, 10);
 				{
-				State = 209;
+				State = 216;
 				Match(OP_BIT_XOR);
 				}
 				break;
 			case OP_INC_RANGE:
 				EnterOuterAlt(_localctx, 11);
 				{
-				State = 210;
+				State = 217;
 				Match(OP_INC_RANGE);
 				}
 				break;
 			case OP_RANGE:
 				EnterOuterAlt(_localctx, 12);
 				{
-				State = 211;
+				State = 218;
 				Match(OP_RANGE);
 				}
 				break;
 			case OP_MIN:
 				EnterOuterAlt(_localctx, 13);
 				{
-				State = 212;
+				State = 219;
 				Match(OP_MIN);
 				}
 				break;
 			case TAIL:
 				EnterOuterAlt(_localctx, 14);
 				{
-				State = 213;
+				State = 220;
 				op_max();
 				}
 				break;
 			case B_SLASH:
 				EnterOuterAlt(_localctx, 15);
 				{
-				State = 214;
+				State = 221;
 				op_list_diff();
 				}
 				break;
 			case OP_INTERSECT:
 				EnterOuterAlt(_localctx, 16);
 				{
-				State = 215;
+				State = 222;
 				Match(OP_INTERSECT);
 				}
 				break;
 			case OP_INDEX_OF:
 				EnterOuterAlt(_localctx, 17);
 				{
-				State = 216;
+				State = 223;
 				Match(OP_INDEX_OF);
 				}
 				break;
 			case OP_CONCAT:
 				EnterOuterAlt(_localctx, 18);
 				{
-				State = 217;
+				State = 224;
 				Match(OP_CONCAT);
 				}
 				break;
 			case OP_INDEX:
 				EnterOuterAlt(_localctx, 19);
 				{
-				State = 218;
+				State = 225;
 				Match(OP_INDEX);
 				}
 				break;
 			case OP_APPEND:
 				EnterOuterAlt(_localctx, 20);
 				{
-				State = 219;
+				State = 226;
 				Match(OP_APPEND);
 				}
 				break;
 			case OP_CONS:
 				EnterOuterAlt(_localctx, 21);
 				{
-				State = 220;
+				State = 227;
 				Match(OP_CONS);
 				}
 				break;
 			case OP_COND:
 				EnterOuterAlt(_localctx, 22);
 				{
-				State = 221;
+				State = 228;
 				conditionalOp();
 				}
 				break;
@@ -1608,8 +1657,14 @@ public partial class PrimellParser : Parser {
 
 	public partial class ConditionalOpContext : ParserRuleContext {
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OP_COND() { return GetToken(PrimellParser.OP_COND, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public CondModsContext condMods() {
-			return GetRuleContext<CondModsContext>(0);
+		[System.Diagnostics.DebuggerNonUserCode] public CondFuncContext condFunc() {
+			return GetRuleContext<CondFuncContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public Cond_mod_negContext cond_mod_neg() {
+			return GetRuleContext<Cond_mod_negContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public Cond_mod_tailContext cond_mod_tail() {
+			return GetRuleContext<Cond_mod_tailContext>(0);
 		}
 		public ConditionalOpContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
@@ -1627,84 +1682,39 @@ public partial class PrimellParser : Parser {
 	[RuleVersion(0)]
 	public ConditionalOpContext conditionalOp() {
 		ConditionalOpContext _localctx = new ConditionalOpContext(Context, State);
-		EnterRule(_localctx, 26, RULE_conditionalOp);
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 224;
-			Match(OP_COND);
-			State = 225;
-			condMods();
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class CondModsContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public Cond_mod_negContext cond_mod_neg() {
-			return GetRuleContext<Cond_mod_negContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public CondFuncModContext condFuncMod() {
-			return GetRuleContext<CondFuncModContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public Cond_mod_tailContext cond_mod_tail() {
-			return GetRuleContext<Cond_mod_tailContext>(0);
-		}
-		public CondModsContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_condMods; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IPrimellParserVisitor<TResult> typedVisitor = visitor as IPrimellParserVisitor<TResult>;
-			if (typedVisitor != null) return typedVisitor.VisitCondMods(this);
-			else return visitor.VisitChildren(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public CondModsContext condMods() {
-		CondModsContext _localctx = new CondModsContext(Context, State);
-		EnterRule(_localctx, 28, RULE_condMods);
+		EnterRule(_localctx, 28, RULE_conditionalOp);
 		int _la;
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 228;
+			State = 231;
+			Match(OP_COND);
+			State = 233;
+			ErrorHandler.Sync(this);
+			_la = TokenStream.LA(1);
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & 486388759756013568L) != 0)) {
+				{
+				State = 232;
+				condFunc();
+				}
+			}
+
+			State = 236;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
 			if (_la==NEGATE) {
 				{
-				State = 227;
+				State = 235;
 				cond_mod_neg();
 				}
 			}
 
-			State = 231;
-			ErrorHandler.Sync(this);
-			_la = TokenStream.LA(1);
-			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & 1945555039024054272L) != 0)) {
-				{
-				State = 230;
-				condFuncMod();
-				}
-			}
-
-			State = 234;
+			State = 239;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
 			if (_la==TAIL) {
 				{
-				State = 233;
+				State = 238;
 				cond_mod_tail();
 				}
 			}
@@ -1722,7 +1732,7 @@ public partial class PrimellParser : Parser {
 		return _localctx;
 	}
 
-	public partial class CondFuncModContext : ParserRuleContext {
+	public partial class CondFuncContext : ParserRuleContext {
 		[System.Diagnostics.DebuggerNonUserCode] public Cond_mod_jumpContext cond_mod_jump() {
 			return GetRuleContext<Cond_mod_jumpContext>(0);
 		}
@@ -1735,52 +1745,52 @@ public partial class PrimellParser : Parser {
 		[System.Diagnostics.DebuggerNonUserCode] public Cond_mod_do_whileContext cond_mod_do_while() {
 			return GetRuleContext<Cond_mod_do_whileContext>(0);
 		}
-		public CondFuncModContext(ParserRuleContext parent, int invokingState)
+		public CondFuncContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
 		}
-		public override int RuleIndex { get { return RULE_condFuncMod; } }
+		public override int RuleIndex { get { return RULE_condFunc; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
 			IPrimellParserVisitor<TResult> typedVisitor = visitor as IPrimellParserVisitor<TResult>;
-			if (typedVisitor != null) return typedVisitor.VisitCondFuncMod(this);
+			if (typedVisitor != null) return typedVisitor.VisitCondFunc(this);
 			else return visitor.VisitChildren(this);
 		}
 	}
 
 	[RuleVersion(0)]
-	public CondFuncModContext condFuncMod() {
-		CondFuncModContext _localctx = new CondFuncModContext(Context, State);
-		EnterRule(_localctx, 30, RULE_condFuncMod);
+	public CondFuncContext condFunc() {
+		CondFuncContext _localctx = new CondFuncContext(Context, State);
+		EnterRule(_localctx, 30, RULE_condFunc);
 		try {
-			State = 240;
+			State = 245;
 			ErrorHandler.Sync(this);
 			switch (TokenStream.LA(1)) {
 			case F_SLASH:
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 236;
+				State = 241;
 				cond_mod_jump();
 				}
 				break;
 			case B_SLASH:
 				EnterOuterAlt(_localctx, 2);
 				{
-				State = 237;
+				State = 242;
 				cond_mod_back_jump();
 				}
 				break;
 			case STAR:
 				EnterOuterAlt(_localctx, 3);
 				{
-				State = 238;
+				State = 243;
 				cond_mod_while();
 				}
 				break;
 			case PLUS:
 				EnterOuterAlt(_localctx, 4);
 				{
-				State = 239;
+				State = 244;
 				cond_mod_do_while();
 				}
 				break;
@@ -1823,12 +1833,12 @@ public partial class PrimellParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 243;
+			State = 248;
 			ErrorHandler.Sync(this);
-			switch ( Interpreter.AdaptivePredict(TokenStream,21,Context) ) {
+			switch ( Interpreter.AdaptivePredict(TokenStream,22,Context) ) {
 			case 1:
 				{
-				State = 242;
+				State = 247;
 				_la = TokenStream.LA(1);
 				if ( !(_la==OPMOD_POW || _la==OPMOD_CUT) ) {
 				ErrorHandler.RecoverInline(this);
@@ -1877,12 +1887,12 @@ public partial class PrimellParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 246;
+			State = 251;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
 			if (_la==OPMOD_POW || _la==OPMOD_CUT) {
 				{
-				State = 245;
+				State = 250;
 				_la = TokenStream.LA(1);
 				if ( !(_la==OPMOD_POW || _la==OPMOD_CUT) ) {
 				ErrorHandler.RecoverInline(this);
@@ -1934,9 +1944,9 @@ public partial class PrimellParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 248;
+			State = 253;
 			baseNullaryOp();
-			State = 249;
+			State = 254;
 			opMods();
 			}
 		}
@@ -1982,19 +1992,19 @@ public partial class PrimellParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 252;
+			State = 257;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
 			if (_la==ASSIGN) {
 				{
-				State = 251;
+				State = 256;
 				unaryAssign();
 				}
 			}
 
-			State = 254;
+			State = 259;
 			baseUnaryOp();
-			State = 255;
+			State = 260;
 			opMods();
 			}
 		}
@@ -2034,9 +2044,9 @@ public partial class PrimellParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 257;
+			State = 262;
 			Match(ASSIGN);
-			State = 258;
+			State = 263;
 			assignMods();
 			}
 		}
@@ -2078,9 +2088,9 @@ public partial class PrimellParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 260;
+			State = 265;
 			baseBinaryOp();
-			State = 261;
+			State = 266;
 			opMods();
 			}
 		}
@@ -2117,7 +2127,7 @@ public partial class PrimellParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 263;
+			State = 268;
 			Match(B_SLASH);
 			}
 		}
@@ -2154,7 +2164,7 @@ public partial class PrimellParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 265;
+			State = 270;
 			Match(B_SLASH);
 			}
 		}
@@ -2191,7 +2201,7 @@ public partial class PrimellParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 267;
+			State = 272;
 			Match(F_SLASH);
 			}
 		}
@@ -2228,7 +2238,7 @@ public partial class PrimellParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 269;
+			State = 274;
 			Match(F_SLASH);
 			}
 		}
@@ -2265,7 +2275,7 @@ public partial class PrimellParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 271;
+			State = 276;
 			Match(TAIL);
 			}
 		}
@@ -2302,7 +2312,7 @@ public partial class PrimellParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 273;
+			State = 278;
 			Match(TAIL);
 			}
 		}
@@ -2339,7 +2349,7 @@ public partial class PrimellParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 275;
+			State = 280;
 			Match(STAR);
 			}
 		}
@@ -2376,7 +2386,7 @@ public partial class PrimellParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 277;
+			State = 282;
 			Match(STAR);
 			}
 		}
@@ -2413,7 +2423,7 @@ public partial class PrimellParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 279;
+			State = 284;
 			Match(PLUS);
 			}
 		}
@@ -2450,7 +2460,7 @@ public partial class PrimellParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 281;
+			State = 286;
 			Match(PLUS);
 			}
 		}
@@ -2487,7 +2497,7 @@ public partial class PrimellParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 283;
+			State = 288;
 			Match(NEGATE);
 			}
 		}
@@ -2524,7 +2534,7 @@ public partial class PrimellParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 285;
+			State = 290;
 			Match(NEGATE);
 			}
 		}
@@ -2554,7 +2564,7 @@ public partial class PrimellParser : Parser {
 	}
 
 	private static int[] _serializedATN = {
-		4,1,62,288,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,7,
+		4,1,61,293,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,7,
 		7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,2,14,7,14,
 		2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,20,7,20,2,21,7,21,
 		2,22,7,22,2,23,7,23,2,24,7,24,2,25,7,25,2,26,7,26,2,27,7,27,2,28,7,28,
@@ -2566,90 +2576,91 @@ public partial class PrimellParser : Parser {
 		6,136,8,6,11,6,12,6,137,1,6,1,6,3,6,142,8,6,1,6,1,6,1,6,1,6,5,6,148,8,
 		6,10,6,12,6,151,9,6,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,1,7,3,
 		7,165,8,7,1,8,1,8,3,8,169,8,8,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,
-		1,9,3,9,182,8,9,1,10,1,10,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,1,11,
-		1,11,1,11,1,11,1,11,3,11,199,8,11,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,
-		12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,
-		12,3,12,223,8,12,1,13,1,13,1,13,1,14,3,14,229,8,14,1,14,3,14,232,8,14,
-		1,14,3,14,235,8,14,1,15,1,15,1,15,1,15,3,15,241,8,15,1,16,3,16,244,8,16,
-		1,17,3,17,247,8,17,1,18,1,18,1,18,1,19,3,19,253,8,19,1,19,1,19,1,19,1,
-		20,1,20,1,20,1,21,1,21,1,21,1,22,1,22,1,23,1,23,1,24,1,24,1,25,1,25,1,
-		26,1,26,1,27,1,27,1,28,1,28,1,29,1,29,1,30,1,30,1,31,1,31,1,32,1,32,1,
-		33,1,33,1,33,0,1,12,34,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,
-		36,38,40,42,44,46,48,50,52,54,56,58,60,62,64,66,0,3,1,0,15,17,2,0,3,3,
-		22,23,1,0,18,19,319,0,68,1,0,0,0,2,77,1,0,0,0,4,80,1,0,0,0,6,85,1,0,0,
-		0,8,112,1,0,0,0,10,114,1,0,0,0,12,141,1,0,0,0,14,164,1,0,0,0,16,168,1,
-		0,0,0,18,181,1,0,0,0,20,183,1,0,0,0,22,198,1,0,0,0,24,222,1,0,0,0,26,224,
-		1,0,0,0,28,228,1,0,0,0,30,240,1,0,0,0,32,243,1,0,0,0,34,246,1,0,0,0,36,
-		248,1,0,0,0,38,252,1,0,0,0,40,257,1,0,0,0,42,260,1,0,0,0,44,263,1,0,0,
-		0,46,265,1,0,0,0,48,267,1,0,0,0,50,269,1,0,0,0,52,271,1,0,0,0,54,273,1,
-		0,0,0,56,275,1,0,0,0,58,277,1,0,0,0,60,279,1,0,0,0,62,281,1,0,0,0,64,283,
-		1,0,0,0,66,285,1,0,0,0,68,70,3,4,2,0,69,71,3,2,1,0,70,69,1,0,0,0,70,71,
-		1,0,0,0,71,73,1,0,0,0,72,74,5,62,0,0,73,72,1,0,0,0,73,74,1,0,0,0,74,75,
-		1,0,0,0,75,76,5,0,0,1,76,1,1,0,0,0,77,78,7,0,0,0,78,3,1,0,0,0,79,81,3,
-		6,3,0,80,79,1,0,0,0,81,82,1,0,0,0,82,80,1,0,0,0,82,83,1,0,0,0,83,5,1,0,
-		0,0,84,86,5,6,0,0,85,84,1,0,0,0,85,86,1,0,0,0,86,87,1,0,0,0,87,88,3,8,
-		4,0,88,7,1,0,0,0,89,113,3,12,6,0,90,91,3,12,6,0,91,95,3,10,5,0,92,96,3,
-		8,4,0,93,94,5,4,0,0,94,96,3,4,2,0,95,92,1,0,0,0,95,93,1,0,0,0,96,113,1,
-		0,0,0,97,98,3,12,6,0,98,99,3,10,5,0,99,100,5,8,0,0,100,101,3,4,2,0,101,
-		102,5,9,0,0,102,113,1,0,0,0,103,104,5,12,0,0,104,105,3,4,2,0,105,106,5,
-		13,0,0,106,110,3,10,5,0,107,111,3,8,4,0,108,109,5,4,0,0,109,111,3,4,2,
-		0,110,107,1,0,0,0,110,108,1,0,0,0,111,113,1,0,0,0,112,89,1,0,0,0,112,90,
-		1,0,0,0,112,97,1,0,0,0,112,103,1,0,0,0,113,9,1,0,0,0,114,115,5,7,0,0,115,
-		117,3,34,17,0,116,118,3,42,21,0,117,116,1,0,0,0,117,118,1,0,0,0,118,11,
-		1,0,0,0,119,120,6,6,-1,0,120,142,3,18,9,0,121,122,5,8,0,0,122,123,3,4,
-		2,0,123,124,5,9,0,0,124,125,3,38,19,0,125,142,1,0,0,0,126,127,5,8,0,0,
-		127,128,3,4,2,0,128,129,5,9,0,0,129,130,3,14,7,0,130,142,1,0,0,0,131,132,
-		5,8,0,0,132,133,3,4,2,0,133,135,5,14,0,0,134,136,3,16,8,0,135,134,1,0,
-		0,0,136,137,1,0,0,0,137,135,1,0,0,0,137,138,1,0,0,0,138,139,1,0,0,0,139,
-		140,5,9,0,0,140,142,1,0,0,0,141,119,1,0,0,0,141,121,1,0,0,0,141,126,1,
-		0,0,0,141,131,1,0,0,0,142,149,1,0,0,0,143,144,10,5,0,0,144,148,3,38,19,
-		0,145,146,10,4,0,0,146,148,3,14,7,0,147,143,1,0,0,0,147,145,1,0,0,0,148,
-		151,1,0,0,0,149,147,1,0,0,0,149,150,1,0,0,0,150,13,1,0,0,0,151,149,1,0,
-		0,0,152,153,3,42,21,0,153,154,3,18,9,0,154,165,1,0,0,0,155,156,3,42,21,
-		0,156,157,5,4,0,0,157,158,3,4,2,0,158,165,1,0,0,0,159,160,5,8,0,0,160,
-		161,3,42,21,0,161,162,3,4,2,0,162,163,5,9,0,0,163,165,1,0,0,0,164,152,
-		1,0,0,0,164,155,1,0,0,0,164,159,1,0,0,0,165,15,1,0,0,0,166,169,3,38,19,
-		0,167,169,3,14,7,0,168,166,1,0,0,0,168,167,1,0,0,0,169,17,1,0,0,0,170,
-		182,5,1,0,0,171,182,5,2,0,0,172,182,3,36,18,0,173,174,5,10,0,0,174,182,
-		5,11,0,0,175,176,5,8,0,0,176,182,5,9,0,0,177,178,5,10,0,0,178,179,3,4,
-		2,0,179,180,5,11,0,0,180,182,1,0,0,0,181,170,1,0,0,0,181,171,1,0,0,0,181,
-		172,1,0,0,0,181,173,1,0,0,0,181,175,1,0,0,0,181,177,1,0,0,0,182,19,1,0,
-		0,0,183,184,7,1,0,0,184,21,1,0,0,0,185,199,5,24,0,0,186,199,5,25,0,0,187,
-		199,5,26,0,0,188,199,5,27,0,0,189,199,3,64,32,0,190,199,5,45,0,0,191,199,
-		5,28,0,0,192,199,5,29,0,0,193,199,5,30,0,0,194,199,5,33,0,0,195,199,5,
-		31,0,0,196,199,5,34,0,0,197,199,5,21,0,0,198,185,1,0,0,0,198,186,1,0,0,
-		0,198,187,1,0,0,0,198,188,1,0,0,0,198,189,1,0,0,0,198,190,1,0,0,0,198,
-		191,1,0,0,0,198,192,1,0,0,0,198,193,1,0,0,0,198,194,1,0,0,0,198,195,1,
-		0,0,0,198,196,1,0,0,0,198,197,1,0,0,0,199,23,1,0,0,0,200,223,3,60,30,0,
-		201,223,5,35,0,0,202,223,3,56,28,0,203,223,3,48,24,0,204,223,5,36,0,0,
-		205,223,5,37,0,0,206,223,5,38,0,0,207,223,5,42,0,0,208,223,5,43,0,0,209,
-		223,5,44,0,0,210,223,5,39,0,0,211,223,5,40,0,0,212,223,5,41,0,0,213,223,
-		3,52,26,0,214,223,3,44,22,0,215,223,5,50,0,0,216,223,5,47,0,0,217,223,
-		5,53,0,0,218,223,5,46,0,0,219,223,5,52,0,0,220,223,5,51,0,0,221,223,3,
-		26,13,0,222,200,1,0,0,0,222,201,1,0,0,0,222,202,1,0,0,0,222,203,1,0,0,
-		0,222,204,1,0,0,0,222,205,1,0,0,0,222,206,1,0,0,0,222,207,1,0,0,0,222,
-		208,1,0,0,0,222,209,1,0,0,0,222,210,1,0,0,0,222,211,1,0,0,0,222,212,1,
-		0,0,0,222,213,1,0,0,0,222,214,1,0,0,0,222,215,1,0,0,0,222,216,1,0,0,0,
-		222,217,1,0,0,0,222,218,1,0,0,0,222,219,1,0,0,0,222,220,1,0,0,0,222,221,
-		1,0,0,0,223,25,1,0,0,0,224,225,5,54,0,0,225,226,3,28,14,0,226,27,1,0,0,
-		0,227,229,3,66,33,0,228,227,1,0,0,0,228,229,1,0,0,0,229,231,1,0,0,0,230,
-		232,3,30,15,0,231,230,1,0,0,0,231,232,1,0,0,0,232,234,1,0,0,0,233,235,
-		3,54,27,0,234,233,1,0,0,0,234,235,1,0,0,0,235,29,1,0,0,0,236,241,3,50,
-		25,0,237,241,3,46,23,0,238,241,3,58,29,0,239,241,3,62,31,0,240,236,1,0,
-		0,0,240,237,1,0,0,0,240,238,1,0,0,0,240,239,1,0,0,0,241,31,1,0,0,0,242,
-		244,7,2,0,0,243,242,1,0,0,0,243,244,1,0,0,0,244,33,1,0,0,0,245,247,7,2,
-		0,0,246,245,1,0,0,0,246,247,1,0,0,0,247,35,1,0,0,0,248,249,3,20,10,0,249,
-		250,3,32,16,0,250,37,1,0,0,0,251,253,3,40,20,0,252,251,1,0,0,0,252,253,
-		1,0,0,0,253,254,1,0,0,0,254,255,3,22,11,0,255,256,3,32,16,0,256,39,1,0,
-		0,0,257,258,5,7,0,0,258,259,3,34,17,0,259,41,1,0,0,0,260,261,3,24,12,0,
-		261,262,3,32,16,0,262,43,1,0,0,0,263,264,5,60,0,0,264,45,1,0,0,0,265,266,
-		5,60,0,0,266,47,1,0,0,0,267,268,5,59,0,0,268,49,1,0,0,0,269,270,5,59,0,
-		0,270,51,1,0,0,0,271,272,5,55,0,0,272,53,1,0,0,0,273,274,5,55,0,0,274,
-		55,1,0,0,0,275,276,5,57,0,0,276,57,1,0,0,0,277,278,5,57,0,0,278,59,1,0,
-		0,0,279,280,5,56,0,0,280,61,1,0,0,0,281,282,5,56,0,0,282,63,1,0,0,0,283,
-		284,5,58,0,0,284,65,1,0,0,0,285,286,5,58,0,0,286,67,1,0,0,0,24,70,73,82,
-		85,95,110,112,117,137,141,147,149,164,168,181,198,222,228,231,234,240,
-		243,246,252
+		1,9,3,9,182,8,9,1,10,1,10,1,10,5,10,187,8,10,10,10,12,10,190,9,10,1,11,
+		1,11,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,3,12,
+		206,8,12,1,13,1,13,1,13,1,13,1,13,1,13,1,13,1,13,1,13,1,13,1,13,1,13,1,
+		13,1,13,1,13,1,13,1,13,1,13,1,13,1,13,1,13,1,13,3,13,230,8,13,1,14,1,14,
+		3,14,234,8,14,1,14,3,14,237,8,14,1,14,3,14,240,8,14,1,15,1,15,1,15,1,15,
+		3,15,246,8,15,1,16,3,16,249,8,16,1,17,3,17,252,8,17,1,18,1,18,1,18,1,19,
+		3,19,258,8,19,1,19,1,19,1,19,1,20,1,20,1,20,1,21,1,21,1,21,1,22,1,22,1,
+		23,1,23,1,24,1,24,1,25,1,25,1,26,1,26,1,27,1,27,1,28,1,28,1,29,1,29,1,
+		30,1,30,1,31,1,31,1,32,1,32,1,33,1,33,1,33,0,1,12,34,0,2,4,6,8,10,12,14,
+		16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62,
+		64,66,0,3,1,0,13,15,1,0,20,21,1,0,16,17,324,0,68,1,0,0,0,2,77,1,0,0,0,
+		4,80,1,0,0,0,6,85,1,0,0,0,8,112,1,0,0,0,10,114,1,0,0,0,12,141,1,0,0,0,
+		14,164,1,0,0,0,16,168,1,0,0,0,18,181,1,0,0,0,20,183,1,0,0,0,22,191,1,0,
+		0,0,24,205,1,0,0,0,26,229,1,0,0,0,28,231,1,0,0,0,30,245,1,0,0,0,32,248,
+		1,0,0,0,34,251,1,0,0,0,36,253,1,0,0,0,38,257,1,0,0,0,40,262,1,0,0,0,42,
+		265,1,0,0,0,44,268,1,0,0,0,46,270,1,0,0,0,48,272,1,0,0,0,50,274,1,0,0,
+		0,52,276,1,0,0,0,54,278,1,0,0,0,56,280,1,0,0,0,58,282,1,0,0,0,60,284,1,
+		0,0,0,62,286,1,0,0,0,64,288,1,0,0,0,66,290,1,0,0,0,68,70,3,4,2,0,69,71,
+		3,2,1,0,70,69,1,0,0,0,70,71,1,0,0,0,71,73,1,0,0,0,72,74,5,61,0,0,73,72,
+		1,0,0,0,73,74,1,0,0,0,74,75,1,0,0,0,75,76,5,0,0,1,76,1,1,0,0,0,77,78,7,
+		0,0,0,78,3,1,0,0,0,79,81,3,6,3,0,80,79,1,0,0,0,81,82,1,0,0,0,82,80,1,0,
+		0,0,82,83,1,0,0,0,83,5,1,0,0,0,84,86,5,4,0,0,85,84,1,0,0,0,85,86,1,0,0,
+		0,86,87,1,0,0,0,87,88,3,8,4,0,88,7,1,0,0,0,89,113,3,12,6,0,90,91,3,12,
+		6,0,91,95,3,10,5,0,92,96,3,8,4,0,93,94,5,2,0,0,94,96,3,4,2,0,95,92,1,0,
+		0,0,95,93,1,0,0,0,96,113,1,0,0,0,97,98,3,12,6,0,98,99,3,10,5,0,99,100,
+		5,6,0,0,100,101,3,4,2,0,101,102,5,7,0,0,102,113,1,0,0,0,103,104,5,6,0,
+		0,104,105,3,4,2,0,105,106,5,7,0,0,106,110,3,10,5,0,107,111,3,8,4,0,108,
+		109,5,2,0,0,109,111,3,4,2,0,110,107,1,0,0,0,110,108,1,0,0,0,111,113,1,
+		0,0,0,112,89,1,0,0,0,112,90,1,0,0,0,112,97,1,0,0,0,112,103,1,0,0,0,113,
+		9,1,0,0,0,114,115,5,5,0,0,115,117,3,34,17,0,116,118,3,42,21,0,117,116,
+		1,0,0,0,117,118,1,0,0,0,118,11,1,0,0,0,119,120,6,6,-1,0,120,142,3,18,9,
+		0,121,122,5,6,0,0,122,123,3,4,2,0,123,124,5,7,0,0,124,125,3,38,19,0,125,
+		142,1,0,0,0,126,127,5,6,0,0,127,128,3,4,2,0,128,129,5,7,0,0,129,130,3,
+		14,7,0,130,142,1,0,0,0,131,132,5,6,0,0,132,133,3,4,2,0,133,135,5,12,0,
+		0,134,136,3,16,8,0,135,134,1,0,0,0,136,137,1,0,0,0,137,135,1,0,0,0,137,
+		138,1,0,0,0,138,139,1,0,0,0,139,140,5,7,0,0,140,142,1,0,0,0,141,119,1,
+		0,0,0,141,121,1,0,0,0,141,126,1,0,0,0,141,131,1,0,0,0,142,149,1,0,0,0,
+		143,144,10,5,0,0,144,148,3,38,19,0,145,146,10,4,0,0,146,148,3,14,7,0,147,
+		143,1,0,0,0,147,145,1,0,0,0,148,151,1,0,0,0,149,147,1,0,0,0,149,150,1,
+		0,0,0,150,13,1,0,0,0,151,149,1,0,0,0,152,153,3,42,21,0,153,154,3,18,9,
+		0,154,165,1,0,0,0,155,156,3,42,21,0,156,157,5,2,0,0,157,158,3,4,2,0,158,
+		165,1,0,0,0,159,160,5,6,0,0,160,161,3,42,21,0,161,162,3,4,2,0,162,163,
+		5,7,0,0,163,165,1,0,0,0,164,152,1,0,0,0,164,155,1,0,0,0,164,159,1,0,0,
+		0,165,15,1,0,0,0,166,169,3,38,19,0,167,169,3,14,7,0,168,166,1,0,0,0,168,
+		167,1,0,0,0,169,17,1,0,0,0,170,182,3,20,10,0,171,182,5,1,0,0,172,182,3,
+		36,18,0,173,174,5,8,0,0,174,182,5,9,0,0,175,176,5,6,0,0,176,182,5,7,0,
+		0,177,178,5,8,0,0,178,179,3,4,2,0,179,180,5,9,0,0,180,182,1,0,0,0,181,
+		170,1,0,0,0,181,171,1,0,0,0,181,172,1,0,0,0,181,173,1,0,0,0,181,175,1,
+		0,0,0,181,177,1,0,0,0,182,19,1,0,0,0,183,188,5,60,0,0,184,185,5,52,0,0,
+		185,187,5,60,0,0,186,184,1,0,0,0,187,190,1,0,0,0,188,186,1,0,0,0,188,189,
+		1,0,0,0,189,21,1,0,0,0,190,188,1,0,0,0,191,192,7,1,0,0,192,23,1,0,0,0,
+		193,206,5,22,0,0,194,206,5,23,0,0,195,206,5,24,0,0,196,206,3,64,32,0,197,
+		206,5,42,0,0,198,206,5,25,0,0,199,206,5,26,0,0,200,206,5,27,0,0,201,206,
+		5,30,0,0,202,206,5,28,0,0,203,206,5,31,0,0,204,206,5,19,0,0,205,193,1,
+		0,0,0,205,194,1,0,0,0,205,195,1,0,0,0,205,196,1,0,0,0,205,197,1,0,0,0,
+		205,198,1,0,0,0,205,199,1,0,0,0,205,200,1,0,0,0,205,201,1,0,0,0,205,202,
+		1,0,0,0,205,203,1,0,0,0,205,204,1,0,0,0,206,25,1,0,0,0,207,230,3,60,30,
+		0,208,230,5,32,0,0,209,230,3,56,28,0,210,230,3,48,24,0,211,230,5,33,0,
+		0,212,230,5,34,0,0,213,230,5,35,0,0,214,230,5,39,0,0,215,230,5,40,0,0,
+		216,230,5,41,0,0,217,230,5,36,0,0,218,230,5,37,0,0,219,230,5,38,0,0,220,
+		230,3,52,26,0,221,230,3,44,22,0,222,230,5,47,0,0,223,230,5,44,0,0,224,
+		230,5,50,0,0,225,230,5,43,0,0,226,230,5,49,0,0,227,230,5,48,0,0,228,230,
+		3,28,14,0,229,207,1,0,0,0,229,208,1,0,0,0,229,209,1,0,0,0,229,210,1,0,
+		0,0,229,211,1,0,0,0,229,212,1,0,0,0,229,213,1,0,0,0,229,214,1,0,0,0,229,
+		215,1,0,0,0,229,216,1,0,0,0,229,217,1,0,0,0,229,218,1,0,0,0,229,219,1,
+		0,0,0,229,220,1,0,0,0,229,221,1,0,0,0,229,222,1,0,0,0,229,223,1,0,0,0,
+		229,224,1,0,0,0,229,225,1,0,0,0,229,226,1,0,0,0,229,227,1,0,0,0,229,228,
+		1,0,0,0,230,27,1,0,0,0,231,233,5,51,0,0,232,234,3,30,15,0,233,232,1,0,
+		0,0,233,234,1,0,0,0,234,236,1,0,0,0,235,237,3,66,33,0,236,235,1,0,0,0,
+		236,237,1,0,0,0,237,239,1,0,0,0,238,240,3,54,27,0,239,238,1,0,0,0,239,
+		240,1,0,0,0,240,29,1,0,0,0,241,246,3,50,25,0,242,246,3,46,23,0,243,246,
+		3,58,29,0,244,246,3,62,31,0,245,241,1,0,0,0,245,242,1,0,0,0,245,243,1,
+		0,0,0,245,244,1,0,0,0,246,31,1,0,0,0,247,249,7,2,0,0,248,247,1,0,0,0,248,
+		249,1,0,0,0,249,33,1,0,0,0,250,252,7,2,0,0,251,250,1,0,0,0,251,252,1,0,
+		0,0,252,35,1,0,0,0,253,254,3,22,11,0,254,255,3,32,16,0,255,37,1,0,0,0,
+		256,258,3,40,20,0,257,256,1,0,0,0,257,258,1,0,0,0,258,259,1,0,0,0,259,
+		260,3,24,12,0,260,261,3,32,16,0,261,39,1,0,0,0,262,263,5,5,0,0,263,264,
+		3,34,17,0,264,41,1,0,0,0,265,266,3,26,13,0,266,267,3,32,16,0,267,43,1,
+		0,0,0,268,269,5,58,0,0,269,45,1,0,0,0,270,271,5,58,0,0,271,47,1,0,0,0,
+		272,273,5,57,0,0,273,49,1,0,0,0,274,275,5,57,0,0,275,51,1,0,0,0,276,277,
+		5,53,0,0,277,53,1,0,0,0,278,279,5,53,0,0,279,55,1,0,0,0,280,281,5,55,0,
+		0,281,57,1,0,0,0,282,283,5,55,0,0,283,59,1,0,0,0,284,285,5,54,0,0,285,
+		61,1,0,0,0,286,287,5,54,0,0,287,63,1,0,0,0,288,289,5,56,0,0,289,65,1,0,
+		0,0,290,291,5,56,0,0,291,67,1,0,0,0,25,70,73,82,85,95,110,112,117,137,
+		141,147,149,164,168,181,188,205,229,233,236,239,245,248,251,257
 	};
 
 	public static readonly ATN _ATN =

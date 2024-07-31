@@ -9,7 +9,8 @@ type OperationModifier =
 
 module ParseLib =
 
-  let rec private ParseInteger' (text:string) (b:int) (index:int) (cumulativeValue: bigint) =
+  let rec private ParseInteger' (settings: PrimellConfiguration) (text:string) (index:int) (cumulativeValue: bigint) =
+    let b = settings.SourceBase
     if index >= text.Length then 
       cumulativeValue
     else
@@ -22,19 +23,18 @@ module ParseLib =
         elif c >= 'a' && c <= 'z' && b > 10 then
           if b <= 36 then int c - int 'A' + 10
           else int c - int 'A' + 36
-        elif c = 'Þ' && b > 62 then 62 
-        elif c = 'þ' && b > 63 then 63
+        elif c = settings.Character63 && b > 62 then 62 
+        elif c = settings.Character64 && b > 63 then 63
         else PrimellInvalidSyntaxException $"Invalid integer character '{c}' in: {text}" |> raise
           
-      ParseInteger' text b (index + 1) (cumulativeValue + bigint digitValue * bigint.Pow(b, text.Length - index - 1))
+      ParseInteger' settings text (index + 1) (cumulativeValue + bigint digitValue * bigint.Pow(b, text.Length - index - 1))
 
-  let ParseInteger (text:string) (``base``:int) =
-    let b = ``base``
+  let ParseInteger (settings: PrimellConfiguration) (text:string) =
     let result = 
-      if b = 1 then
+      if settings.SourceBase = 1 then
         BigRational(text.Length, 1)
       else
-        BigRational(ParseInteger' text b 0 0I, 1) 
+        BigRational(ParseInteger' settings text 0 0I, 1) 
     result |> Rational |> PNumber
 
   let rec private ParseOperationModifiers' (opModText: string) (opMods: list<OperationModifier>) =
@@ -71,6 +71,10 @@ module ParseLib =
         UpdateSettings { settings with OutputBase = int args[1] } args.Tail.Tail
       | "-sb" | "--source-base" -> 
         UpdateSettings { settings with SourceBase = int args[1] } args.Tail.Tail
+      | "-c63" | "--character-63" -> 
+        UpdateSettings { settings with Character63 = char args[1] } args.Tail.Tail
+      | "-c64" | "--character-64" -> 
+        UpdateSettings { settings with Character64 = char args[1] } args.Tail.Tail
       | "-rs" | "--restricted-source" ->   // TODO - is there a way to clean up the code copy for optional settings?
         if args.Length > 1 && not <| args[1].StartsWith "-" then
           UpdateSettings { settings with RestrictedSource = args[1].ToLowerInvariant().StartsWith "y" } args.Tail.Tail
