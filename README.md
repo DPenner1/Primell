@@ -29,7 +29,7 @@ No, not the Pandas kind, but that did make it hard to search for other examples.
     (5 10 11 14 17 19 20)@(3 2)
     = 14 11
 
-This was not explicitly designed for, but is just a result of how operators in Listell automatically apply a for-each approach when given a list instead of a numeric argument. This generality meant it could then be combined elegantly with the range operator `..` for achieve Python-like list slicing _without_ any dedicated list slicing implementation code:
+This was not explicitly designed for, but is just a result of how operators in Listell automatically apply a for-each approach when given a list instead of a numeric argument. This generality meant it could then be combined elegantly with the range operator `..` to achieve Python-like list slicing _without_ any dedicated list slicing implementation code:
 
     (5 10 11 14 17 19 20)@(2..6)
     = 11 14 17 19
