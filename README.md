@@ -29,10 +29,15 @@ No, not the Pandas kind, but that did make it hard to search for other examples.
     (5 10 11 14 17 19 20)@(5 2)
     = 19 11
 
-This was not explicitly designed for, but is just a result of how operators in Primell automatically apply a for-each approach when given a list argument instead of an expected numeric argument (in this case, the index). This generality meant it could then be combined elegantly with the range operator `..` to achieve Python-like list slicing _without_ any dedicated list slicing implementation code:
+This was not explicitly designed for, but is just a result of how operators in Primell automatically apply a for-each approach when given a list argument instead of an expected numeric argument (in this case, the index). This generality meant it could then be combined elegantly with the range operator `..` to achieve Python-like list slicing _without_ any dedicated list slicing implementation code (inclusive lower, exclusive upper bounds like Python):
 
     (5 10 11 14 17 19 20)@(2..6)
     = 11 14 17 19
+
+Listell is limited to binary operations, so you can't directly specify start, end _and_ step in a range, but a crude approximation of range-step is possible by simply multiplying the range (the bounds also get multiplied):
+
+    (0 1 2 3 4 5 6 7 8 9 10)@(2..5 * 2)
+    = 4 6 8
 
 And while the implementation for this is currently broken, negative numbers will allow the ability to wrap around a list in either direction (due to syntax quirk, -1 is written as `1~`):
 
