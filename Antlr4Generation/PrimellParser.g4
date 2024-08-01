@@ -48,20 +48,18 @@ atomTerm : intOrId                    #integerOrIdentifier   // the silly one
 intOrId : INT_OR_ID (DOT INT_OR_ID)* ;
 
 // Note; numeric/list op distinction isn't syntactical, it's functional!
-baseNullaryOp : OP_READ_STR | OP_READ_CSV
+baseNullaryOp : OP_NULLARY
               ;
 
-baseUnaryOp : OP_NEXT | OP_PREV | OP_ROUND | op_neg | OP_BIT_NOT                               // numeric unary
-            | OP_HEAD | OP_TAIL | OP_DISTINCT | OP_REV | OP_FLATTEN | OP_SORT | OP_READ_CODE   // list unary
+baseUnaryOp : OP_UNARY 
+            | OP_USER_UNARY 
+            | op_neg
             ;
             
-baseBinaryOp : op_add | OP_SUB | op_mul | op_div | OP_MOD | OP_POW | OP_LOG   // num binary (math)
-             | OP_BIT_AND | OP_BIT_OR | OP_BIT_XOR                            // num binary (bitwise)
-             | OP_INC_RANGE | OP_RANGE | OP_MIN | op_max                      // num binary (misc)
-             | op_list_diff | OP_INTERSECT | OP_INDEX_OF | OP_CONCAT          // list binary
-             | OP_INDEX | OP_APPEND                                           // list numeric
-             | OP_CONS                                                        // numeric list
-             | conditionalOp   // separate for easier handling
+baseBinaryOp : OP_BINARY 
+             | OP_USER_BINARY 
+             | op_add | op_mul | op_div | op_max | op_list_diff   // re-used symbols
+             | conditionalOp
              ;
 
 conditionalOp : OP_COND condFunc? cond_mod_neg? cond_mod_tail? ;

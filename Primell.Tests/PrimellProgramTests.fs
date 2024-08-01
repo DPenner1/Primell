@@ -3,14 +3,26 @@ module PrimellProgramTests
 open Xunit
 open dpenner1.Primell
 
+let GetOutput(control: PrimellProgramControl) = 
+  control.LineResults 
+    |> Array.filter(fun lineRec -> match lineRec.Output with | Some _ -> true | _ -> false)
+    |> Array.map(fun lineRec -> lineRec.Output.Value)
+    |> String.concat "\n"
+  
+
 let TestProgram(program: string, settings: PrimellConfiguration, expectedResult: string) =
   let runner = PrimellRunner()
   let control = runner.Run program settings
-  let outputCheck = control.LineResults 
-                    |> Array.filter(fun lineRec -> match lineRec.Output with | Some _ -> true | _ -> false)
-                    |> Array.map(fun lineRec -> lineRec.Output.Value)
-                    |> String.concat "\n"
-  Assert.Equal(expectedResult, outputCheck)
+  Assert.Equal(expectedResult, GetOutput control)
+
+let TestEquivalentProgram(program1: string, settings1: PrimellConfiguration, program2: string, settings2: PrimellConfiguration) =
+  let runner1 = PrimellRunner()
+  let control1 = runner1.Run program1 settings1
+  let runner2 = PrimellRunner()
+  let control2 = runner2.Run program2 settings2
+
+  Assert.Equal(GetOutput control1, GetOutput control2)
+  
 
 let TestProgramFromFile(filePath: string, settings: PrimellConfiguration, expectedResult: string) = 
   let lines = System.IO.File.ReadAllLines(filePath)
@@ -117,4 +129,13 @@ let ``Test Foreach Chain``() =
   TestProgram("[(2 3 5)(7 11 13) | _~_<]", PrimellConfiguration.PrimellDefault, "5 13")
   TestProgram("[(2 3 5)(7 11 13) | _<[<::(23 29)(31 37)]]", PrimellConfiguration.PrimellDefault, "((2 23 29) (2 31 37)) ((7 23 29) (7 31 37))")
 
+[<Fact>]
+let ``Test User Operations``() =  // User-defined ops not yet done, but a few hard-coded syntactical tests so I don't actually break stuff
+  TestEquivalentProgram("3 2[<::(3 5)(7 11)]", PrimellConfiguration.Listell, "3 2[#test_(3 5)(7 11)]", PrimellConfiguration.Listell)
+  TestEquivalentProgram("(3 5 7)::>5", PrimellConfiguration.Listell, "(3 5 7)_test#5", PrimellConfiguration.Listell)
+  TestEquivalentProgram("[3 5 7]<::>(3 5 7)", PrimellConfiguration.Listell, "[3 5 7]_test_(3 5 7)", PrimellConfiguration.Listell)
+  TestEquivalentProgram("[3 5 7]-(3 5 7)", PrimellConfiguration.Listell, "[3 5 7]#test#(3 5 7)", PrimellConfiguration.Listell)
+  TestEquivalentProgram("[(3 5)(7 11)]_~", PrimellConfiguration.Listell, "[(3 5)(7 11)]_test", PrimellConfiguration.Listell)
+  TestEquivalentProgram("(3 5)(7 11)~", PrimellConfiguration.Listell, "(3 5)(7 11)#test", PrimellConfiguration.Listell)
+  TestEquivalentProgram(",", PrimellConfiguration.Listell, "test", PrimellConfiguration.Listell)
   

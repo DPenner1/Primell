@@ -13,9 +13,18 @@ L_BRACK : '[' ;
 R_BRACK : ']' ;
 L_PAREN : '(' ;
 R_PAREN : ')' ;
-L_BRACE : '{' ;
-R_BRACE : '}' ;
 VERT_BAR : '|' ;
+
+DOT: '.' ;
+
+// these symbols get re-used as both ops and mods in different contexts
+// in theory, i could use modes, but i think this ones easier in the parser
+TAIL : '>' ;
+PLUS : '+' ;
+STAR : '*' ;
+NEGATE : '~' ;
+F_SLASH: '/' ;
+B_SLASH: '\\' ;
 
 OUT_INV : '"~' ;
 OUT_DEF : '""' ;
@@ -23,50 +32,24 @@ OUT_STR : '"' ;
 
 OPMOD_POW : '^' ;
 OPMOD_CUT : '`' ;
-OPMOD_FOLD : '!' ;
 
-OP_READ_CODE : '_:' ;
-OP_READ_STR : ':"' ;
-OP_READ_CSV : ':,' ;
-OP_NEXT : '++';
-OP_PREV : '--';
-OP_ROUND : '+-' ;
-OP_HEAD : '_<' ;
-OP_TAIL : '_>' ;
-OP_DISTINCT : '_*' ;
-OP_FLATTEN : '__' ;
-OP_PURGE : '_?' ;
-OP_REV : '_~' ;
-OP_SORT : '_@' ;
-OP_SUB : '-' ;
-OP_MOD : '%' ;
-OP_POW : '**';
-OP_LOG : '//';
-OP_INC_RANGE : '…';
-OP_RANGE : '..' ;
-OP_MIN : '<' ;
-OP_BIT_AND : '`&' ;
-OP_BIT_OR : '`|' ;
-OP_BIT_XOR : '`^' ;
-OP_BIT_NOT : '`~' ;
-OP_INDEX : '@' ;
-OP_INDEX_OF : '@#' ;
-OP_FILT : '*?';
-OP_NEG_FILT : '*?~' ;
-OP_INTERSECT : '&' ;
-OP_CONS : '<::' ;
-OP_APPEND : '::>' ;
-OP_CONCAT : '<::>' ;
+OP_NULLARY : ':"' | ':,' ;
+
+OP_UNARY :  '_:' | '_<' | '_>' | '_*' | '__' | '_?' | '_~' | '_@'  // list unary
+         | '++' | '--' | '+-' | '`~' // numeric unary
+         ;
+
+OP_USER_UNARY : '_' INT_OR_ID | '#' INT_OR_ID ;
+
+OP_BINARY : '-' |'%' | '**' | '//' | '…' | '..' | '<' | '`&' | '`|'  | '`^' // numeric binary
+          | '<::>' | '*?' | '*?~' | '&'       // list binary
+          | '@' | '::>'// list-numeric
+          | '<::'  //numeric-list
+          ;
+
+OP_USER_BINARY : '_' INT_OR_ID '_' | '_' INT_OR_ID '#' | '#' INT_OR_ID '_' | '#' INT_OR_ID '#' ;
 
 OP_COND : '?' ;
-DOT: '.' ;
-
-TAIL : '>' ;
-PLUS : '+' ;
-STAR : '*' ;
-NEGATE : '~' ;
-F_SLASH: '/' ;
-B_SLASH: '\\' ;
 
 WS : [ \t\r\n]+ -> channel(HIDDEN) ;
 

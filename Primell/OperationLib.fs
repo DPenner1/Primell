@@ -9,9 +9,13 @@ type OperationLib(control: PrimellProgramControl) =
 
     let control = control
 
+    // all dictionaries have test item for now, this is planning for user-defined operators,
+    // the test entries are for test cases so I don't inadvertently break these plans while working on other things
+
     member this.NullaryOperators: IDictionary<string, unit->PObject> =
       dict [":\"", fun () -> control.GetStringInput()
             ":,", fun () -> control.GetCsvInput()
+            "test", fun () -> 123 |> BigRational |> Rational |> PNumber :> PObject
            ]
 
     member this.UnaryNumericOperators: IDictionary<string, PNumber->PObject> = 
@@ -19,14 +23,16 @@ type OperationLib(control: PrimellProgramControl) =
             "++", fun n -> if control.Settings.UsePrimeOperators then PPrimeLib.NextPrime n else n.Value + ExtendedBigRational.One |> PNumber :> PObject
             "--", fun n -> if control.Settings.UsePrimeOperators then PPrimeLib.PrevPrime n else n.Value - ExtendedBigRational.One |> PNumber :> PObject
             "+-", fun n -> if control.Settings.UsePrimeOperators then PPrimeLib.NearestPrime n else round n.Value |> PNumber :> PObject
+            "#test", fun n -> ExtendedBigRational.(~-) n.Value |> PNumber :> PObject  // copied negate function
            ]
 
     member this.UnaryListOperators: IDictionary<string, PList->PObject> = 
-      dict ["_<", fun (l: PrimellList) -> l.Head()
-            "_>", fun (l: PrimellList) -> l.Tail()        
-            "_~", fun (l: PrimellList) -> l.Reverse()
-            "__", fun (l: PrimellList) -> l.Flatten()
-            "_:", fun (l: PrimellList) -> control.GetCodeInput(l)
+      dict ["_<", fun l -> l.Head()
+            "_>", fun l -> l.Tail()        
+            "_~", fun l -> l.Reverse()
+            "__", fun l -> l.Flatten()
+            "_:", fun l -> control.GetCodeInput(l)
+            "_test", fun l -> l.Reverse()
            ]
 
     member this.BinaryNumericOperators: IDictionary<string, PNumber*PNumber->PObject> = 
@@ -41,19 +47,23 @@ type OperationLib(control: PrimellProgramControl) =
                       PPrimeLib.PrimeRange left.Value right.Value :> PObject
                     else 
                       ExtendedBigRational.Range(left.Value, right.Value) |> Seq.map(fun x -> x |> PNumber :> PObject) |> PList :> PObject
+            "#test#", fun (left, right) -> ExtendedBigRational.(-)(left.Value, right.Value) |> PNumber :> PObject // copied subtract 
            ]
     
     member this.BinaryListOperators: IDictionary<string, PList*PList->PObject> = 
       dict ["<::>",  fun (left: PList, right: PList) -> left.AppendAll right
+            "_test_", fun (left: PList, right: PList) -> left.AppendAll right
            ]
  
     member this.NumericListOperators: IDictionary<string, PNumber*PList->PObject> = 
       dict ["<::",  fun (left: PNumber, right: PList) -> right.Cons left
+            "#test_",  fun (left: PNumber, right: PList) -> right.Cons left
            ]
 
     member this.ListNumericOperators: IDictionary<string, PList*PNumber->PObject> = 
       dict ["::>", fun (left: PList, right: PNumber) -> left.Append right
             "@",   fun (left: PList, right: PNumber) -> left.Index right
+            "_test#", fun (left: PList, right: PNumber) -> left.Append right
            ]
 
     // opMods for consistency, but I don't think Primell will have any need for opMods on unary numeric operators

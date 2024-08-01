@@ -113,7 +113,7 @@ Console commands are prefixed with `?`, which on its own pulls up the help menu.
 
 For example, included example programs can be run with the following (Linux file path):
 
-    ?run ../Examples/HelloWorld.prime
+    ?run ../Examples/HelloWorld.pll
 
 Input not starting with `?` are taken to be code and executed immediately on the console.
 
