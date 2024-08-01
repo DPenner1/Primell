@@ -54,7 +54,7 @@ Step by step, it reverses each list `(5 3 2)(13 11 7)`, takes the tail of each l
 
     [(2 3 5)(7 11 13) | _~ _> +(3 5)]
 
-This of course is entirely possible to achieve in many programming languages, I'm just not aware of any that does it so concisely while still being fairly readable.
+This _feels_ like it probably exists elsewhere, but I'm just not aware of any that does it so concisely while still being fairly readable (all in my opinion of course, some get close, an example of how this would be accomplished in F# I think would be something like `listToMap |> Seq.map(fun x -> x |> Seq.rev |> Seq.tail |> (partiallyAppliedFunc [3 5])`)
 
 ## Data types
 
