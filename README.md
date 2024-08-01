@@ -8,7 +8,7 @@ Primell is a language that likes prime numbers. So much in fact, that it is the 
  - Lists are allowed. Primell in fact quite likes lists because it allows more storage of prime numbers and so allows for infinite lists.
  - Primell doesn't make mistakes: All valid programs either execute in a fully defined manner or execute infinitely, there are no runtime errors.
 
-Note: A "serious" version called Listell without the source restriction is configurable.
+A "serious" version called Listell without the source restriction is configurable.
 
 # Why?
 
@@ -18,18 +18,18 @@ Primell was created as an experiment. I had intended on creating a more serious 
 
 _This overview presents high-level highlights of Primell, see the [wiki](https://github.com/DPenner1/Primell/wiki) for details._
 
-## Unique Features (probably)
+## Cool features
 
-While never intended to be serious, there are two things in Primell/Listell that I think are legitimately useful, and _as far as I am aware_ are unique to it.
+While never intended to be serious, there are a few things in Primell/Listell that I think are legitimately useful.
 
-### 1. List multi-indexing 
+### 1. List multi-indexing
 
 No, not the Pandas kind, but that did make it hard to search for other examples. Listell's index operator `@` generalizes list indexing concisely; it is effectively a way to select any items from a list and in any order:
 
-    (5 10 11 14 17 19 20)@(3 2)
-    = 14 11
+    (5 10 11 14 17 19 20)@(5 2)
+    = 19 11
 
-This was not explicitly designed for, but is just a result of how operators in Listell automatically apply a for-each approach when given a list instead of a numeric argument. This generality meant it could then be combined elegantly with the range operator `..` to achieve Python-like list slicing _without_ any dedicated list slicing implementation code:
+This was not explicitly designed for, but is just a result of how operators in Primell automatically apply a for-each approach when given a list instead of a numeric argument. This generality meant it could then be combined elegantly with the range operator `..` to achieve Python-like list slicing _without_ any dedicated list slicing implementation code:
 
     (5 10 11 14 17 19 20)@(2..6)
     = 11 14 17 19
@@ -41,7 +41,7 @@ And while the implementation for this is currently broken, negative numbers will
     (5 10 11 14 17 19 20)@(2..(1~))
     = 11 10 5 20
 
-_(of course while functionally nice, I can imagine that implementing this in a production programming language in a performant manner might be challenging)_
+As far as I'm aware, this kind of multi-indexing is unique to Primell/Listell, though would be happy to learn from other examples (note: this section specifically used Listell, because in Primell the "range" operator skips non-primes!).
 
 ### 2. Concise functional mapping sequence syntax
 
@@ -50,11 +50,11 @@ Or in more procedural language, apply a sequence of functions for each element i
     [(2 3 5)(7 11 13) | reverse tail +(3 5)]
     = (6 7) (14 12)
 
-Step by step, it reverses each list `(5 3 2)(13 11 7)`, takes the tail of each list `(3 2)(11 7)` then adds `(3 5)` to each list, which itself adds across like-indexes to produce the final result of `(6 7) (14 12)`. Of course I wanted to show how the syntax might look in a "serious" language, but Primell/Listell makes heavy use of symbols in it's operators so it actually looks like this:
+Step by step, it reverses each list `(5 3 2)(13 11 7)`, takes the tail of each list `(3 2)(11 7)` then adds `(3 5)` to each list, which itself adds across like-indexes to produce the final result of `(6 7) (14 12)`. Of course I wanted to show how the syntax might look in a "serious" language, but Primell/Listell makes heavy use of symbols in its operators so it actually looks like this:
 
     [(2 3 5)(7 11 13) | _~ _> +(3 5)]
 
-This _feels_ like it probably exists elsewhere, but I'm just not aware of any that does it so concisely while still being fairly readable (all in my opinion of course, some get close, an example of how this would be accomplished in F# I think would be something like `listToMap |> Seq.map(fun x -> x |> Seq.rev |> Seq.tail |> (partiallyAppliedFunc [3 5])`)
+This is of course not unique to Primell, but I was particularly happy with how concise yet readable (in my opinion) the syntax turned out.
 
 ## Data types
 
