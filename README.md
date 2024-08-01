@@ -46,7 +46,7 @@ Primell/Listell is limited to binary operations, so you can't directly specify s
     (0 1 2 3 4 5 6 7 8 9 10)@(2..5 * 2)
     = 4 6 8
 
-As far as I'm aware, this kind of multi-indexing is unique to Primell/Listell, though would be happy to learn about and from other examples.
+As far as I'm aware, this kind of multi-indexing is unique to Primell/Listell, though would be happy to learn about and from other examples (at least at the language-level, there probably exists libraries for this kind of thing).
 
 ### 2. Concise functional mapping sequence syntax
 
