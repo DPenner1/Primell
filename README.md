@@ -59,7 +59,7 @@ Step by step, it reverses each list `(5 3 2)(13 11 7)`, takes the tail of each l
 
     [(2 3 5)(7 11 13) | _~ _> +(3 5)]
 
-This is of course not unique to Primell, but I was particularly happy with how concise yet readable (in my opinion) the syntax turned out.
+This kind of functionality is of course not unique to Primell, but I was particularly happy with how concise yet readable (in my opinion) the syntax turned out.
 
 ## Data types
 
@@ -71,10 +71,6 @@ Primell has but two data types:
 Other familiar data types are only simulated with these. For example:
 - Boolean: A non-empty list consisting of only prime numbers is considered true. Anything else is false. (This is the truest truth, but alternative truths are configurable.)
 - There aren't really others yet.
-
-
-
- 1. List multi-indexing (no, not the Pandas kind, but that did make it hard to search for examples):
 
 ## Operators
 
