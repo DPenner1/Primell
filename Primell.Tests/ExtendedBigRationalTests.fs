@@ -173,14 +173,22 @@ let ``Test Reciprocal Special``() =
   Assert.Equal(Infinity Positive, ExtendedBigRational.Reciprocal ExtendedBigRational.Zero)
   Assert.Equal(Infinity Negative, ExtendedBigRational.Reciprocal ExtendedBigRational.NegativeZero)
 
+let AssertEqualSequences(expected: seq<ExtendedBigRational>, actual: seq<ExtendedBigRational>) =
+  Assert.Equal(Seq.length expected, Seq.length actual)
+  Seq.zip expected actual |> Seq.iter(fun pair -> Assert.Equal(fst pair, snd pair))
+
+
 [<Fact>]
 let ``Test Range``() = 
   let expected = seq { 2..100 } |> Seq.map(fun x -> x |> BigRational |> Rational)
-  let actual = ExtendedBigRational.Range (2 |> BigRational |> Rational) (101 |> BigRational |> Rational)
+  let actual = ExtendedBigRational.Range(2 |> BigRational |> Rational, 101 |> BigRational |> Rational)
 
-  Assert.Equal(Seq.length expected, Seq.length actual)
-  
-  Seq.zip expected actual |> Seq.iter(fun pair -> Assert.Equal(fst pair, snd pair))
+  AssertEqualSequences(expected, actual)
+
+  let expected2 = seq { 2; 1; 0 ; -1} |> Seq.map(fun x -> x |> BigRational |> Rational)
+  let actual2 = ExtendedBigRational.Range(2 |> BigRational |> Rational, -2|> BigRational |> Rational)
+
+  AssertEqualSequences(expected2, actual2)
   
 
 

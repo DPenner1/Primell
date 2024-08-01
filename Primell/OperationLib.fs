@@ -40,7 +40,7 @@ type OperationLib(control: PrimellProgramControl) =
                     if control.Settings.UsePrimeOperators then 
                       PPrimeLib.PrimeRange left.Value right.Value :> PObject
                     else 
-                      ExtendedBigRational.Range left.Value right.Value |> Seq.map(fun x -> x |> PNumber :> PObject) |> PList :> PObject
+                      ExtendedBigRational.Range(left.Value, right.Value) |> Seq.map(fun x -> x |> PNumber :> PObject) |> PList :> PObject
            ]
     
     member this.BinaryListOperators: IDictionary<string, PList*PList->PObject> = 

@@ -110,7 +110,7 @@ type BigRational =
 
   // way more general than I currently need for Primell, but fun to figure out
   static member Range (left: BigRational, right: BigRational, ?step: BigRational, ?leftInclusive: bool, ?rightInclusive: bool) =
-    let stepValue = defaultArg step <| BigRational(1, 1)
+    let stepValue = defaultArg step (if left <= right then BigRational 1 else BigRational -1)
     let includeLeft = defaultArg leftInclusive true
     let includeRight = defaultArg rightInclusive false
     let leftOrEmpty condition = 
@@ -123,8 +123,11 @@ type BigRational =
       seq { while true do yield left } // right-of-way
     else 
       let diff = right - left
-      if diff.Sign <> stepValue.Sign then
-        leftOrEmpty includeLeft
+      if diff.Sign <> stepValue.Sign then  // step has us starting at left but getting further from right
+        if includeLeft then
+          Seq.initInfinite (fun i -> left + stepValue * BigRational(i, 1))
+        else
+          Seq.initInfinite (fun i -> left + stepValue * BigRational(bigint i + 1I, 1))
       else
         let numSteps = diff / stepValue
         let wholeSteps, fractionalSteps = bigint.DivRem(numSteps.Numerator, numSteps.Denominator)

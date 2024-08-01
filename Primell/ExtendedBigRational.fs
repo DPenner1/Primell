@@ -182,20 +182,24 @@ type ExtendedBigRational =
         static member Min (left, right) =
           if left < right then left else right
         
-        static member Range left right: seq<ExtendedBigRational> =
-          match left, right with
-          | NaN, _ | _, NaN -> 
-              Seq.empty
-          | Infinity Positive, _ -> 
-              seq { while true do yield Infinity Positive }
-          | Infinity Negative, _ -> 
-              seq { while true do yield Infinity Negative }
-          | Rational left', Infinity Positive -> 
-              Seq.initInfinite(fun i -> ceil left' + BigRational(i,1) |> Rational)
-          | Rational left', Infinity Negative -> 
-              Seq.initInfinite(fun i -> ceil left' - BigRational(i,1) |> Rational)
-          | Rational left', Rational right' ->  // Is the cast more functional? In C# i'd go with a covariant (contra?) generic
-              BigRational.Range(left', right', BigRational(1, 1), true, false) |> Seq.map(fun r -> r |> Rational)
+        // for now, hard coded lower-bound inclusive, upper-bound exclusive
+        static member Range(left, right, ?step): seq<ExtendedBigRational> =
+          let step = defaultArg step (if left <= right then ExtendedBigRational.One else ExtendedBigRational.MinusOne)
+
+          // a lot of judgment calls here
+          match step with
+          | NaN -> Seq.singleton left
+          | Infinity _ as inf -> System.NotImplementedException "my head hurts" |> raise
+          | Rational step' ->
+            match left, right with
+            | NaN, _ | _, NaN -> 
+                Seq.empty
+            | Infinity _ as inf, _ -> 
+                seq { while true do yield inf }
+            | Rational _', Infinity _ -> 
+                Seq.initInfinite(fun i -> left + step * (BigRational(i,1) |> Rational))
+            | Rational left', Rational right' ->  // Is the cast more functional? In C# i'd go with a covariant (contra?) generic
+                BigRational.Range(left', right', step', true, false) |> Seq.map(fun r -> r |> Rational)
 
 // TODO - if we generate a range from +inf..1 it infinitely returns +inf...
         //        but if we reverse that range, then we would actually want it to start generating from 1

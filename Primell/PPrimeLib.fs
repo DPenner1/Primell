@@ -61,21 +61,21 @@ module PPrimeLib =
     | Infinity Positive, _ -> 
         PList(seq { while true do yield Infinity Positive |> PNumber}, ?length = Some(Infinity Positive |> PNumber))
     | Infinity Negative, Infinity Positive ->
-        PrimeConvert(ExtendedBigRational.Range ExtendedBigRational.Two (Infinity Positive), Some(Infinity Positive |> PNumber))
+        PrimeConvert(ExtendedBigRational.Range(ExtendedBigRational.Two, Infinity Positive), Some(Infinity Positive |> PNumber))
     | Rational _ as left', Infinity Positive -> 
-        PrimeConvert(ExtendedBigRational.Range (max ExtendedBigRational.Two left') (Infinity Positive), Some(Infinity Positive |> PNumber))
+        PrimeConvert(ExtendedBigRational.Range(max ExtendedBigRational.Two left', Infinity Positive), Some(Infinity Positive |> PNumber))
     | Rational _ as left', Infinity Negative when left' < ExtendedBigRational.Two ->
         Seq.empty |> PList
     | Rational _ as left', Infinity Negative when left' = ExtendedBigRational.Two ->  // TODO can merge this case with below when inclusive range is implemented
         PList(Seq.singleton (ExtendedBigRational.Two |> PNumber :> PObject)) 
     | Rational _ as left', Infinity Negative when left' > ExtendedBigRational.Two ->
-        PrimeConvert(ExtendedBigRational.Range left' ExtendedBigRational.Two, Some(ExtendedBigRational.One |> PNumber))
+        PrimeConvert(ExtendedBigRational.Range(left', ExtendedBigRational.Two), Some(ExtendedBigRational.One |> PNumber))
     | Rational _ as left', (Rational _ as right') when left' < ExtendedBigRational.Two && right' <= ExtendedBigRational.Two ->
         Seq.empty |> PList
     | Rational _ as left', (Rational _ as right') when left' > right' ->
-        PrimeConvert(ExtendedBigRational.Range left' (max right' ExtendedBigRational.Two), None)
+        PrimeConvert(ExtendedBigRational.Range(left', max right' ExtendedBigRational.Two), None)
     | Rational _ as left', (Rational _ as right') when left' < right' ->
-        PrimeConvert(ExtendedBigRational.Range (max left' ExtendedBigRational.Two) right', None)
+        PrimeConvert(ExtendedBigRational.Range(max left' ExtendedBigRational.Two, right'), None)
     | Rational _ as left', (Rational _ as right') when left' = right' ->
         Seq.empty |> PList
     | _ -> PrimellProgrammerProblemException("shouldn't be possible") |> raise
