@@ -46,9 +46,9 @@ Primell/Listell is limited to binary operations, so you can't directly specify s
     (0 1 2 3 4 5 6 7 8 9 10)@(2..5 * 2)
     = 4 6 8
 
-As far as I'm aware, this kind of multi-indexing is unique to Primell/Listell, though would be happy to learn about and from other examples (at least at the language-level, there probably exists libraries for this kind of thing).
+As far as I'm aware, this kind of multi-indexing is unique to Primell/Listell (at least at the language-level, there probably exists libraries for this kind of thing). I would be happy to learn about/from other examples though!
 
-### 2. Concise functional mapping sequence syntax
+### 2. Concise mapping sequence syntax
 
 Or in more procedural language: for each element in a list apply a sequence of functions. In general, the syntax is `[ list to be mapped | mapping function sequence ]`. The following example takes a 2-item list, each itself nested with 3-item lists and applies a sequence of functions to it (including a binary operator).
 
