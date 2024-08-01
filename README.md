@@ -29,7 +29,7 @@ No, not the Pandas kind, but that did make it hard to search for other examples.
     (5 10 11 14 17 19 20)@(5 2)
     = 19 11
 
-This was not explicitly designed for, but is just a result of how operators in Primell automatically apply a for-each approach when given a list instead of a numeric argument. This generality meant it could then be combined elegantly with the range operator `..` to achieve Python-like list slicing _without_ any dedicated list slicing implementation code:
+This was not explicitly designed for, but is just a result of how operators in Primell automatically apply a for-each approach when given a list argument instead of an expected numeric argument (in this case, the index). This generality meant it could then be combined elegantly with the range operator `..` to achieve Python-like list slicing _without_ any dedicated list slicing implementation code:
 
     (5 10 11 14 17 19 20)@(2..6)
     = 11 14 17 19
