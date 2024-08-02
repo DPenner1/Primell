@@ -70,7 +70,7 @@ Primell has but two data types:
 	
 Other familiar data types are only simulated with these. For example:
 - Boolean: A non-empty list consisting of only prime numbers is considered true. Anything else is false. (This is the truest truth, but alternative truths are configurable.)
-- There aren't really others yet.
+- Strings: Syntax available, but strings are just translated into a list of numbers in the background. And checked for non-primes.
 
 ## Operators
 
