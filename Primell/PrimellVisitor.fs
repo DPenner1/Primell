@@ -148,7 +148,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
                         |> Seq.insertAt index (snd ivPair) 
                         |> PList
                     else 
-                        accList |> Seq.removeAt index |> Seq.insertAt index (snd ivPair) |> PList
+                        accList |> Seq.updateAt index (snd ivPair) |> PList
                 )
         | _ ->
             PrimellProgrammerProblemException "this isn't possible either right?" |> raise
