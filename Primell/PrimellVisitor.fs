@@ -80,8 +80,16 @@ type PrimellVisitor(control: PrimellProgramControl) =
 
         control.GetVariable(text)
 
-
   override this.VisitInfinity context = Infinity Positive |> PNumber :> PObject
+
+  override this.VisitString context = // TODO, just hardcoding UTF-32
+    let runeEnumerable = seq { let mutable i = context.STRING().GetText().EnumerateRunes() in while i.MoveNext() do yield i.Current }
+    runeEnumerable |> Seq.map(fun f -> 
+      let value = f.Value |> BigRational |> Rational |> PNumber
+      if control.Settings.RestrictedSource && not (PPrimeLib.IsPrime value) then
+        NonPrimeDectectionException (f.ToString() + ": " + value.ToString()) |> raise
+      value :> PObject
+    ) |> PList :> PObject
   
   override this.VisitNullaryOp context =
     operationLib.ApplyNullaryOperation (context.baseNullaryOp().GetText()) []

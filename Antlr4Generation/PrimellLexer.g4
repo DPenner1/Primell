@@ -26,9 +26,7 @@ NEGATE : '~' ;
 F_SLASH: '/' ;
 B_SLASH: '\\' ;
 
-OUT_INV : '"~' ;
-OUT_DEF : '""' ;
-OUT_STR : '"' ;
+D_QUOTE: '"' -> skip, pushMode(IN_STR) ; 
 
 OPMOD_POW : '^' ;
 OPMOD_CUT : '`' ;
@@ -58,4 +56,10 @@ INT_OR_ID : INT_OR_ID_CHAR+ ;
 fragment INT_OR_ID_CHAR : [0-9A-Za-zÞþ,] ;
 // TODO - later to be even less restrictive
 
-COMMENT : '~~'  ;
+COMMENT : '~~' [\u0000-\uFFFF]*;
+
+mode IN_STR;
+
+STRING: ~["\u0000-\u001F]+ ;  // TODO - could be more detailed
+
+InStr_D_QUOTE: '"' -> skip, popMode ;

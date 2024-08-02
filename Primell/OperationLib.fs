@@ -210,7 +210,7 @@ type OperationLib(control: PrimellProgramControl) =
             match charValue with
             | None -> ()
             | Some v ->
-                //let bytes = [|byte (v >>> 24); byte (v >>> 16); byte (v >>> 8); byte v|]
+                // I learned about Rune after i did UTF-32 manually here... well it works, so im leaving it for now...
                 let bytes = [|byte v; byte (v >>> 8); byte (v >>> 16); byte (v >>> 24)|]
                 let c = Encoding.UTF32.GetString(bytes)
                 control.LineResults[control.CurrentLine] <- 

@@ -6,9 +6,8 @@ options {
 
 // TODO : at some point learn how to prevent whitespace in certain contexts
 
-line : termSeq outputSpec? COMMENT? EOF;
-
-outputSpec : OUT_INV | OUT_DEF | OUT_STR ;
+line : termSeq COMMENT? EOF
+     ;
 
 termSeq : concatRtlTerm+ ;
 
@@ -41,8 +40,9 @@ atomTerm : intOrId                    #integerOrIdentifier   // the silly one
          | INFINITY                   #infinity
          | nullaryOp                  #nullaryOperation
          | L_PAREN R_PAREN            #emptyList
-         | L_BRACK R_BRACK            #emptyList  // i don't think it ever matters which
+         | L_BRACK R_BRACK            #emptyList  // i don't think it ever matters which empty list
          | L_PAREN termSeq R_PAREN    #parens
+         | STRING                     #string
          ;
 
 intOrId : INT_OR_ID (DOT INT_OR_ID)* ;

@@ -1,0 +1,1 @@
+"Hello, World!" :>"  ~~ The :>" operator outputs a string. Strings are just lists of numbers, maybe in future Listell will track which lists were initialized as strings
