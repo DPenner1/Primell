@@ -1,6 +1,7 @@
 namespace dpenner1.Primell
 
 open System.Collections.Generic
+open System.Text
 
 
 // note: as part of trying to get references to work, OperationLib was converted from module to class type
@@ -13,8 +14,8 @@ type OperationLib(control: PrimellProgramControl) =
     // the test entries are for test cases so I don't inadvertently break these plans while working on other things
 
     member this.NullaryOperators: IDictionary<string, unit->PObject> =
-      dict [":\"", fun () -> control.GetStringInput()
-            ":,", fun () -> control.GetCsvInput()
+      dict [":\"", fun () -> this.GetStringInput()
+            ":,", fun () -> this.GetCsvInput()
             "test", fun () -> 123 |> BigRational |> Rational |> PNumber :> PObject
            ]
 
@@ -31,7 +32,8 @@ type OperationLib(control: PrimellProgramControl) =
             "_>", fun l -> l.Tail()        
             "_~", fun l -> l.Reverse()
             "__", fun l -> l.Flatten()
-            "_:", fun l -> control.GetCodeInput(l)
+            "_:", fun l -> this.GetCodeInput(l)
+            ":>\"", fun l -> this.OutputString(l)
             "_test", fun l -> l.Reverse()
            ]
 
@@ -179,3 +181,46 @@ type OperationLib(control: PrimellProgramControl) =
       if this.IsTruth(left, control.Settings.PrimesAreTruth, control.Settings.RequireAllTruth) <> negate then 
         this.UnaryListOperators["_<"]  // TODO - when operators become first-class, you probably don't want these overridable...
       else this.UnaryListOperators["_>"]
+
+    member this.GetCodeInput(parameters: PList): PObject =
+      System.NotImplementedException() |> raise
+
+    member this.GetStringInput(): PObject =
+      System.NotImplementedException() |> raise
+
+    member this.GetCsvInput(): PObject =
+      System.NotImplementedException() |> raise
+
+    member private this.OutputString'(l: PList) = 
+      l |> Seq.iter(fun pobj -> 
+        match pobj with
+        | :? PList as subList -> this.OutputString' subList
+        | :? PNumber as n -> 
+            let charValue = 
+              match n.Value with  // TODO - hardcoding UTF-32
+              | NaN -> None
+              | Infinity Positive -> Some 0x10FFFF
+              | Infinity Negative -> Some 0
+              | Rational r -> 
+                  let intValue = (round r).Numerator
+                  if intValue <= 0I then Some 0
+                  elif intValue > bigint 0x10FFFF then Some 0x10FFFF
+                  else Some (int intValue)
+            
+            match charValue with
+            | None -> ()
+            | Some v ->
+                //let bytes = [|byte (v >>> 24); byte (v >>> 16); byte (v >>> 8); byte v|]
+                let bytes = [|byte v; byte (v >>> 8); byte (v >>> 16); byte (v >>> 24)|]
+                let c = Encoding.UTF32.GetString(bytes)
+                control.LineResults[control.CurrentLine] <- 
+                  { control.LineResults[control.CurrentLine] with Output = control.LineResults[control.CurrentLine].Output + c}
+                printf "%s" c
+        | _ -> System.NotImplementedException() |> raise
+      )
+
+    member this.OutputString(l: PList) = 
+      this.OutputString' l
+      control.LastOperationWasOutput <- true
+      l   // i guess?  probably makes sense to not modify the object "on the stack"
+

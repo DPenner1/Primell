@@ -4,11 +4,11 @@ Get out your ASCII Table for this.
 
 "Hello, World!" would be:
 
-    72 101 108 108 111 44 32 87 111 114 108 100 33"
+    (72 101 108 108 111 44 32 87 111 114 108 100 33):>"
 
-However, Primell will complain about this! This is because non-prime numbers were used in source code. This is not allowed (note that the `"` at the end simply tells Primell to print as a string instead of a list). We simply need to write each number as a prime number. This is always possible. Here is an example expressing each number as a product of primes:
+However, Primell will complain about this! This is because non-prime numbers were used in source code. This is not allowed (note that the `:>"` at the end simply tells Primell to output a string instead of a list). We simply need to write each number as a prime number. This is always possible. Here is an example expressing each number as a product of primes:
 
-    2*2*2*3*3 101 2*2*3*3*3 2*2*3*3*3 3*37 2*2*11 2*2*2*2*2 3*29 3*37 2*3*19 2*2*3*3*3 2*2*5*5 3*11"
+    (2*2*2*3*3 101 2*2*3*3*3 2*2*3*3*3 3*37 2*2*11 2*2*2*2*2 3*29 3*37 2*3*19 2*2*3*3*3 2*2*5*5 3*11):>"
 
 That wasn't so bad was it?
 

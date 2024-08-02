@@ -60,11 +60,13 @@ type PrimellRunner() =
     // also this has just been cobbled together over time, this could definitely be cleaner
     for i in 0..(control.LineResults.Length - 1) do
       control.CurrentLine <- i
-      let result, doOutput = this.ExecuteLine control.LineResults[i].Text control, not control.LastOperationWasAssignment
+      let result = this.ExecuteLine control.LineResults[i].Text control
+      let doOutput = not (control.LastOperationWasAssignment || control.LastOperationWasOutput)
       control.LastOperationWasAssignment <- false  // reset for next line
+      control.LastOperationWasOutput <- false
       control.LineResults[i] <-
-        { control.LineResults[i] with Result = Some result; Output = if doOutput then Some (this.GetResultString result control) else None }
-      if doOutput then printfn "%s" <| control.LineResults[i].Output.Value
+        { control.LineResults[i] with Result = Some result; Output = control.LineResults[i].Output + if doOutput then this.GetResultString result control else "" }
+      if doOutput then printfn "%s" <| control.LineResults[i].Output
 
     control
 

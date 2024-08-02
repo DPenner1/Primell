@@ -47,6 +47,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
 
     (Seq.empty, context.concatRtlTerm()) ||> Seq.fold(fun retval concatRtlTerm ->
       control.LastOperationWasAssignment <- false   // putting this here is either genius or deranged
+      control.LastOperationWasOutput <- false
       match concatRtlTerm.CONCAT(), this.Visit(concatRtlTerm.rtlTerm()) with
       | null, (_ as pobj) ->
           Seq.append retval (Seq.singleton pobj)

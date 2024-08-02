@@ -6,7 +6,7 @@ type LineRecord =
   {
     Text: string
     Result: PObject option
-    Output: string option
+    Output: string  // tracking this has so far been purely for test verification, nothing internal to Primell
   }
 
 type PrimellProgramControl(settings: PrimellConfiguration, lines: string seq) =
@@ -18,11 +18,12 @@ type PrimellProgramControl(settings: PrimellConfiguration, lines: string seq) =
   member val CurrentLine = 0 with get, set
   
   member val LineResults = 
-    lines |> Array.ofSeq |> Array.map (fun l -> { Text = l; Result = None; Output = None; }) with get
+    lines |> Array.ofSeq |> Array.map (fun l -> { Text = l; Result = None; Output = ""; }) with get
 
   // This is a port from original Primell, copying to have current examples execute as before,
   // Might consider changing the part of Primell requiring this
   member val LastOperationWasAssignment = false with get, set
+  member val LastOperationWasOutput = false with get, set
 
   member this.GetVariable(name: string) = 
     if not <| this.Variables.ContainsKey(name) then
@@ -42,16 +43,6 @@ type PrimellProgramControl(settings: PrimellConfiguration, lines: string seq) =
     else 
       this.Variables[name] <- newValue.WithReference(Variable name)
       true
-
-  
-  member this.GetCodeInput(parameters: PList): PObject =
-    System.NotImplementedException() |> raise
-
-  member this.GetStringInput(): PObject =
-    System.NotImplementedException() |> raise
-
-  member this.GetCsvInput(): PObject =
-    System.NotImplementedException() |> raise
     
   override this.ToString() =
     let valueString = this.Variables |> Seq.map (fun kvp -> $"({kvp.Key}, {kvp.Value})") |> String.concat ""

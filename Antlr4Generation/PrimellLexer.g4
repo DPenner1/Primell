@@ -35,14 +35,14 @@ OPMOD_CUT : '`' ;
 
 OP_NULLARY : ':"' | ':,' ;
 
-OP_UNARY :  '_:' | '_<' | '_>' | '_*' | '__' | '_?' | '_~' | '_@'  // list unary
+OP_UNARY :  '_:' | '_<' | '_>' | '_*' | '__' | '_?' | '_~' | '_@' | ':>"' | ':>,' | ':>_' | ':@"' | ':@,' // list unary
          | '++' | '--' | '+-' | '`~' // numeric unary
          ;
 
 OP_USER_UNARY : '_' INT_OR_ID | '#' INT_OR_ID ;
 
 OP_BINARY : '-' |'%' | '**' | '//' | '…' | '..' | '<' | '`&' | '`|'  | '`^' // numeric binary
-          | '<::>' | '*?' | '*?~' | '&'       // list binary
+          | '<::>' | '*?' | '*?~' | '&' | ':@_' | ':@>_' | ':@>"' | ':@>,'      // list binary
           | '@' | '::>'// list-numeric
           | '<::'  //numeric-list
           ;
