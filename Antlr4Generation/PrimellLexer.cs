@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generated from /home/darrell/Projects/Primell/Antlr4Generation/PrimellLexer.g4 by ANTLR 4.13.1
+// Generated from /home/darrell/Projects/Primell/PrimellLexer.g4 by ANTLR 4.13.1
 
 // Unreachable code detected
 #pragma warning disable 0162
