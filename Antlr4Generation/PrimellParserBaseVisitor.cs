@@ -321,7 +321,7 @@ public partial class PrimellParserBaseVisitor<Result> : AbstractParseTreeVisitor
 	/// <return>The visitor result.</return>
 	public virtual Result VisitConditionalOp([NotNull] PrimellParser.ConditionalOpContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="PrimellParser.condFunc"/>.
+	/// Visit a parse tree produced by <see cref="PrimellParser.condBranch"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
 	/// on <paramref name="context"/>.
@@ -329,7 +329,17 @@ public partial class PrimellParserBaseVisitor<Result> : AbstractParseTreeVisitor
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitCondFunc([NotNull] PrimellParser.CondFuncContext context) { return VisitChildren(context); }
+	public virtual Result VisitCondBranch([NotNull] PrimellParser.CondBranchContext context) { return VisitChildren(context); }
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="PrimellParser.condLoop"/>.
+	/// <para>
+	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
+	/// on <paramref name="context"/>.
+	/// </para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	public virtual Result VisitCondLoop([NotNull] PrimellParser.CondLoopContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="PrimellParser.opMods"/>.
 	/// <para>
@@ -401,7 +411,7 @@ public partial class PrimellParserBaseVisitor<Result> : AbstractParseTreeVisitor
 	/// <return>The visitor result.</return>
 	public virtual Result VisitOp_list_diff([NotNull] PrimellParser.Op_list_diffContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="PrimellParser.cond_mod_back_jump"/>.
+	/// Visit a parse tree produced by <see cref="PrimellParser.cond_branch_b"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
 	/// on <paramref name="context"/>.
@@ -409,7 +419,7 @@ public partial class PrimellParserBaseVisitor<Result> : AbstractParseTreeVisitor
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitCond_mod_back_jump([NotNull] PrimellParser.Cond_mod_back_jumpContext context) { return VisitChildren(context); }
+	public virtual Result VisitCond_branch_b([NotNull] PrimellParser.Cond_branch_bContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="PrimellParser.op_div"/>.
 	/// <para>
@@ -421,7 +431,7 @@ public partial class PrimellParserBaseVisitor<Result> : AbstractParseTreeVisitor
 	/// <return>The visitor result.</return>
 	public virtual Result VisitOp_div([NotNull] PrimellParser.Op_divContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="PrimellParser.cond_mod_jump"/>.
+	/// Visit a parse tree produced by <see cref="PrimellParser.cond_branch_f"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
 	/// on <paramref name="context"/>.
@@ -429,7 +439,7 @@ public partial class PrimellParserBaseVisitor<Result> : AbstractParseTreeVisitor
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitCond_mod_jump([NotNull] PrimellParser.Cond_mod_jumpContext context) { return VisitChildren(context); }
+	public virtual Result VisitCond_branch_f([NotNull] PrimellParser.Cond_branch_fContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="PrimellParser.op_max"/>.
 	/// <para>
@@ -461,7 +471,7 @@ public partial class PrimellParserBaseVisitor<Result> : AbstractParseTreeVisitor
 	/// <return>The visitor result.</return>
 	public virtual Result VisitOp_mul([NotNull] PrimellParser.Op_mulContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="PrimellParser.cond_mod_while"/>.
+	/// Visit a parse tree produced by <see cref="PrimellParser.cond_loop_while"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
 	/// on <paramref name="context"/>.
@@ -469,7 +479,7 @@ public partial class PrimellParserBaseVisitor<Result> : AbstractParseTreeVisitor
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitCond_mod_while([NotNull] PrimellParser.Cond_mod_whileContext context) { return VisitChildren(context); }
+	public virtual Result VisitCond_loop_while([NotNull] PrimellParser.Cond_loop_whileContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="PrimellParser.op_add"/>.
 	/// <para>
@@ -481,7 +491,7 @@ public partial class PrimellParserBaseVisitor<Result> : AbstractParseTreeVisitor
 	/// <return>The visitor result.</return>
 	public virtual Result VisitOp_add([NotNull] PrimellParser.Op_addContext context) { return VisitChildren(context); }
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="PrimellParser.cond_mod_do_while"/>.
+	/// Visit a parse tree produced by <see cref="PrimellParser.cond_loop_do_while"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
 	/// on <paramref name="context"/>.
@@ -489,7 +499,7 @@ public partial class PrimellParserBaseVisitor<Result> : AbstractParseTreeVisitor
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	public virtual Result VisitCond_mod_do_while([NotNull] PrimellParser.Cond_mod_do_whileContext context) { return VisitChildren(context); }
+	public virtual Result VisitCond_loop_do_while([NotNull] PrimellParser.Cond_loop_do_whileContext context) { return VisitChildren(context); }
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="PrimellParser.op_neg"/>.
 	/// <para>

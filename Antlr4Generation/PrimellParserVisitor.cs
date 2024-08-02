@@ -210,11 +210,17 @@ public interface IPrimellParserVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitConditionalOp([NotNull] PrimellParser.ConditionalOpContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="PrimellParser.condFunc"/>.
+	/// Visit a parse tree produced by <see cref="PrimellParser.condBranch"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitCondFunc([NotNull] PrimellParser.CondFuncContext context);
+	Result VisitCondBranch([NotNull] PrimellParser.CondBranchContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="PrimellParser.condLoop"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitCondLoop([NotNull] PrimellParser.CondLoopContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="PrimellParser.opMods"/>.
 	/// </summary>
@@ -258,11 +264,11 @@ public interface IPrimellParserVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitOp_list_diff([NotNull] PrimellParser.Op_list_diffContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="PrimellParser.cond_mod_back_jump"/>.
+	/// Visit a parse tree produced by <see cref="PrimellParser.cond_branch_b"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitCond_mod_back_jump([NotNull] PrimellParser.Cond_mod_back_jumpContext context);
+	Result VisitCond_branch_b([NotNull] PrimellParser.Cond_branch_bContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="PrimellParser.op_div"/>.
 	/// </summary>
@@ -270,11 +276,11 @@ public interface IPrimellParserVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitOp_div([NotNull] PrimellParser.Op_divContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="PrimellParser.cond_mod_jump"/>.
+	/// Visit a parse tree produced by <see cref="PrimellParser.cond_branch_f"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitCond_mod_jump([NotNull] PrimellParser.Cond_mod_jumpContext context);
+	Result VisitCond_branch_f([NotNull] PrimellParser.Cond_branch_fContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="PrimellParser.op_max"/>.
 	/// </summary>
@@ -294,11 +300,11 @@ public interface IPrimellParserVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitOp_mul([NotNull] PrimellParser.Op_mulContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="PrimellParser.cond_mod_while"/>.
+	/// Visit a parse tree produced by <see cref="PrimellParser.cond_loop_while"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitCond_mod_while([NotNull] PrimellParser.Cond_mod_whileContext context);
+	Result VisitCond_loop_while([NotNull] PrimellParser.Cond_loop_whileContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="PrimellParser.op_add"/>.
 	/// </summary>
@@ -306,11 +312,11 @@ public interface IPrimellParserVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitOp_add([NotNull] PrimellParser.Op_addContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="PrimellParser.cond_mod_do_while"/>.
+	/// Visit a parse tree produced by <see cref="PrimellParser.cond_loop_do_while"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitCond_mod_do_while([NotNull] PrimellParser.Cond_mod_do_whileContext context);
+	Result VisitCond_loop_do_while([NotNull] PrimellParser.Cond_loop_do_whileContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="PrimellParser.op_neg"/>.
 	/// </summary>

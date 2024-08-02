@@ -62,9 +62,11 @@ baseBinaryOp : OP_BINARY
              | conditionalOp
              ;
 
-conditionalOp : OP_COND condFunc? cond_mod_neg? cond_mod_tail? ;
+conditionalOp : OP_COND condBranch? condLoop? cond_mod_neg? cond_mod_tail? ;
 
-condFunc : cond_mod_jump | cond_mod_back_jump | cond_mod_while | cond_mod_do_while ;
+condBranch : cond_branch_f | cond_branch_b ;
+
+condLoop : cond_loop_while | cond_loop_do_while ;
 
 opMods : (OPMOD_CUT | OPMOD_POW)? ;
 
@@ -79,22 +81,23 @@ unaryAssign : ASSIGN assignMods ;
 binaryOp : baseBinaryOp opMods ;
 
 
-// a few symbols get used in different contexts so need to be distinguished by parser
+// a few symbols get used in different contexts so need to be distinguished by parser (or lexer mode, but that seemed tougher)
+// (I've used underscores instead of camelCase for these parser rules that are basically just tokens)
 
 op_list_diff : B_SLASH ;
-cond_mod_back_jump : B_SLASH ;
+cond_branch_b : B_SLASH ;
 
 op_div : F_SLASH ;
-cond_mod_jump : F_SLASH ;
+cond_branch_f : F_SLASH ;
 
 op_max : TAIL ;
 cond_mod_tail : TAIL ;
 
 op_mul :  STAR ;
-cond_mod_while : STAR ;
+cond_loop_while : STAR ;
 
 op_add : PLUS ;
-cond_mod_do_while : PLUS ;
+cond_loop_do_while : PLUS ;
 
 op_neg : NEGATE ;
 cond_mod_neg : NEGATE ;
