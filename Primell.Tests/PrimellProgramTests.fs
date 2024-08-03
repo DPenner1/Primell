@@ -148,6 +148,7 @@ let ``Test Foreach Double``() =
 [<Fact>]
 let ``Test Foreach Chain``() =
   TestProgram("[(2 3 5)(7 11 13) | _~_<]", PrimellConfiguration.PrimellDefault, "5 13")
+  TestProgram("[(2 3 5)(7 11 13) | _~ _> +(3 5)]", PrimellConfiguration.PrimellDefault, "(6 7) (14 12)")
   TestProgram("[(2 3 5)(7 11 13) | _<[<::(23 29)(31 37)]]", PrimellConfiguration.PrimellDefault, "((2 23 29) (2 31 37)) ((7 23 29) (7 31 37))")
 
 [<Fact>]

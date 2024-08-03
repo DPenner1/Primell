@@ -182,12 +182,6 @@ type OperationLib(control: PrimellProgramControl) =
             | _ as v -> not v.IsZero
       | _ -> PrimellProgrammerProblemException("Not possible") |> raise
 
-
-    member this.Conditional (left: PObject) (right: PObject) (negate: bool) =
-      if this.IsTruth(left, control.Settings.PrimesAreTruth, control.Settings.RequireAllTruth) <> negate then 
-        this.UnaryListOperators["_<"]  // TODO - when operators become first-class, you probably don't want these overridable...
-      else this.UnaryListOperators["_>"]
-
     member this.GetCodeInput(parameters: PList): PObject =
       System.NotImplementedException() |> raise
 

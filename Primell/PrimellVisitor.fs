@@ -3,9 +3,13 @@ namespace dpenner1.Primell
 open System.Collections.Generic
 open Antlr4.Runtime
 
-
 exception NonPrimeDectectionException of string
-// TODO - port from original C# code, very mutable stuff, see if you can get rid of non-functional stuff later
+
+type internal BinaryRHS =  // yes, this was a headache
+  | NonConditonal of PObject
+  | EvaluatedConditional of PObject  
+  | Conditional of PrimellParser.TermSeqContext
+// i think the NonCond and EvCond could be functionally merged, but it helps with understanding the code
 
 type PrimellVisitor(control: PrimellProgramControl) = 
   inherit PrimellParserBaseVisitor<PObject>()
@@ -43,11 +47,11 @@ type PrimellVisitor(control: PrimellProgramControl) =
 
   override this.VisitEmptyList context = PList.Empty
 
-  override this.VisitTermSeq context =
+  member private this.VisitConcatRtlTermSeq(rtlTermSeq: PrimellParser.ConcatRtlTermContext seq) =
 
-    (Seq.empty, context.concatRtlTerm()) ||> Seq.fold(fun retval concatRtlTerm ->
+    (Seq.empty, rtlTermSeq) ||> Seq.fold(fun retval concatRtlTerm ->
       control.LastOperationWasAssignment <- false   // putting this here is either genius or deranged
-      control.LastOperationWasOutput <- false
+      control.LastOperationWasOutput <- false      // continued genius / derangement
       match concatRtlTerm.CONCAT(), this.Visit(concatRtlTerm.rtlTerm()) with
       | null, (_ as pobj) ->
           Seq.append retval (Seq.singleton pobj)
@@ -59,6 +63,25 @@ type PrimellVisitor(control: PrimellProgramControl) =
     ) 
     |> PList 
     |> PrimellVisitor.Normalize
+
+  member private this.VisitTermSeqHead(termSeqCtxt: PrimellParser.TermSeqContext) =
+    if termSeqCtxt.concatRtlTerm().Length = 0 then
+      PList.Empty :> PObject
+    else 
+      match (termSeqCtxt.concatRtlTerm()[0]).CONCAT() with
+      | null -> this.Visit(termSeqCtxt.concatRtlTerm()[0])
+      | _ -> System.NotImplementedException "Conditional + ;head not implemented" |> raise 
+
+  member private this.VisitTermSeqTail(termSeqCtxt: PrimellParser.TermSeqContext) =
+    if termSeqCtxt.concatRtlTerm().Length = 0 then
+      PList.Empty :> PObject
+    else 
+      match (termSeqCtxt.concatRtlTerm()[0]).CONCAT() with
+      | null -> this.VisitConcatRtlTermSeq(termSeqCtxt.concatRtlTerm() |> Seq.tail)
+      | _ -> System.NotImplementedException "Conditional + ;head not implemented" |> raise 
+    
+
+  override this.VisitTermSeq context = this.VisitConcatRtlTermSeq(context.concatRtlTerm())
 
   override this.VisitIntegerOrIdentifier context =
     let text = context.GetText() 
@@ -299,7 +322,11 @@ type PrimellVisitor(control: PrimellProgramControl) =
     let interimResult =
       match context.binaryAssign().binaryOp() with
       | null -> right
-      | _ as opContext -> this.ApplyBinaryOperation left right opContext
+      | _ as opContext -> 
+          if opContext.baseBinaryOp().conditionalOp() |> isNull then
+            this.ApplyBinaryOperation left (right |> NonConditonal) opContext           
+          else
+            System.NotImplementedException "Conditional + assign not implemented" |> raise
 
     control.LastOperationWasAssignment <- true
     this.PerformAssign(left, interimResult, opMods)
@@ -310,73 +337,182 @@ type PrimellVisitor(control: PrimellProgramControl) =
   override this.VisitForEachRightAssign context = 
     System.NotImplementedException "Assign foreach not implemented" |> raise
 
-  member this.ConditionalBranch (left: PObject) (right: PObject) (negate: bool) (isForward: bool) =
-      if operationLib.IsTruth(left, control.Settings.PrimesAreTruth, control.Settings.RequireAllTruth) <> negate then
-        let head = operationLib.ApplyUnaryListOperation right operationLib.UnaryListOperators["_<"] []
-        match head with
-        | :? PNumber as n ->
-            match n.Value with
-            | NaN | Infinity _ -> PList.Empty :> PObject
-            | Rational r ->
-                let offset = ((round r).Numerator |> int) * (if isForward then 1 else -1)
+  
+  member private this.VisitConditionalRight (right: BinaryRHS)(leftIsTruth: bool)(useHeadOnTruth: bool) =
+    match right, leftIsTruth = useHeadOnTruth with
+    | Conditional ctxt, true -> this.VisitTermSeqHead(ctxt)
+    | Conditional ctxt, false -> this.VisitTermSeqTail(ctxt)
+    | EvaluatedConditional pobj, true -> operationLib.Head pobj
+    | EvaluatedConditional pobj, false -> operationLib.Tail pobj
+    | _ -> PrimellProgrammerProblemException "non-conditional in conditional code" |> raise
 
-                let parser = PrimellVisitor.GetParser control.LineResults[control.CurrentLine + offset].Text
-                PrimellVisitor(control).VisitLine(parser.line())
+  member private this.Conditional (left: PObject) (right: BinaryRHS) (condContext: PrimellParser.ConditionalOpContext) =
+    let negate = condContext.cond_mod_neg() |> isNull |> not
+    let useHeadOnTruth = condContext.cond_mod_tail() |> isNull
+    let effectiveBool = operationLib.IsTruth(left, control.Settings.PrimesAreTruth, control.Settings.RequireAllTruth) <> negate
 
-        | :? PList as l ->
-            l |> Seq.map (fun x -> this.ConditionalBranch left x negate isForward) |> PList :> PObject
-        | _ -> System.NotImplementedException "You're doing crazy stuff" |> raise
-      else operationLib.ApplyUnaryListOperation right operationLib.UnaryListOperators["_>"] []
+    if effectiveBool then
+      let branchIsForward = 
+        match condContext.condBranch() with
+        | null -> None
+        | _ as nestedCtxt -> Some (nestedCtxt.cond_branch_f() |> isNull |> not)
+      let loopIsDoWhile = 
+        match condContext.condLoop() with
+        | null -> None
+        | _ as nestedCtxt -> Some (nestedCtxt.cond_loop_do_while() |> isNull |> not)
+      
+      let result = this.VisitConditionalRight right effectiveBool useHeadOnTruth
+      match branchIsForward, loopIsDoWhile with
+      | None, None ->  // straight if-else expression
+          result
+      | _, Some _ ->
+          System.NotImplementedException "conditional loops useless before first-class operators" |> raise
+      | Some isForward, _ -> 
+          this.Branch result isForward
+    else
+      this.VisitConditionalRight right effectiveBool useHeadOnTruth
 
-  member this.ApplyBinaryOperation left right (context: PrimellParser.BinaryOpContext) =
+  member this.Branch (branchValues: PObject) (isForward: bool) =
+    match branchValues with
+    | :? PNumber as n ->
+        match n.Value with
+        | NaN | Infinity _ -> PList.Empty :> PObject
+        | Rational r ->
+            let offset = ((round r).Numerator |> int) * (if isForward then 1 else -1)
+
+            let parser = PrimellVisitor.GetParser control.LineResults[control.CurrentLine + offset].Text
+            PrimellVisitor(control).VisitLine(parser.line())
+
+    | :? PList as l ->
+        l |> Seq.map (fun x -> this.Branch x isForward) |> PList :> PObject
+    | _ -> System.NotImplementedException "You're doing crazy stuff" |> raise
+
+  member private this.ApplyBinaryOperation (left: PObject) (right: BinaryRHS) (context: PrimellParser.BinaryOpContext) =
 
     let opText = context.baseBinaryOp().GetText()
-    let retval =
-      if opText.StartsWith "?" then  // TODO - conditional stuff needs to not visit both branches, may need grammar work to help
-        if opText.Contains "/" || opText.Contains("\\") then
-          this.ConditionalBranch left right (opText.Contains "~") (opText.Contains "/")
-        else
-          let operator = operationLib.Conditional left right (opText.Contains "~")
-          operationLib.ApplyUnaryListOperation right operator []   //head or tail operator
-      else
-        operationLib.ApplyBinaryOperation left right opText []
-      
-    if opText = "@" then  // index needs special handling for the whole reference-assign
-      retval.WithReference(Reference(left, right))
-    else 
-      retval
+    match right with
+    | NonConditonal pobj -> 
+        let retval = operationLib.ApplyBinaryOperation left pobj opText []
+        if opText = "@" then  // index needs special handling for the whole reference-assign
+          retval.WithReference(Reference(left, pobj))
+        else 
+          retval
+    | _ ->   // TODO - ive just horridly realized that in theory you could put regular mods on conditional op... 
+        this.Conditional left right (context.baseBinaryOp().conditionalOp())  
 
+  member private this.EvaluateAtomForConditional(atomCtxt: PrimellParser.AtomTermContext) =
+    match atomCtxt with
+    | :? PrimellParser.ParensContext as parensCtxt ->
+        this.DrillDownTermSeqForConditonal <| parensCtxt.termSeq()
+    | _ ->  // we *want* to visit nullary/variables to get their real values!
+            // their contents aren't evaluated yet due to laziness in Seq!
+            // (and the other cases are constants where we might as well evaluate now)
+        EvaluatedConditional <| this.Visit(atomCtxt)
+    
+  member private this.DrillDownTermSeqForConditonal(termSeqCtxt: PrimellParser.TermSeqContext) =
+    match (termSeqCtxt.concatRtlTerm()[0]).CONCAT() with  // per grammar always at least one
+    | null -> 
+        if termSeqCtxt.concatRtlTerm().Length = 1 then // it could be a "fake" atom (redundant nested parentheses)
+          match (termSeqCtxt.concatRtlTerm()[0]).rtlTerm() with
+          | :? PrimellParser.PassThroughRtlContext as ptRtlCtxt ->
+            match ptRtlCtxt.mulTerm() with
+            | :? PrimellParser.PassThroughMulTermContext as ptMulCtxt ->
+                this.EvaluateAtomForConditional <| ptMulCtxt.atomTerm() 
+            | _ -> Conditional <| termSeqCtxt
+          | _ -> Conditional <| termSeqCtxt
+        else Conditional <| termSeqCtxt
+    | _ -> System.NotImplementedException "Conditional with ;head" |> raise
+
+  
   member private this.GetLeftRightBinaryOperands (leftContext: ParserRuleContext)(rightContext: PrimellParser.BinaryOpWithRSContext) =
-    // visit order matters in case of mutable assignment!
+  (* CAUTION: this method does incredibly unexpected stuff with conditionals
+     This is because to get conditional to work the "intuitive" way, It actually *doesn't* defer evaluation of the RHS, 
+     but defers evaluation of the *contents* of the RHS... this distinction is very rare, but consider:
+
+     (some boolean stand-in) ?$ (nullary operation) 
+
+     In order it does the following:
+     1. Evaulate the nullary first due to $ RTL (possibly with side-effects),
+     2. Evaluate the boolean condition (possibly with side-effects)
+     3. Later (up the call chain) evaluate the head or tail based on the boolean
+
+     Now, why did I decide to write this method *before* first-class operators, when deferred eval should be available?
+     
+     1. I want this to work independently of that in case the spec changes for one but not the other
+     2. I anticipate the real difficulty in conditionals is more the selectively evaluating the head or tail part,
+          and that would be the case regardless of a better deferred evaluation being available
+     3. My first idea for generalized deferred eval is hacky, and I don't want the conditional to be hacky
+     4. After i wrote the above, the ;append (CONCAT) functionality may prove this approach definitely correct
+  *)
     let isRtl = rightContext.RTL() |> isNull |> not
-    // TODO - really need to adjust grammar to section off conditional, its a mess otherwise
-    // TODO - here we need to handle conditional, and not visit head/tail of right, depending on the result
+
     let firstObj = 
-      if isRtl then this.Visit(rightContext.termSeq()) 
-      else this.Visit(leftContext)
+      if isRtl then 
+        this.VisitRhs rightContext
+      else NonConditonal <| this.Visit(leftContext)
 
     let secondObj =
-      if isRtl then this.Visit(leftContext)
-      else match rightContext.termSeq() with
-           | null -> this.Visit(rightContext.atomTerm())
-           | _ as x -> this.Visit(x)
+      if isRtl then 
+        NonConditonal <| this.Visit(leftContext)
+      else 
+        this.VisitRhs rightContext
 
-    if isRtl then secondObj, firstObj else firstObj, secondObj
+    if isRtl then 
+      match secondObj with
+      | NonConditonal pobj -> pobj
+      | _ -> PrimellProgrammerProblemException "not possible" |> raise
+      , firstObj
+    else 
+      match firstObj with
+      | NonConditonal pobj -> pobj
+      | _ -> PrimellProgrammerProblemException "not possible" |> raise
+      , secondObj
 
-  member private this.ApplyBinaryRhsOperation (left: PObject)(right: PObject)(context: PrimellParser.BinaryOpWithRSContext) =
-    match context.L_BRACK() with  // presence of bracket indicates for-each right side
-    | null ->
-        this.ApplyBinaryOperation left right (context.binaryOp())
-    | _ -> 
-        match right with
-        | :? PList as l -> l |> Seq.map(fun x -> this.ApplyBinaryOperation left x (context.binaryOp())) |> PList :> PObject
-        | _ -> this.ApplyBinaryOperation left right (context.binaryOp())
+  member private this.VisitRhs(rightContext: PrimellParser.BinaryOpWithRSContext) =
+    let isConditional = rightContext.binaryOp().baseBinaryOp().conditionalOp() |> isNull |> not
 
+    match rightContext.atomTerm(), isConditional with
+    | null, true -> this.DrillDownTermSeqForConditonal <| rightContext.termSeq()
+    | null, false -> NonConditonal <| this.Visit(rightContext.termSeq())
+    | _ as aCtxt, true -> this.EvaluateAtomForConditional <| aCtxt
+    | _ as aCtxt, false -> NonConditonal <| this.Visit(aCtxt)
+
+  member private this.ApplyForEachRight(left: PObject)(right: BinaryRHS)(boCtxt: PrimellParser.BinaryOpContext) =
+    
+    // awkwardly you have box the conditional right back up...
+    // it sort of makes sense because with the for-each-right, theres two layers of deferer evals possible
+    // but there are probably more efficient ways of doing it
+    match right with
+    | NonConditonal pobj ->
+        match pobj with
+        | :? PList as l ->
+            l |> Seq.map(fun x -> this.ApplyBinaryOperation left (NonConditonal x) boCtxt) |> PList :> PObject
+        | _ -> this.ApplyBinaryOperation left (NonConditonal pobj) boCtxt
+    | EvaluatedConditional pobj ->
+        match pobj with
+        | :? PList as l ->
+            l |> Seq.map(fun x -> this.ApplyBinaryOperation left (EvaluatedConditional x) boCtxt) |> PList :> PObject
+        | _ -> this.ApplyBinaryOperation left (EvaluatedConditional pobj) boCtxt
+    | Conditional tsCtxt ->
+        System.NotImplementedException "Deferred cond in for-each right is hard" |> raise
+        //if tsCtxt.concatRtlTerm() |> Seq.exists(fun x -> x.CONCAT() |> isNull |> not) then
+        //  System.NotImplementedException "conditional for-each with ;" |> raise
+        //else
+        //  tsCtxt.concatRtlTerm() |> Seq.map(fun rtlCtxt ->
+        //    this.ApplyBinaryOperation left Visit(context.binaryOpWithRS().binaryOp())
+        //  )
 
   override this.VisitBinaryOperation context =
-    let left, right = this.GetLeftRightBinaryOperands (context.mulTerm()) (context.binaryOpWithRS())
-    this.ApplyBinaryRhsOperation left right (context.binaryOpWithRS())
-   
+    let rhsCtxt = context.binaryOpWithRS()
+    match rhsCtxt.L_BRACK() with // presence of bracket indicates for-each right side
+    | null -> 
+        let left, right = this.GetLeftRightBinaryOperands (context.mulTerm()) rhsCtxt
+        this.ApplyBinaryOperation left right (rhsCtxt.binaryOp())
+    | _ ->
+        let left = this.Visit(context.mulTerm())
+        let right = this.VisitRhs rhsCtxt
+
+        this.ApplyForEachRight left right (rhsCtxt.binaryOp())
 
   override this.VisitForEachUnary context =
     match this.Visit(context.termSeq()) with
@@ -392,21 +528,22 @@ type PrimellVisitor(control: PrimellProgramControl) =
 
     match left with
     | :? PList as l -> 
-        l |> Seq.map(fun pobj -> this.ApplyBinaryRhsOperation pobj right rhsCtxt) |> PList :> PObject 
+        l |> Seq.map(fun pobj -> this.ApplyBinaryOperation pobj right (rhsCtxt.binaryOp())) |> PList :> PObject 
     | _ ->
-        this.ApplyBinaryRhsOperation left right rhsCtxt
+        this.ApplyBinaryOperation left right (rhsCtxt.binaryOp())
 
   member private this.OpChain (pobj: PObject) (context: PrimellParser.UnaryOrBinaryOpContext seq) =
     (pobj, context) ||> Seq.fold (fun p op ->
       match op.binaryOpWithRS() with
       | null -> 
           this.ApplyUnaryOperation p (op.unaryOp())
-      | _ as boCtxt -> 
-            match boCtxt.termSeq() with
-            | null ->                  
-                this.ApplyBinaryRhsOperation p (this.Visit(boCtxt.atomTerm())) boCtxt
-            | _ as x ->
-                this.ApplyBinaryRhsOperation p (this.Visit(x)) boCtxt
+      | _ as rhsCtxt -> 
+          let right = this.VisitRhs(rhsCtxt)
+          match rhsCtxt.L_BRACK() with // presence of bracket indicates for-each right side
+          | null ->
+              this.ApplyBinaryOperation p right (rhsCtxt.binaryOp())
+          | _ ->
+              this.ApplyForEachRight p right (rhsCtxt.binaryOp())
     )
 
   override this.VisitForEachChain context =
