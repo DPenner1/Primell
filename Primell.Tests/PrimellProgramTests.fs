@@ -90,6 +90,10 @@ let ``Test Assign``() =
   TestProgram(", = (2 3)\n, = (5 7 11)\n,", PrimellConfiguration.PrimellDefault, "5 7")  // spec might change in future
 
 [<Fact>]
+let ``Test Assign + Op``()  =
+  TestProgram(", = 2\n, =+ 3\n,", PrimellConfiguration.PrimellDefault, "5")
+
+[<Fact>]
 let ``Test Index + Assign``() =
   TestProgram(", = (2 3 5 7)\n,@2 = 11\n,", PrimellConfiguration.PrimellDefault, "2 3 11 7")
   TestProgram(", = (2 3 5 7)\n,@2 = (2 3)\n,", PrimellConfiguration.PrimellDefault, "2 3 (2 3) 7")
@@ -138,11 +142,27 @@ let ``Test Foreach Binary``() =
 let ``Test Foreach Unary``() =
   TestProgram("[(3 5)(7 11)]_~", PrimellConfiguration.PrimellDefault, "(5 3) (11 7)")
 
+let ``Test Foreach Double``() =
+  TestProgram("[2 3 5][<:: 11 13 17]", PrimellConfiguration.PrimellDefault, "((2 11) (2 13) (2 17)) ((3 11) (3 13) (3 17)) ((5 11) (5 13) (5 17))")
+
 [<Fact>]
 let ``Test Foreach Chain``() =
   TestProgram("[(2 3 5)(7 11 13) | _~_<]", PrimellConfiguration.PrimellDefault, "5 13")
   TestProgram("[(2 3 5)(7 11 13) | _<[<::(23 29)(31 37)]]", PrimellConfiguration.PrimellDefault, "((2 23 29) (2 31 37)) ((7 23 29) (7 31 37))")
 
+[<Fact>]
+let ``Test Side Effects``()  =
+  TestProgram(",=2\n(2 , 2 2 , 2 2 , 2)+(, , (, = 5) , , (, = 7) , , ,)", PrimellConfiguration.PrimellDefault, "4 4 7 7 7 9 9 9 9")
+  TestProgram(",=2\n(2 , 2 2 (, = 3) 2 2 , 2)+(, , (, = 5) , , (, = 7) , , ,)", PrimellConfiguration.PrimellDefault, "5 5 7 7 8 9 9 10 9")
+
+[<Fact>]
+let ``Test Side Effects Foreach``()  =
+  TestProgram(",=2\n[(2 3)(3 5)(5 7)]::>(, =+ 3)", PrimellConfiguration.PrimellDefault, "(2 3 5) (3 5 5) (5 7 5)")
+  TestProgram(",=2\n[(2 ,)(3 (, = 3))(5 ,)]::>5", PrimellConfiguration.PrimellDefault, "(2 2 5) (3 3 5) (5 3 5)")
+
+  TestProgram(",=2\n(, =+ 3)[<::(2 3)(3 5)(5 7)]", PrimellConfiguration.PrimellDefault, "(5 2 3) (5 3 5) (5 5 7)")
+  TestProgram(",=2\n5[<::(2 ,)(3 (, = 3))(5 ,)]", PrimellConfiguration.PrimellDefault, "(5 2 2) (5 3 3) (5 5 3)")
+ 
 [<Fact>]
 let ``Test User Operations``() =  // User-defined ops not yet done, but a few hard-coded syntactical tests so I don't actually break stuff
   TestEquivalentProgram("3 2[<::(3 5)(7 11)]", PrimellConfiguration.Listell, "3 2[#test_(3 5)(7 11)]", PrimellConfiguration.Listell)

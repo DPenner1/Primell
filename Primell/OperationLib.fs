@@ -133,12 +133,16 @@ type OperationLib(control: PrimellProgramControl) =
         | _ -> PrimellProgrammerProblemException("Not possible") |> raise
 
     member this.ApplyNullaryOperation (opText: string) opMods =
+      control.LastOperationWasAssignment <- false
+      control.LastOperationWasOutput <- false
       if this.NullaryOperators.ContainsKey opText then
         this.NullaryOperators[opText]()
       else
         PrimellProgrammerProblemException "Unrecognized operator" |> raise
 
     member this.ApplyUnaryOperation (pobj: PObject) (opText: string) opMods : PObject =
+      control.LastOperationWasAssignment <- false
+      control.LastOperationWasOutput <- false
       if this.UnaryNumericOperators.ContainsKey opText then
         this.ApplyUnaryNumericOperation pobj (this.UnaryNumericOperators[opText]) opMods
       elif this.UnaryListOperators.ContainsKey opText then
@@ -147,6 +151,8 @@ type OperationLib(control: PrimellProgramControl) =
         PrimellProgrammerProblemException "Unrecognized operator" |> raise
 
     member this.ApplyBinaryOperation (left: PObject) (right: PObject) (opText: string) opMods : PObject =
+      control.LastOperationWasAssignment <- false
+      control.LastOperationWasOutput <- false
       if this.BinaryListOperators.ContainsKey opText then
         this.ApplyBinaryListOperation left right (this.BinaryListOperators[opText]) opMods
       elif this.BinaryNumericOperators.ContainsKey opText then
