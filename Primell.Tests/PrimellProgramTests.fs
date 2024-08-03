@@ -111,8 +111,18 @@ let ``Test Conditional``() =
   TestProgram("2?(2 3 5)", PrimellConfiguration.PrimellDefault, "2")
   TestProgram("2?~(2 3 5)", PrimellConfiguration.PrimellDefault, "3 5")
   TestProgram("2+2 ?(2 3 5)", PrimellConfiguration.PrimellDefault, "3 5")
-
   TestProgram("2+2 ?~(2 3 5)", PrimellConfiguration.PrimellDefault, "2")
+
+[<Fact>]
+let ``Test Conditional Assign``() =
+  TestProgram("2?((, = 3)(, = 5))\n,", PrimellConfiguration.PrimellDefault, "3")
+  TestProgram("2?~((, = 3)(, = 5))\n,", PrimellConfiguration.PrimellDefault, "5")
+  TestProgram("2+2 ?((, = 3)(, = 5))\n,", PrimellConfiguration.PrimellDefault, "5")
+  TestProgram("2+2 ?~((, = 3)(, = 5))\n,", PrimellConfiguration.PrimellDefault, "3")
+
+  // quick screen this still works with $
+  TestProgram("2?$(, = 3)(, = 5)\n,", PrimellConfiguration.PrimellDefault, "3")
+  TestProgram("2?~$(, = 3)(, = 5)\n,", PrimellConfiguration.PrimellDefault, "5")
 
 [<Fact>]
 let ``Test Foreach Binary``() =

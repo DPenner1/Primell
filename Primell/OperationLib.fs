@@ -12,7 +12,7 @@ type OperationLib(control: PrimellProgramControl) =
 
     // all dictionaries have test item for now, this is planning for user-defined operators,
     // the test entries are for test cases so I don't inadvertently break these plans while working on other things
-
+    
     member this.NullaryOperators: IDictionary<string, unit->PObject> =
       dict [":\"", fun () -> this.GetStringInput()
             ":,", fun () -> this.GetCsvInput()
@@ -224,3 +224,12 @@ type OperationLib(control: PrimellProgramControl) =
       control.LastOperationWasOutput <- true
       l   // i guess?  probably makes sense to not modify the object "on the stack"
 
+    member this.Head(pobj: PObject) =
+      match pobj with
+      | :? PList as l -> l.Head()
+      | _ -> pobj   // atom is its own head
+
+    member this.Tail(pobj: PObject) =
+      match pobj with
+      | :? PList as l -> l.Tail()
+      | _ -> PList.Empty  // atom has no tail
