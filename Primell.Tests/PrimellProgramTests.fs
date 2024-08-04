@@ -109,7 +109,13 @@ let ``Test Index + Assign``() =
   TestProgram(", = 2\n,@2 = 5\n,", PrimellConfiguration.PrimellDefault, "2 () 5")
   TestProgram(",@(2 3) = (5 7)\n,", PrimellConfiguration.PrimellDefault, "() () 5 7")
   
- 
+[<Fact>]
+let ``Test Branch``() =
+  TestProgram(", + 5\n, = 2\n2!\\", PrimellConfiguration.PrimellDefault, "()\n7")
+  TestProgram(", + 5\n(, =$ 2/2)!\\", PrimellConfiguration.PrimellDefault, "()\n6")
+  TestProgram(", + 5\n(, =$ 2-2)!|", PrimellConfiguration.PrimellDefault, "()\n5")
+
+
 [<Fact>]
 let ``Test Conditional``() =
   TestProgram("2?(2 3 5)", PrimellConfiguration.PrimellDefault, "2")
@@ -127,6 +133,11 @@ let ``Test Conditional Assign``() =
   // quick screen this still works with $
   TestProgram("2?$(, = 3)(, = 5)\n,", PrimellConfiguration.PrimellDefault, "3")
   TestProgram("2?~$(, = 3)(, = 5)\n,", PrimellConfiguration.PrimellDefault, "5")
+
+[<Fact>]
+let ``Test Conditional Branch``() =
+  TestProgram("7\n11\n2?(2!\\ 2/2)", PrimellConfiguration.PrimellDefault, "7\n11\n7")
+  TestProgram("7\n11\n(2-2)?(2!\\ 2/2)", PrimellConfiguration.PrimellDefault, "7\n11\n1")
 
 [<Fact>]
 let ``Test Foreach Binary``() =
@@ -163,12 +174,6 @@ let ``Test Side Effects Foreach``()  =
 
   TestProgram(",=2\n(, =+ 3)[<::(2 3)(3 5)(5 7)]", PrimellConfiguration.PrimellDefault, "(5 2 3) (5 3 5) (5 5 7)")
   TestProgram(",=2\n5[<::(2 ,)(3 (, = 3))(5 ,)]", PrimellConfiguration.PrimellDefault, "(5 2 2) (5 3 3) (5 5 3)")
-
-[<Fact>]
-let ``Test Branch``() =
-  TestProgram(", + 5\n, = 2\n2!\\", PrimellConfiguration.PrimellDefault, "()\n7")
-  TestProgram(", + 5\n(, =$ 2/2)!\\", PrimellConfiguration.PrimellDefault, "()\n6")
-  TestProgram(", + 5\n(, =$ 2-2)!|", PrimellConfiguration.PrimellDefault, "()\n5")
  
 [<Fact>]
 let ``Test User Operations``() =  // User-defined ops not yet done, but a few hard-coded syntactical tests so I don't actually break stuff

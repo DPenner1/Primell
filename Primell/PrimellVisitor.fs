@@ -363,26 +363,24 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
 
   member private this.Conditional (left: PObject) (right: BinaryRHS) (condContext: PrimellParser.ConditionalOpContext) =
     let negate = condContext.cond_mod_neg() |> isNull |> not
-    let useHeadOnTruth = condContext.cond_mod_tail() |> isNull
+    //let useHeadOnTruth = condContext.cond_mod_tail() |> isNull
     let effectiveBool = operationLib.IsTruth(left, control.Settings.PrimesAreTruth, control.Settings.RequireAllTruth) <> negate
 
     if effectiveBool then
-      let isBranch = condContext.condBranch() |> isNull |> not
       let loopIsDoWhile = 
         match condContext.condLoop() with
         | null -> None
         | _ as nestedCtxt -> Some (nestedCtxt.cond_loop_do_while() |> isNull |> not)
       
-      let result = this.VisitConditionalRight right effectiveBool useHeadOnTruth
-      match isBranch, loopIsDoWhile with
-      | false, None ->  // straight if-else expression
+      let result = this.VisitConditionalRight right effectiveBool true
+      match loopIsDoWhile with
+      | None ->  // straight if-else expression
           result
-      | _, Some _ ->
+      | Some _ ->
           System.NotImplementedException "conditional loops useless before first-class operators" |> raise
-      | true, _ ->
-          operationLib.ApplyUnaryOperation result (condContext.condBranch().GetText()) [] 
+          
     else
-      this.VisitConditionalRight right effectiveBool useHeadOnTruth
+      this.VisitConditionalRight right effectiveBool true
 
   member private this.ApplyBinaryOperation (left: PObject) (right: BinaryRHS) (context: PrimellParser.BinaryOpContext) =
 

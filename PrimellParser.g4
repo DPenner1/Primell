@@ -53,7 +53,7 @@ baseNullaryOp : OP_NULLARY
 
 baseUnaryOp : OP_UNARY 
             | OP_USER_UNARY 
-            | op_neg | op_branch_a | op_branch_f | op_branch_b   // re-used symbols
+            | op_neg    // re-used symbols
             ;
             
 baseBinaryOp : OP_BINARY 
@@ -62,9 +62,7 @@ baseBinaryOp : OP_BINARY
              | conditionalOp
              ;
 
-conditionalOp : OP_COND condBranch? condLoop? cond_mod_neg? cond_mod_tail? ;
-
-condBranch : cond_branch_f | cond_branch_b ;
+conditionalOp : OP_COND condLoop? cond_mod_neg? ;
 
 condLoop : cond_loop_while | cond_loop_do_while ;
 
@@ -88,17 +86,7 @@ op_list_diff : B_SLASH ;
 
 op_div : F_SLASH ;
 
-op_branch_b : BRANCH_B ;
-cond_branch_b : BRANCH_B ;
-
-op_branch_f : BRANCH_F ;
-cond_branch_f : BRANCH_F ;
-
-op_branch_a : BRANCH_A ;
-cond_branch_a : BRANCH_A ;
-
 op_max : TAIL ;
-cond_mod_tail : TAIL ;
 
 op_mul :  STAR ;
 cond_loop_while : STAR ;

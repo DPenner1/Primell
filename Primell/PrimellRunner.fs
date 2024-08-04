@@ -134,6 +134,7 @@ type PrimellRunner() =
     | :? Antlr4.Runtime.Misc.ParseCanceledException as ex -> this.PromptForInput settings echo $"Invalid syntax: {ex.Message}"
     | :? NotImplementedException as ex -> this.PromptForInput settings echo $"Primell's programmer hasn't implemented that yet: {ex.Message}"
     | :? InvalidCastException as ex -> this.PromptForInput settings echo $"Primell's programmer hasn't implemented that yet: {ex.Message}"
+    | :? IO.IOException as ex -> this.PromptForInput settings echo $"File not found! {ex.Message}"
          // invalid case is basically same as not implemented in this solution - they are hacks to temporarly not do the harder datatype
     | PrimellInvalidSyntaxException msg -> this.PromptForInput settings echo $"Invalid Syntax: {msg}"
     | PrimellProgrammerProblemException _ -> this.PromptForInput settings echo "Error in Primell's programmer's brain"

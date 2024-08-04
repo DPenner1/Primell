@@ -25,9 +25,6 @@ STAR : '*' ;
 NEGATE : '~' ;
 F_SLASH: '/' ;
 B_SLASH: '\\' ;
-BRANCH_F : '!/' ;
-BRANCH_B : '!\\' ;
-BRANCH_A : '!|' ;
 
 D_QUOTE: '"' -> skip, pushMode(IN_STR) ; 
 
@@ -37,7 +34,7 @@ OPMOD_CUT : '`' ;
 OP_NULLARY : ':"' | ':,' ;
 
 OP_UNARY :  '_:' | '_<' | '_>' | '_*' | '__' | '_?' | '_~' | '_@' | ':>"' | ':>,' | ':>_' | ':@"' | ':@,' // list unary
-         | '++' | '--' | '+-' | '`~' // numeric unary
+         | '++' | '--' | '+-' | '`~' | '!|' | '!\\' | '!/' // numeric unary
          ;
 
 OP_USER_UNARY : '_' INT_OR_ID | '#' INT_OR_ID ;
