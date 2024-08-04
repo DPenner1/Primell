@@ -79,3 +79,23 @@ module PPrimeLib =
     | Rational _ as left', (Rational _ as right') when left' = right' ->
         Seq.empty |> PList
     | _ -> PrimellProgrammerProblemException("shouldn't be possible") |> raise
+
+  
+  let PrimeFactorization (x: PNumber) =
+    match x.Value with
+    | NaN -> PList.Empty :> PObject
+    | Infinity Positive -> Seq.initInfinite(fun _ -> ExtendedBigRational.Two |> PNumber :> PObject) |> PList :> PObject
+           // for infinity, there's an infinite number of factors, but you won't get past all those 2s!
+    | Infinity Negative -> Seq.append [ExtendedBigRational.MinusOne |> PNumber :> PObject] 
+                                      (Seq.initInfinite(fun _ -> ExtendedBigRational.Two |> PNumber :> PObject)) |> PList :> PObject
+    | Rational r ->
+        let denominatorPrimes = // since PrimeLib gives ordered primes, we need to reverse the denom ones (and deal with -1)
+          PrimeLib.PrimeFactors(bigint.Abs r.Denominator) 
+          |> Seq.rev
+          |> Seq.map(fun p -> p |> BigRational |> BigRational.Reciprocal |> Rational |> PNumber :> PObject)
+        let signSeq = if r.Sign = -1 then Seq.singleton (ExtendedBigRational.MinusOne |> PNumber :> PObject) else Seq.empty
+        let numeratorPrimes = PrimeLib.PrimeFactors(r.Numerator) |> Seq.map (fun p -> p |> BigRational |> Rational |> PNumber :> PObject)
+        
+        numeratorPrimes |> Seq.append denominatorPrimes |> Seq.append signSeq |> PList :> PObject
+    
+    

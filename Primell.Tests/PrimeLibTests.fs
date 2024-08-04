@@ -4,10 +4,13 @@ module PPrimeLibTests
 open Xunit
 open dpenner1.Primell
 
-let TestRange(range, primes) =
-  range |> List.iter(fun i ->
-    Assert.Equal(List.contains i primes, PPrimeLib.IsPrime(BigRational(i, 1I) |> Rational |> PNumber))
-  )
+let AssertEqualSequences<'T>(expected: seq<'T>, actual: seq<'T>) =
+  Assert.Equal(Seq.length expected, Seq.length actual)
+  Seq.zip expected actual |> Seq.iter(fun pair -> Assert.Equal(fst pair, snd pair))
+
+let TestRange(range, knownPrimes) =
+  let calculatedPrimes = range |> Seq.filter (fun x -> PPrimeLib.IsPrime(BigRational(x, 1I) |> Rational |> PNumber))  
+  AssertEqualSequences(knownPrimes, calculatedPrimes)
 
 [<Fact>]
 let ``Test Is Prime 80-100`` () =
@@ -35,3 +38,18 @@ let ``Test Is Prime Special Cases`` () =
 
   Assert.False <| PPrimeLib.IsPrime(BigRational(5, 2) |> Rational |> PNumber)
   Assert.False <| PPrimeLib.IsPrime(BigRational(5, -2) |> Rational |> PNumber)
+
+
+[<Fact>]
+let ``Test PrimeFactorization``() = 
+  let calculated = PPrimeLib.PrimeFactorization(BigRational(-20, 77) |> Rational |> PNumber)
+  let expected = 
+    [BigRational -1; BigRational(1, 11); BigRational(1, 7); BigRational 2; BigRational 2; BigRational 5] 
+    |> Seq.map(fun r -> r |> Rational |> PNumber :> PObject) |> PList :> PObject
+  Assert.Equal(expected, calculated)
+
+  let calculated = PPrimeLib.PrimeFactorization(BigRational -5 |> Rational |> PNumber)
+  let expected = 
+    [BigRational -1; BigRational 5] 
+    |> Seq.map(fun r -> r |> Rational |> PNumber :> PObject) |> PList :> PObject
+  Assert.Equal(expected, calculated)

@@ -9,5 +9,13 @@ type PrimellNumber(value: ExtendedBigRational, ?refersTo: Reference) =
 
   override this.WithReference(ref) = PrimellNumber(value, ref)
 
+  override this.Equals(other) =
+    match other with
+    | :? PrimellNumber as n -> this.Value = n.Value
+    | _ -> false
+
+  override this.GetHashCode() =
+    this.Value.GetHashCode()
+
 type PNumber = PrimellNumber  // abbreviation for sanity
 

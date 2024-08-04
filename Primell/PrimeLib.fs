@@ -8,7 +8,7 @@ module PrimeLib =
 
   // memoization
   let private primes = HashSet<bigint>()
-  let private nonPrimes = HashSet<bigint>()
+  let private composites = HashSet<bigint>() // probably a little silly
 
   let private smallPrimes = [2I;3I;5I;7I;11I;13I;17I;19I;23I;29I;31I;37I;41I;43I;47I;53I;59I;61I;67I;71I;73I;79I;83I;89I;97I]
   smallPrimes |> List.iter (fun x -> primes.Add x |> ignore) // List instead of set, as order means efficiently checking mod 2 first
@@ -64,14 +64,14 @@ module PrimeLib =
         then false
       elif primes.Contains n   // we've already seen this prime
         then true
-      elif nonPrimes.Contains n
+      elif composites.Contains n
         then false
       elif List.exists (fun p -> (n % p).IsZero) smallPrimes  // checking small divisors is more efficient
-        then nonPrimes.Add n |> ignore; false
+        then composites.Add n |> ignore; false
       else 
         let result = Miller n
         if result then primes.Add n |> ignore
-        else nonPrimes.Add n |> ignore
+        else composites.Add n |> ignore
         result
 
   let rec NextPrime n =
@@ -81,8 +81,31 @@ module PrimeLib =
   let rec PrevPrime n =
     let prevInt = n - 1I
     if prevInt < 2I 
-      then Some n
+      then None
     elif IsPrime prevInt 
       then Some prevInt 
     else 
       PrevPrime prevInt
+
+  let rec private PrimeFactors'' n primeDivisor factors =
+    let q, rem = bigint.DivRem(n, primeDivisor)
+    if rem.IsZero then
+      PrimeFactors'' q primeDivisor (Seq.append factors [primeDivisor])
+    elif n.IsOne then
+      factors
+    else
+      PrimeFactors'' n (NextPrime primeDivisor) factors
+
+  let rec private PrimeFactors' (n: bigint) factors =
+    if IsPrime n then   // use an optimized test before expensive divisions
+      Seq.append factors [n]
+    else
+      PrimeFactors'' n 2I factors
+
+  let PrimeFactors (n: bigint) = 
+    if n.Sign = -1 then  // i guess since bigint allows negative we'll handle it here
+      PrimeFactors' -n (Seq.singleton -1I)
+    elif n.IsZero then // would trigger infinite recursion (1 is handled correctly though)
+      Seq.empty
+    else
+      PrimeFactors' n (Seq.empty)

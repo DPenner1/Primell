@@ -29,7 +29,7 @@ type PrimellList(sequence: seq<PObject>, ?length: PNumber, ?refersTo: Reference)
     | None -> true
     | _ -> false
 
-  member this.IsEmpty with get() = Seq.isEmpty main   // avoid calling this.Length due to potential long computation
+  member val IsEmpty = Seq.isEmpty main with get
 
   member this.Head() = 
     match Seq.tryHead main with
@@ -128,10 +128,30 @@ type PrimellList(sequence: seq<PObject>, ?length: PNumber, ?refersTo: Reference)
   member this.Flatten() =
     this.RaiseAtoms() |> Seq.concat |> PrimellList
   
+  override this.WithReference(ref) = PrimellList(main, ?length = length, ?refersTo = Some ref)
+
   override this.ToString() =  // TODO - surely there's a cleaner way than the nested concat abomination I came up with
     String.concat "" ["("; String.concat " " (main |> Seq.map(fun obj -> obj.ToString())); ")"]
 
-  override this.WithReference(ref) = PrimellList(main, ?length = length, ?refersTo = Some ref)
+  override this.Equals(other) =
+    match other with
+    | :? PrimellList as l ->
+        if l.Length <> this.Length then false  // TODO - just to get it going, but with infinite possible, you can do better
+        else
+          (this, l) ||> Seq.exists2 (fun x y -> x.Equals y |> not) |> not
+    | _ -> false
+
+  override this.GetHashCode() =
+    let truncInfTo = 16  // arbitrary, but we definitely don't want to evaluate infinitely here
+    
+    match length with
+    | None ->
+        main |> Seq.truncate truncInfTo  
+    | Some n -> 
+        match n.Value with
+        | Infinity _ -> main |> Seq.truncate truncInfTo  
+        | _ -> main
+    |> Seq.fold (fun hashcode x -> hashcode ^^^ x.GetHashCode()) 0
 
 type PList = PrimellList  // abbreviation for sanity
 
