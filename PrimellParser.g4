@@ -21,13 +21,13 @@ rtlTerm : mulTerm                                                               
 
 binaryAssign : ASSIGN assignMods binaryOp? ;
 
-mulTerm : atomTerm                                          #passThroughMulTerm
-        | mulTerm unaryOp                                   #unaryOperation
-        | mulTerm binaryOpWithRS                            #binaryOperation
-        | L_BRACK termSeq R_BRACK unaryOp                     #forEachUnary
-        | L_BRACK termSeq R_BRACK binaryOpWithRS              #forEachLeftBinary
-        | L_BRACK termSeq VERT_BAR unaryOrBinaryOp+ R_BRACK   #forEachChain
-        ;          
+mulTerm : atomTerm                                                  #passThroughMulTerm
+        | mulTerm unaryOp                                           #unaryOperation
+        | mulTerm binaryOpWithRS                                    #binaryOperation
+        | L_BRACK termSeq R_BRACK unaryOp                           #forEachUnary
+        | L_BRACK termSeq R_BRACK binaryOpWithRS                    #forEachLeftBinary
+        | L_BRACK termSeq VERT_BAR unaryOrBinaryOp+ R_BRACK opMods  #forEachChain 
+        ;     // not sure I want opMods here, but I want to know if i accidentally break this
 
 binaryOpWithRS : binaryOp atomTerm
                | binaryOp RTL termSeq
@@ -53,7 +53,7 @@ baseNullaryOp : OP_NULLARY
 
 baseUnaryOp : OP_UNARY 
             | OP_USER_UNARY 
-            | op_neg
+            | op_neg | op_branch_a | op_branch_f | op_branch_b   // re-used symbols
             ;
             
 baseBinaryOp : OP_BINARY 
@@ -81,14 +81,21 @@ unaryAssign : ASSIGN assignMods ;
 binaryOp : baseBinaryOp opMods ;
 
 
-// a few symbols get used in different contexts so need to be distinguished by parser (or lexer mode, but that seemed tougher)
+// a few symbols get used (or probably will) in different contexts so need to be distinguished by parser (or lexer mode, but that seemed tougher)
 // (I've used underscores instead of camelCase for these parser rules that are basically just tokens)
 
 op_list_diff : B_SLASH ;
-cond_branch_b : B_SLASH ;
 
 op_div : F_SLASH ;
-cond_branch_f : F_SLASH ;
+
+op_branch_b : BRANCH_B ;
+cond_branch_b : BRANCH_B ;
+
+op_branch_f : BRANCH_F ;
+cond_branch_f : BRANCH_F ;
+
+op_branch_a : BRANCH_A ;
+cond_branch_a : BRANCH_A ;
 
 op_max : TAIL ;
 cond_mod_tail : TAIL ;

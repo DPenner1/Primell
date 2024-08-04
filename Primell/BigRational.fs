@@ -140,6 +140,12 @@ type BigRational =
           
           seq { startIndex..endIndex } |> Seq.map(fun i -> left + stepValue * BigRational(i, 1))
 
+  static member ToBigInt(r: BigRational) =
+    (round r).Numerator * bigint r.Sign
+    
+  static member ToInt(r: BigRational) =  // TODO - deal with int max/min value
+    BigRational.ToBigInt r |> int
+
   override this.ToString() =
     let str1 = if this.Denominator.Sign = -1 then "-" else ""
     let str2 = this.Numerator.ToString()

@@ -163,6 +163,12 @@ let ``Test Side Effects Foreach``()  =
 
   TestProgram(",=2\n(, =+ 3)[<::(2 3)(3 5)(5 7)]", PrimellConfiguration.PrimellDefault, "(5 2 3) (5 3 5) (5 5 7)")
   TestProgram(",=2\n5[<::(2 ,)(3 (, = 3))(5 ,)]", PrimellConfiguration.PrimellDefault, "(5 2 2) (5 3 3) (5 5 3)")
+
+[<Fact>]
+let ``Test Branch``() =
+  TestProgram(", + 5\n, = 2\n2!\\", PrimellConfiguration.PrimellDefault, "()\n7")
+  TestProgram(", + 5\n(, =$ 2/2)!\\", PrimellConfiguration.PrimellDefault, "()\n6")
+  TestProgram(", + 5\n(, =$ 2-2)!|", PrimellConfiguration.PrimellDefault, "()\n5")
  
 [<Fact>]
 let ``Test User Operations``() =  // User-defined ops not yet done, but a few hard-coded syntactical tests so I don't actually break stuff
@@ -172,5 +178,5 @@ let ``Test User Operations``() =  // User-defined ops not yet done, but a few ha
   TestEquivalentProgram("[3 5 7]-(3 5 7)", PrimellConfiguration.Listell, "[3 5 7]#test#(3 5 7)", PrimellConfiguration.Listell)
   TestEquivalentProgram("[(3 5)(7 11)]_~", PrimellConfiguration.Listell, "[(3 5)(7 11)]_test", PrimellConfiguration.Listell)
   TestEquivalentProgram("(3 5)(7 11)~", PrimellConfiguration.Listell, "(3 5)(7 11)#test", PrimellConfiguration.Listell)
-  TestEquivalentProgram(",", PrimellConfiguration.Listell, "test", PrimellConfiguration.Listell)
+
   

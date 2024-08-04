@@ -3,12 +3,20 @@ namespace dpenner1.Primell
 open System.Collections.Generic
 open System.Text
 
+type BranchMode =
+  | Forward
+  | Backward
+  | Absolute
+
+type IExternal =  // Some operations need to interact with the outside world  TODO need better name
+  abstract member Branch: BranchMode -> PNumber -> PObject
 
 // note: as part of trying to get references to work, OperationLib was converted from module to class type
 //       This may have the later benefit of being able to swap out operations dependent on control.UsePrimeOperators
-type OperationLib(control: PrimellProgramControl) =
+type OperationLib(control: PrimellProgramControl, external: IExternal) =
 
     let control = control
+    let external = external
 
     // all dictionaries have test item for now, this is planning for user-defined operators,
     // the test entries are for test cases so I don't inadvertently break these plans while working on other things
@@ -16,14 +24,16 @@ type OperationLib(control: PrimellProgramControl) =
     member this.NullaryOperators: IDictionary<string, unit->PObject> =
       dict [":\"", fun () -> this.GetStringInput()
             ":,", fun () -> this.GetCsvInput()
-            "test", fun () -> 123 |> BigRational |> Rational |> PNumber :> PObject
            ]
 
     member this.UnaryNumericOperators: IDictionary<string, PNumber->PObject> = 
-      dict ["~",  fun n -> ExtendedBigRational.(~-) n.Value |> PNumber :> PObject
-            "++", fun n -> if control.Settings.UsePrimeOperators then PPrimeLib.NextPrime n else n.Value + ExtendedBigRational.One |> PNumber :> PObject
-            "--", fun n -> if control.Settings.UsePrimeOperators then PPrimeLib.PrevPrime n else n.Value - ExtendedBigRational.One |> PNumber :> PObject
-            "+-", fun n -> if control.Settings.UsePrimeOperators then PPrimeLib.NearestPrime n else round n.Value |> PNumber :> PObject
+      dict ["~",   fun n -> ExtendedBigRational.(~-) n.Value |> PNumber :> PObject
+            "++",  fun n -> if control.Settings.UsePrimeOperators then PPrimeLib.NextPrime n else n.Value + ExtendedBigRational.One |> PNumber :> PObject
+            "--",  fun n -> if control.Settings.UsePrimeOperators then PPrimeLib.PrevPrime n else n.Value - ExtendedBigRational.One |> PNumber :> PObject
+            "+-",  fun n -> if control.Settings.UsePrimeOperators then PPrimeLib.NearestPrime n else round n.Value |> PNumber :> PObject
+            "!/",  fun n -> external.Branch Forward n
+            "!\\", fun n -> external.Branch Backward n
+            "!|",  fun n -> external.Branch Absolute n
             "#test", fun n -> ExtendedBigRational.(~-) n.Value |> PNumber :> PObject  // copied negate function
            ]
 

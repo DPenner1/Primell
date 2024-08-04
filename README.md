@@ -103,7 +103,7 @@ You'll note that the parentheses were not printed to the screen. The outermost p
 
 Note that spaces aren't usually necessary, `(2 3 5)+2_~_>*3` would have been an identical program.
 
-Programs may have multiple lines and the lines are executed from top to bottom in the same manner. Primell doesn't quite have traditional control-flow like other programming languages, but instead does have the capability to incorporate lines of code within another line. Check out the conditional branch operator `?/`. This is probably sufficient for simulating a Turing machine (see the [Examples.md](https://github.com/DPenner1/Primell/blob/main/Examples/Examples.md) file for details).
+Programs may have multiple lines and the lines are executed from top to bottom in the same manner. Primell doesn't quite have traditional control-flow like other programming languages, but instead does have the capability to incorporate lines of code within another line. Check out the conditional branch operator `?!/`. This is probably sufficient for simulating a Turing machine (see the [Examples.md](https://github.com/DPenner1/Primell/blob/main/Examples/Examples.md) file for details).
 
 # Running Primell #
 
@@ -125,3 +125,4 @@ Don't look at it. It's painful. If you choose not to heed that warning, read on.
 - I was speed learning F#, I opted to glaze over access modifiers for the most part, I couldn't usually remember what the default access modifier was for a given context. Partially for that reason, I stuck to C# naming and casing conventions, but also I wasn't initially sure if the entire implementation would be F# or just the data structures. 
 - On naming, I had originally simply called the language Prime, but changed to avoid potential trademark issue with HP Prime. Primell was derived as Prime List Language.
 - I opted not to add the Antlr4 generated source files to the `.gitignore` to allow for users to run the project without self-generating the files.
+- At the moment, I'm relatively happy with the code for the core Primell datatypes. However, the structure of parsing/execution code is a bit messy. There's a bit of a through line of Engine->Parser->Operators, with all 3 depending on a program state object (it was a mutable C# solution afterall). But that gets messy with the operators that require access to external reference, eg. I/O (engine) or branches (parser). For now, I'm going to keep hacking it, because whenever I get to user-defined operators, I expect to have to make an architecture change at that time anyways.

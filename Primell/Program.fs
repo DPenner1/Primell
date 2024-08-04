@@ -2,11 +2,11 @@
 
 let runner = PrimellRunner()
 
-//let control = runner.Run "\"Hello, World!\" :>\"  ~~ The :>\" operator outputs a string. Strings are just lists of numbers, maybe in future Listell will track which lists were initialized as strings" PrimellConfiguration.Listell
+//let control = runner.Run ", + 5\n, = 2\n2~!\\" PrimellConfiguration.PrimellDefault
 
 runner.InteractiveMode()
 
-//let control = runner.RunFromFile { PrimellConfiguration.PrimellDefault with SourceFilePath = "./../../../../Examples/Turing.pll" }
+//let control = runner.RunFromFile { PrimellConfiguration.PrimellDefault with SourceFilePath = "./../../../../Examples/NumbersTo100.pll" }
 //let control = runner.Run "5/0" PrimellConfiguration.Listell
 
 //printfn "%s" <| runner.GetResultString (List.last results |> fst) control

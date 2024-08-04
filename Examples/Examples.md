@@ -48,27 +48,27 @@ Wait, you want more explanation for step 4? Here's a more detailed breakdown the
 
 # Turing Machine simulation
 
-_Note: as it turns out, this section of code_ `(,@2 ;,,@$,@3)` _actually executed incorrectly in the original C# version and the F# version currently crashes._
+_Note: as it turns out, this section of code_ `(,@2 ;,,,@$,@3)` _actually executed incorrectly in the original C# version and the F# version currently crashes._
 
 This is really only here as proof of Turing-completeness. It is left here as a challenge to the reader: Once understood, the reader is considered an advanced beginner at Primell. To help here is a description of the first five lines, which are simply initializations:
  
- - The tape is represented by the `,,` variable and is unbounded to the right. Any value can go on the tape. It is initialized with all 0s except the zeroth index which is -2 (to more easily mark left-end of tape).
+ - The tape is represented by the `,,,` variable and is unbounded to the right. Any value can go on the tape. It is initialized with all 0s except the zeroth index which is -2 (to more easily mark left-end of tape).
  - The current state is stored in `,@2`. States should be positive numbers, except for -2 representing the halting state
  - The tape reader/head's current position is stored in `,@3`
- - The table of instructions for the Turing machine is stored at `,,,@(3..∞)`. The 4th line of code is an example instruction table that can be edited for different instructions.
+ - The table of instructions for the Turing machine is stored at `,,@(3..∞)`. The 4th line of code is an example instruction table that can be edited for different instructions.
  - Each instruction is a 5-tuple of the following format: (currentState, currentValueUnderHead, nextState, nextValue, headMoveOffset)
- - The instruction matching the currentState and currentValueUnderHead is stored at `,,,@2` and is initialized as junk to begin with.
+ - The instruction matching the currentState and currentValueUnderHead is stored at `,,@2` and is initialized as junk to begin with.
 
 Also, the code arbitrarily outputs the first 4 values of the tape.
 
-	,, =$ 2-2
-	,,@(2-2) =$ 2~
+	,,, =$ 2-2
+	,,,@(2-2) =$ 2~
 	,@(2 3) =$ 2-2 2-2
-	,,, =^$ (2-2 2~ 3 2~ 2/2) (3 2-2 2~ 7 2/2)
-	,,, =^$ (()()(3 3 3 3 3) ;,,,)
+	,, =^$ (2-2 2~ 3 2~ 2/2) (3 2-2 2~ 7 2/2)
+	,, =^$ (()()(3 3 3 3 3) ;,,)
 
-	,@2~ ?~/$ (2/2 2 3 2-2) ,,@(2-2 2/2 2 3)
+	,@2~ ?!/~$ (2/2 2 3 2-2) ,,,@(2-2 2/2 2 3)
 
-	,,,@2 =$ ,,,@$ ,,,[@(2-2 2/2)] @ # (,@2 ;,,@$,@3) _<
-	,,@(,@3) =$ ,,,@2@3
-	,@(2 3) =$ ,,,@2@2 ,@3 + ,,,@2@(2*2)
+	,,@2 =$ ,,@$ ,,[@(2-2 2/2)] @ # (,@2 ;,,,@$,@3) _<
+	,,,@(,@3) =$ ,,@2@3
+	,@(2 3) =$ ,,@2@2 ,@3 + ,,@2@(2*2)

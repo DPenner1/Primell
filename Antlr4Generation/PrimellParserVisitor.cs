@@ -264,23 +264,47 @@ public interface IPrimellParserVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitOp_list_diff([NotNull] PrimellParser.Op_list_diffContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="PrimellParser.cond_branch_b"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitCond_branch_b([NotNull] PrimellParser.Cond_branch_bContext context);
-	/// <summary>
 	/// Visit a parse tree produced by <see cref="PrimellParser.op_div"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitOp_div([NotNull] PrimellParser.Op_divContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="PrimellParser.op_branch_b"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitOp_branch_b([NotNull] PrimellParser.Op_branch_bContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="PrimellParser.cond_branch_b"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitCond_branch_b([NotNull] PrimellParser.Cond_branch_bContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="PrimellParser.op_branch_f"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitOp_branch_f([NotNull] PrimellParser.Op_branch_fContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="PrimellParser.cond_branch_f"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitCond_branch_f([NotNull] PrimellParser.Cond_branch_fContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="PrimellParser.op_branch_a"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitOp_branch_a([NotNull] PrimellParser.Op_branch_aContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="PrimellParser.cond_branch_a"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitCond_branch_a([NotNull] PrimellParser.Cond_branch_aContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="PrimellParser.op_max"/>.
 	/// </summary>

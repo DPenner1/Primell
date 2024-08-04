@@ -17,7 +17,7 @@ VERT_BAR : '|' ;
 
 DOT: '.' ;
 
-// these symbols get re-used as both ops and mods in different contexts
+// these symbols get re-used as both ops and mods in different contexts (or probably will)
 // in theory, i could use modes, but i think this ones easier in the parser
 TAIL : '>' ;
 PLUS : '+' ;
@@ -25,6 +25,9 @@ STAR : '*' ;
 NEGATE : '~' ;
 F_SLASH: '/' ;
 B_SLASH: '\\' ;
+BRANCH_F : '!/' ;
+BRANCH_B : '!\\' ;
+BRANCH_A : '!|' ;
 
 D_QUOTE: '"' -> skip, pushMode(IN_STR) ; 
 

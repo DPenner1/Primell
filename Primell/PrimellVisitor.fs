@@ -11,19 +11,34 @@ type internal BinaryRHS =  // yes, this was a headache
   | Conditional of PrimellParser.TermSeqContext
 // i think the NonCond and EvCond could be functionally merged, but it helps with understanding the code
 
-type PrimellVisitor(control: PrimellProgramControl) = 
+type PrimellVisitor(control: PrimellProgramControl) as self = 
   inherit PrimellParserBaseVisitor<PObject>()
   let control = control
   let currentForEach = new Stack<PObject>()
-  let operationLib = new OperationLib(control)
+  let operationLib = new OperationLib(control, self)
 
   // TODO - get rid of this
-  let GetInt(n: PNumber) = 
+  let GetPositiveInt(n: PNumber) = 
     match n.Value with
     | Rational r when r >= BigRational.Zero -> (round r).Numerator |> int
     | _ -> PrimellProgrammerProblemException("Get Int should only be called with positive rational") |> raise
-  
-  
+
+  interface IExternal with
+    member this.Branch mode branchValue =
+      match branchValue.Value with
+      | NaN | Infinity _ -> PList.Empty :> PObject
+      | Rational r ->
+          let intArg = BigRational.ToInt r
+          let lineIndex = 
+            match mode with
+            | Forward -> control.CurrentLine + intArg
+            | Backward -> control.CurrentLine - intArg
+            | Absolute -> intArg
+
+          let parser = PrimellVisitor.GetParser control.LineResults[lineIndex].Text
+          PrimellVisitor(control).VisitLine(parser.line())
+
+
   static member GetParser (line: string) =
     let stream = AntlrInputStream line
     let lexer = PrimellLexer stream
@@ -166,8 +181,8 @@ type PrimellVisitor(control: PrimellProgramControl) =
                 | Rational r when r < BigRational.Zero -> System.NotImplementedException("negative index") |> raise
                 | Rational r ->
                     let index = int r.Numerator
-                    if index >= GetInt accList.Length then // extend list with empties
-                        Seq.append accList (Seq.init (index - (GetInt accList.Length)) (fun _ -> PList.Empty :> PObject)) 
+                    if index >= GetPositiveInt accList.Length then // extend list with empties
+                        Seq.append accList (Seq.init (index - (GetPositiveInt accList.Length)) (fun _ -> PList.Empty :> PObject)) 
                         |> Seq.insertAt index (snd ivPair) 
                         |> PList
                     else 
@@ -187,8 +202,8 @@ type PrimellVisitor(control: PrimellProgramControl) =
         | _ as n when n < ExtendedBigRational.Zero -> System.NotImplementedException("negative index") |> raise
         | _ as n when n = ExtendedBigRational.Zero -> newValue
         | _ as n ->
-            Seq.append (Seq.singleton cValue) (Seq.init((GetInt cValueIndex) - 1) (fun _ -> PList.Empty)) 
-            |> Seq.insertAt (GetInt cValueIndex) newValue
+            Seq.append (Seq.singleton cValue) (Seq.init((GetPositiveInt cValueIndex) - 1) (fun _ -> PList.Empty)) 
+            |> Seq.insertAt (GetPositiveInt cValueIndex) newValue
             |> PList :> PObject
     | :? PList as l when l.IsEmpty ->
         match round cValueIndex.Value with
@@ -197,13 +212,13 @@ type PrimellVisitor(control: PrimellProgramControl) =
         | _ as n when n < ExtendedBigRational.Zero -> System.NotImplementedException("negative index") |> raise
         | _ as n when n = ExtendedBigRational.Zero -> newValue
         | _ as n ->
-            Seq.init (GetInt cValueIndex) (fun _ -> PList.Empty :> PObject) 
-            |> Seq.insertAt (GetInt cValueIndex) newValue
+            Seq.init (GetPositiveInt cValueIndex) (fun _ -> PList.Empty :> PObject) 
+            |> Seq.insertAt (GetPositiveInt cValueIndex) newValue
             |> PList :> PObject
     | :? PList as l ->
         l |> Seq.mapi (fun i x -> 
             match round cValueIndex.Value with
-            | Rational _ -> if i = GetInt cValueIndex then newValue else x
+            | Rational _ -> if i = GetPositiveInt cValueIndex then newValue else x
             | _ -> x
         )
           |> PList :> PObject
@@ -352,40 +367,22 @@ type PrimellVisitor(control: PrimellProgramControl) =
     let effectiveBool = operationLib.IsTruth(left, control.Settings.PrimesAreTruth, control.Settings.RequireAllTruth) <> negate
 
     if effectiveBool then
-      let branchIsForward = 
-        match condContext.condBranch() with
-        | null -> None
-        | _ as nestedCtxt -> Some (nestedCtxt.cond_branch_f() |> isNull |> not)
+      let isBranch = condContext.condBranch() |> isNull |> not
       let loopIsDoWhile = 
         match condContext.condLoop() with
         | null -> None
         | _ as nestedCtxt -> Some (nestedCtxt.cond_loop_do_while() |> isNull |> not)
       
       let result = this.VisitConditionalRight right effectiveBool useHeadOnTruth
-      match branchIsForward, loopIsDoWhile with
-      | None, None ->  // straight if-else expression
+      match isBranch, loopIsDoWhile with
+      | false, None ->  // straight if-else expression
           result
       | _, Some _ ->
           System.NotImplementedException "conditional loops useless before first-class operators" |> raise
-      | Some isForward, _ -> 
-          this.Branch result isForward
+      | true, _ ->
+          operationLib.ApplyUnaryOperation result (condContext.condBranch().GetText()) [] 
     else
       this.VisitConditionalRight right effectiveBool useHeadOnTruth
-
-  member this.Branch (branchValues: PObject) (isForward: bool) =
-    match branchValues with
-    | :? PNumber as n ->
-        match n.Value with
-        | NaN | Infinity _ -> PList.Empty :> PObject
-        | Rational r ->
-            let offset = ((round r).Numerator |> int) * (if isForward then 1 else -1)
-
-            let parser = PrimellVisitor.GetParser control.LineResults[control.CurrentLine + offset].Text
-            PrimellVisitor(control).VisitLine(parser.line())
-
-    | :? PList as l ->
-        l |> Seq.map (fun x -> this.Branch x isForward) |> PList :> PObject
-    | _ -> System.NotImplementedException "You're doing crazy stuff" |> raise
 
   member private this.ApplyBinaryOperation (left: PObject) (right: BinaryRHS) (context: PrimellParser.BinaryOpContext) =
 
@@ -480,7 +477,7 @@ type PrimellVisitor(control: PrimellProgramControl) =
   member private this.ApplyForEachRight(left: PObject)(right: BinaryRHS)(boCtxt: PrimellParser.BinaryOpContext) =
     
     // awkwardly you have box the conditional right back up...
-    // it sort of makes sense because with the for-each-right, theres two layers of deferer evals possible
+    // it sort of makes sense because with the for-each-right, theres two layers of deferred evals possible
     // but there are probably more efficient ways of doing it
     match right with
     | NonConditonal pobj ->
@@ -494,13 +491,9 @@ type PrimellVisitor(control: PrimellProgramControl) =
             l |> Seq.map(fun x -> this.ApplyBinaryOperation left (EvaluatedConditional x) boCtxt) |> PList :> PObject
         | _ -> this.ApplyBinaryOperation left (EvaluatedConditional pobj) boCtxt
     | Conditional tsCtxt ->
-        System.NotImplementedException "Deferred cond in for-each right is hard" |> raise
-        //if tsCtxt.concatRtlTerm() |> Seq.exists(fun x -> x.CONCAT() |> isNull |> not) then
-        //  System.NotImplementedException "conditional for-each with ;" |> raise
-        //else
-        //  tsCtxt.concatRtlTerm() |> Seq.map(fun rtlCtxt ->
-        //    this.ApplyBinaryOperation left Visit(context.binaryOpWithRS().binaryOp())
-        //  )
+        System.NotImplementedException "Conditional in right-handed foreach planned for after first-class operators" |> raise
+        // Actually here, deferred eval from first-class operators implementation should work fine, as we need to
+        // defer the whole list without regards to head/tail (the individual sub items are the head/tail ones)
 
   override this.VisitBinaryOperation context =
     let rhsCtxt = context.binaryOpWithRS()

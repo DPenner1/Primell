@@ -32,6 +32,7 @@ type PrimellRunner() =
                           "-pd   OR  --primell-default", "Sets configuration to Primell's default. Other simultaneously provided settings override this."
                           "-ld   OR  --listell-default", "Sets configuration to Listell, Primell's non-prime believing cousin. Other simultaneously provided settings override this."
                         ]
+      
 
   member this.GetResultString (result: PrimellObject) (control: PrimellProgramControl) =
     let temp =
@@ -142,7 +143,7 @@ type PrimellRunner() =
   member private this.HelpSpiel() =
     let line = "----------------------------------------------------------------------------------------------"
 
-    let commandPreface = [""; "Commands  (input not prefixed with '?' engages REPL mode)"; line]
+    let commandPreface = [""; "Commands  (input not prefixed with '?' engages REPL mode, branching not yet supported)"; line]
 
     let padding = (consoleCommands |> List.map(fun x -> x.Key.Length + x.ArgumentDescription.Length) |> List.max) + 4
     let commandList = consoleCommands |> List.map(fun command -> let s = $"?{command.Key} {command.ArgumentDescription}"
