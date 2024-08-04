@@ -55,7 +55,7 @@ type PrimellRunner() =
     runnerVariables |> Seq.iter(fun kvp -> control.Variables[kvp.Key] <- kvp.Value)  // add in saved variables
 
     // pre-initialized variables
-    control.TrySetVariable(",,,", PList.Empty, PList(Seq.initInfinite(fun _ -> PList.Empty :> PObject), Infinity Positive |> PNumber)) |> ignore
+    control.TrySetVariable(",,,", PList.Empty, PList(Seq.initInfinite(fun _ -> PList.Empty), Infinity Positive |> PNumber)) |> ignore
     control.TrySetVariable(",,,,,", PList.Empty, PList(Seq.initInfinite(fun _ -> ExtendedBigRational.Zero |> PNumber :> PObject), Infinity Positive |> PNumber)) |> ignore
 
     // also this has just been cobbled together over time, this could definitely be cleaner

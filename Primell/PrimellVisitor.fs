@@ -26,7 +26,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
   interface IExternal with
     member this.Branch mode branchValue =
       match branchValue.Value with
-      | NaN | Infinity _ -> PList.Empty :> PObject
+      | NaN | Infinity _ -> PList.Empty
       | Rational r ->
           let intArg = BigRational.ToInt r
           let lineIndex = 
@@ -81,7 +81,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
 
   member private this.VisitTermSeqHead(termSeqCtxt: PrimellParser.TermSeqContext) =
     if termSeqCtxt.concatRtlTerm().Length = 0 then
-      PList.Empty :> PObject
+      PList.Empty
     else 
       match (termSeqCtxt.concatRtlTerm()[0]).CONCAT() with
       | null -> this.Visit(termSeqCtxt.concatRtlTerm()[0])
@@ -89,7 +89,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
 
   member private this.VisitTermSeqTail(termSeqCtxt: PrimellParser.TermSeqContext) =
     if termSeqCtxt.concatRtlTerm().Length = 0 then
-      PList.Empty :> PObject
+      PList.Empty
     else 
       match (termSeqCtxt.concatRtlTerm()[0]).CONCAT() with
       | null -> this.VisitConcatRtlTermSeq(termSeqCtxt.concatRtlTerm() |> Seq.tail)
@@ -177,12 +177,12 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
             (cList, ivZip) ||> Seq.fold(fun accList ivPair -> 
                 match round (fst ivPair :?> PNumber).Value with // not dealing with nested list index yet
                 | NaN | Infinity Negative -> accList
-                | Infinity Positive -> PList(Seq.append accList (Seq.initInfinite(fun _ -> PList.Empty :> PObject)), Infinity Positive |> PNumber)
+                | Infinity Positive -> PList(Seq.append accList (Seq.initInfinite(fun _ -> PList.Empty)), Infinity Positive |> PNumber)
                 | Rational r when r < BigRational.Zero -> System.NotImplementedException("negative index") |> raise
                 | Rational r ->
                     let index = int r.Numerator
                     if index >= GetPositiveInt accList.Length then // extend list with empties
-                        Seq.append accList (Seq.init (index - (GetPositiveInt accList.Length)) (fun _ -> PList.Empty :> PObject)) 
+                        Seq.append accList (Seq.init (index - (GetPositiveInt accList.Length)) (fun _ -> PList.Empty)) 
                         |> Seq.insertAt index (snd ivPair) 
                         |> PList
                     else 
@@ -198,7 +198,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
     | :? PAtom ->
         match round cValueIndex.Value with
         | NaN | Infinity Negative -> cValue
-        | Infinity Positive -> PList(Seq.append (Seq.singleton cValue) (Seq.initInfinite(fun _ -> PList.Empty :> PObject)), Infinity Positive |> PNumber)
+        | Infinity Positive -> PList(Seq.append (Seq.singleton cValue) (Seq.initInfinite(fun _ -> PList.Empty)), Infinity Positive |> PNumber)
         | _ as n when n < ExtendedBigRational.Zero -> System.NotImplementedException("negative index") |> raise
         | _ as n when n = ExtendedBigRational.Zero -> newValue
         | _ as n ->
@@ -208,11 +208,11 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
     | :? PList as l when l.IsEmpty ->
         match round cValueIndex.Value with
         | NaN | Infinity Negative -> l
-        | Infinity Positive -> PList(Seq.initInfinite(fun _ -> PList.Empty :> PObject), Infinity Positive |> PNumber)
+        | Infinity Positive -> PList(Seq.initInfinite(fun _ -> PList.Empty), Infinity Positive |> PNumber)
         | _ as n when n < ExtendedBigRational.Zero -> System.NotImplementedException("negative index") |> raise
         | _ as n when n = ExtendedBigRational.Zero -> newValue
         | _ as n ->
-            Seq.init (GetPositiveInt cValueIndex) (fun _ -> PList.Empty :> PObject) 
+            Seq.init (GetPositiveInt cValueIndex) (fun _ -> PList.Empty) 
             |> Seq.insertAt (GetPositiveInt cValueIndex) newValue
             |> PList :> PObject
     | :? PList as l ->
@@ -378,7 +378,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
           result
       | Some _ ->
           System.NotImplementedException "conditional loops useless before first-class operators" |> raise
-          
+
     else
       this.VisitConditionalRight right effectiveBool true
 

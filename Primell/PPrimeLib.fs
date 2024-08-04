@@ -83,7 +83,7 @@ module PPrimeLib =
   
   let PrimeFactorization (x: PNumber) =
     match x.Value with
-    | NaN -> PList.Empty :> PObject
+    | NaN -> PList.Empty
     | Infinity Positive -> Seq.initInfinite(fun _ -> ExtendedBigRational.Two |> PNumber :> PObject) |> PList :> PObject
            // for infinity, there's an infinite number of factors, but you won't get past all those 2s!
     | Infinity Negative -> Seq.append [ExtendedBigRational.MinusOne |> PNumber :> PObject] 

@@ -65,9 +65,15 @@ let ``Test Index``() =
 
   // implicit empties
   TestProgram("()@2", PrimellConfiguration.PrimellDefault, "()")
-  TestProgram("()@$2~", PrimellConfiguration.PrimellDefault, "()")
   TestProgram("3@2", PrimellConfiguration.PrimellDefault, "()")
-  TestProgram("3@$2~", PrimellConfiguration.PrimellDefault, "()")
+
+  // negative index wrap-around
+  TestProgram("()@$2~", PrimellConfiguration.PrimellDefault, "()")
+  TestProgram("3@$2~", PrimellConfiguration.PrimellDefault, "3")
+  TestProgram("(2 3 5 7)@$7~", PrimellConfiguration.PrimellDefault, "3")
+  TestProgram("(2 3 5 7 11)@$7~", PrimellConfiguration.PrimellDefault, "7")
+  TestProgram("(2 3 5 7)@$11~", PrimellConfiguration.PrimellDefault, "3")
+  TestProgram("(2 3 5 7 11)@$11~", PrimellConfiguration.PrimellDefault, "11")
 
 
 [<Fact>]

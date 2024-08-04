@@ -141,7 +141,7 @@ type BigRational =
           seq { startIndex..endIndex } |> Seq.map(fun i -> left + stepValue * BigRational(i, 1))
 
   static member ToBigInt(r: BigRational) =
-    (round r).Numerator * bigint r.Sign
+    (round r).Numerator * bigint r.Denominator.Sign
     
   static member ToInt(r: BigRational) =  // TODO - deal with int max/min value
     BigRational.ToBigInt r |> int
