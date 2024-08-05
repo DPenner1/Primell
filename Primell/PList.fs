@@ -89,7 +89,6 @@ type PrimellList(sequence: PObject seq, ?length: PNumber, ?refersTo: Reference) 
             head
         | _ -> tail
 
-
   member this.Reverse() = 
     match length with
     | Infinite ->
@@ -105,7 +104,6 @@ type PrimellList(sequence: PObject seq, ?length: PNumber, ?refersTo: Reference) 
       | _ -> length
     
     PrimellList(Seq.append this (Seq.singleton pobj), newLength)
-
 
   member this.AppendAll (pobj: PObject) =
     match pobj with
@@ -123,13 +121,10 @@ type PrimellList(sequence: PObject seq, ?length: PNumber, ?refersTo: Reference) 
 
   member this.Index(n: PNumber) =
     match n.Value with
-    | NaN ->   // see wiki for the why on weird cases
+    | NaN ->
         PrimellList.Empty
-    | Infinity Positive -> 
+    | Infinity _ -> 
         PrimellList.Empty
-    | Infinity Negative ->
-        if this.IsEmpty then PrimellList.Empty
-        else main |> Seq.item 0
     | Rational r ->
         let index = BigRational.ToBigInt r
 
@@ -137,11 +132,11 @@ type PrimellList(sequence: PObject seq, ?length: PNumber, ?refersTo: Reference) 
             match length with
             | Infinite -> 
                 PrimellList.Empty  // index from end of list
-            | _ ->  
-                // at this point, because we're returning a specific object in a sequence,
-                // i believe it's impossible to avoid evaluating a possibly infinite length
+            | _ ->               
                 if this.IsEmpty then PrimellList.Empty
                 else 
+                  // at this point, because we're returning a specific object in a sequence,
+                  // i believe it's impossible to avoid evaluating a possibly infinite length
                   match this.EvaluatedLength() with
                   | Finite x -> 
                       let modulo = (index % x) // i really hate negative modulo, why is this a thing
@@ -152,8 +147,20 @@ type PrimellList(sequence: PObject seq, ?length: PNumber, ?refersTo: Reference) 
           | None -> PrimellList.Empty 
           | Some x -> x
 
+  static member private AllIndexesOf' (pObj: PObject)(searchSeq: PObject seq)(retval: PrimellList)(indexAdjust: int) = 
+    match searchSeq |> Seq.tryFindIndex(fun x -> x.NaNAwareEquals pObj) with
+    | None -> retval
+    | Some n -> PrimellList.AllIndexesOf' pObj (searchSeq |> Seq.skip (n + 1)) (retval.Append (n + indexAdjust |> BigRational |> Rational |> PNumber)) (n + 1)
+
+  member this.AllIndexesOf(pObj: PObject) =
+    PrimellList.AllIndexesOf' pObj main (Seq.empty |> PrimellList) 0
+
   member this.Cons(pObj: PObject) =
-    main |> Seq.insertAt 0 pObj |> PrimellList
+    let newLength = 
+      match length with 
+      | Finite l -> Finite (l + 1I)
+      | _ -> length
+    PrimellList(main |> Seq.insertAt 0 pObj, newLength)
 
   member private this.RaiseAtoms() =
     main |> Seq.map(fun x -> 
@@ -166,24 +173,43 @@ type PrimellList(sequence: PObject seq, ?length: PNumber, ?refersTo: Reference) 
   
   override this.WithReference(ref) = PrimellList(main, length, ?refersTo = Some ref)
 
+  // code copying with NaNAwareEquals and Equals, but my brain keeps breaking trying to merge them
+  override this.NaNAwareEquals pobj =
+    match pobj with
+    | :? PrimellList as l ->
+        match length, l.listLength with
+        | Finite _, Infinite | Infinite, Finite _ -> false
+        | Finite x, Finite y when x <> y -> false
+        | _ ->
+          if l.Length <> this.Length then false  // TODO - just to get it going, but with infinite possible, you can do better
+          else
+            (this, l) ||> Seq.exists2 (fun x y -> x.NaNAwareEquals y |> not) |> not
+    | _ -> false
+
   override this.ToString() =  // TODO - surely there's a cleaner way than the nested concat abomination I came up with
     String.concat "" ["("; String.concat " " (main |> Seq.map(fun obj -> obj.ToString())); ")"]
 
   override this.Equals(other) =
     match other with
     | :? PrimellList as l ->
-        if l.Length <> this.Length then false  // TODO - just to get it going, but with infinite possible, you can do better
-        else
-          (this, l) ||> Seq.exists2 (fun x y -> x.Equals y |> not) |> not
+        match length, l.listLength with
+        | Finite _, Infinite | Infinite, Finite _ -> false
+        | Finite x, Finite y when x <> y -> false
+        | _ ->
+          if l.Length <> this.Length then false  // TODO - just to get it going, but with infinite possible, you can do better
+          else
+            (this, l) ||> Seq.exists2 (fun x y -> x.Equals y |> not) |> not
     | _ -> false
 
-  override this.GetHashCode() =  
+  override this.GetHashCode() = 
+    let arbitrary = 0x456789AB
     match length with
     | Unknown | Infinite ->
-        main |> Seq.truncate 16    // arbitrary, but we definitely don't want to evaluate infinitely here
+        main |> Seq.truncate 42    // arbitrary, but we definitely don't want to evaluate infinitely here
     | Finite n -> 
         main
-    |> Seq.fold (fun hashcode x -> hashcode ^^^ x.GetHashCode()) 0
+    |> Seq.fold (fun hashcode x -> // TODO this could recurse infinitely down
+        hashcode ^^^ x.GetHashCode()) 0
 
 type PList = PrimellList  // abbreviation for sanity
 

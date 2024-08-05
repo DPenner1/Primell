@@ -64,6 +64,7 @@ type OperationLib(control: PrimellProgramControl, external: IExternal) =
     
     member this.BinaryListOperators: IDictionary<string, PList*PList->PObject> = 
       dict ["<::>",  fun (left: PList, right: PList) -> left.AppendAll right
+            "@_",  fun (left: PList, right: PList) -> left.AllIndexesOf right
             "_test_", fun (left: PList, right: PList) -> left.AppendAll right
            ]
  

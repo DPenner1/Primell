@@ -13,6 +13,9 @@ type PrimellObject internal (?refersTo: Reference) =
 
   member val Reference = defaultArg refersTo Void with get
 
+  abstract member NaNAwareEquals: PrimellObject -> bool
+  default this.NaNAwareEquals pobj = this.Equals(pobj)
+
 // references are a way to deal with indexing mutability (and is more of an implementation detail instead of a object within Primell)
 // so if you have a variable x, and index it at index i (x@i), the parser simply generates a reference with values x and i, 
 // figuring assignments out based on that later. References can also reference other references [citation needed]
