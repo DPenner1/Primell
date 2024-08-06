@@ -6,9 +6,10 @@ open Antlr4.Runtime
 exception NonPrimeDectectionException of string
 
 type internal BinaryRHS =  // yes, this was a headache
-  | NonConditonal of PObject
-  | EvaluatedConditional of PObject  
-  | Conditional of PrimellParser.TermSeqContext
+  | NonConditional of PObject
+  | EvaluatedConditional of PObject
+  | PartialConditional of Evaluated: PObject * Deferred: PrimellParser.ConcatRtlTermContext seq  // for the append-in-place syntax
+  | DeferredConditional of PrimellParser.ConcatRtlTermContext seq
 // i think the NonCond and EvCond could be functionally merged, but it helps with understanding the code
 
 type PrimellVisitor(control: PrimellProgramControl) as self = 
@@ -79,21 +80,21 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
     |> PList 
     |> PrimellVisitor.Normalize
 
-  member private this.VisitTermSeqHead(termSeqCtxt: PrimellParser.TermSeqContext) =
-    if termSeqCtxt.concatRtlTerm().Length = 0 then
+  member private this.VisitRtlTermSeqHead(rtlTermSeq: PrimellParser.ConcatRtlTermContext seq) =
+    if Seq.isEmpty rtlTermSeq then
       PList.Empty
     else 
-      match (termSeqCtxt.concatRtlTerm()[0]).CONCAT() with
-      | null -> this.Visit(termSeqCtxt.concatRtlTerm()[0])
-      | _ -> System.NotImplementedException "Conditional + ;head not implemented" |> raise 
+      match (Seq.head rtlTermSeq).CONCAT() with
+      | null -> this.Visit(Seq.head rtlTermSeq)
+      | _ -> PrimellProgrammerProblemException "You done wrong" |> raise
 
-  member private this.VisitTermSeqTail(termSeqCtxt: PrimellParser.TermSeqContext) =
-    if termSeqCtxt.concatRtlTerm().Length = 0 then
+  member private this.VisitRtlTermSeqTail(rtlTermSeq: PrimellParser.ConcatRtlTermContext seq) =
+    if Seq.isEmpty rtlTermSeq then
       PList.Empty
     else 
-      match (termSeqCtxt.concatRtlTerm()[0]).CONCAT() with
-      | null -> this.VisitConcatRtlTermSeq(termSeqCtxt.concatRtlTerm() |> Seq.tail)
-      | _ -> System.NotImplementedException "Conditional + ;head not implemented" |> raise 
+      match (Seq.head rtlTermSeq).CONCAT() with
+      | null -> this.VisitConcatRtlTermSeq(Seq.tail rtlTermSeq)
+      | _ -> PrimellProgrammerProblemException "Shouldn't have done that" |> raise
     
 
   override this.VisitTermSeq context = this.VisitConcatRtlTermSeq(context.concatRtlTerm())
@@ -339,7 +340,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
       | null -> right
       | _ as opContext -> 
           if opContext.baseBinaryOp().conditionalOp() |> isNull then
-            this.ApplyBinaryOperation left (right |> NonConditonal) opContext           
+            this.ApplyBinaryOperation left (right |> NonConditional) opContext           
           else
             System.NotImplementedException "Conditional + assign not implemented" |> raise
 
@@ -355,10 +356,17 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
   
   member private this.VisitConditionalRight (right: BinaryRHS)(leftIsTruth: bool)(useHeadOnTruth: bool) =
     match right, leftIsTruth = useHeadOnTruth with
-    | Conditional ctxt, true -> this.VisitTermSeqHead(ctxt)
-    | Conditional ctxt, false -> this.VisitTermSeqTail(ctxt)
+    | DeferredConditional ctxt, true -> this.VisitRtlTermSeqHead(ctxt)
+    | DeferredConditional ctxt, false -> this.VisitRtlTermSeqTail(ctxt)
     | EvaluatedConditional pobj, true -> operationLib.Head pobj
     | EvaluatedConditional pobj, false -> operationLib.Tail pobj
+    | PartialConditional (pobj, _), true -> operationLib.Head pobj
+    | PartialConditional (pobj, rest), false -> 
+        let start =
+          match operationLib.Tail pobj with
+          | :? PList as l -> l
+          | _ -> Seq.singleton pobj |> PList
+        start.AppendAll (this.VisitConcatRtlTermSeq rest)
     | _ -> PrimellProgrammerProblemException "non-conditional in conditional code" |> raise
 
   member private this.Conditional (left: PObject) (right: BinaryRHS) (condContext: PrimellParser.ConditionalOpContext) =
@@ -386,7 +394,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
 
     let opText = context.baseBinaryOp().GetText()
     match right with
-    | NonConditonal pobj -> 
+    | NonConditional pobj -> 
         let retval = operationLib.ApplyBinaryOperation left pobj opText []
         if opText = "@" then  // index needs special handling for the whole reference-assign
           retval.WithReference(Reference(left, pobj))
@@ -405,18 +413,28 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
         EvaluatedConditional <| this.Visit(atomCtxt)
     
   member private this.DrillDownTermSeqForConditonal(termSeqCtxt: PrimellParser.TermSeqContext) =
-    match (termSeqCtxt.concatRtlTerm()[0]).CONCAT() with  // per grammar always at least one
+    let rtlTermSeq = termSeqCtxt.concatRtlTerm()
+    match (Seq.head rtlTermSeq).CONCAT() with  // per grammar always at least one concatRtlTerm
     | null -> 
         if termSeqCtxt.concatRtlTerm().Length = 1 then // it could be a "fake" atom (redundant nested parentheses)
-          match (termSeqCtxt.concatRtlTerm()[0]).rtlTerm() with
+          match (Seq.head rtlTermSeq).rtlTerm() with
           | :? PrimellParser.PassThroughRtlContext as ptRtlCtxt ->
             match ptRtlCtxt.mulTerm() with
             | :? PrimellParser.PassThroughMulTermContext as ptMulCtxt ->
                 this.EvaluateAtomForConditional <| ptMulCtxt.atomTerm() 
-            | _ -> Conditional <| termSeqCtxt
-          | _ -> Conditional <| termSeqCtxt
-        else Conditional <| termSeqCtxt
-    | _ -> System.NotImplementedException "Conditional with ;head" |> raise
+            | _ -> DeferredConditional <| rtlTermSeq
+          | _ -> DeferredConditional <| rtlTermSeq
+        else DeferredConditional <| rtlTermSeq
+    | _ -> 
+        // note we're not actually evaluating the whole sequence, Seqs are lazy
+        let indexedResults =  // basically evaluate ;CONCAT terms until they stop being ;CONCAT or stop being empty
+          termSeqCtxt.concatRtlTerm() 
+          |> Seq.takeWhile(fun x -> x.CONCAT() |> isNull |> not) 
+          |> Seq.map(fun x -> this.Visit(x)) 
+          |> Seq.indexed  
+        match indexedResults |> Seq.tryFind(fun x -> PList.Empty.Equals x |> not) with
+        | None -> DeferredConditional (rtlTermSeq |> Seq.skip (Seq.length indexedResults)) // all CONCAT terms evaluated empty, skip them
+        | Some result -> PartialConditional (snd result, rtlTermSeq |> Seq.skip((fst result) + 1))
 
   
   member private this.GetLeftRightBinaryOperands (leftContext: ParserRuleContext)(rightContext: PrimellParser.BinaryOpWithRSContext) =
@@ -444,33 +462,45 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
     let firstObj = 
       if isRtl then 
         this.VisitRhs rightContext
-      else NonConditonal <| this.Visit(leftContext)
+      else NonConditional <| this.Visit(leftContext)
 
     let secondObj =
       if isRtl then 
-        NonConditonal <| this.Visit(leftContext)
+        NonConditional <| this.Visit(leftContext)
       else 
         this.VisitRhs rightContext
 
     if isRtl then 
       match secondObj with
-      | NonConditonal pobj -> pobj
+      | NonConditional pobj -> pobj
       | _ -> PrimellProgrammerProblemException "not possible" |> raise
       , firstObj
     else 
       match firstObj with
-      | NonConditonal pobj -> pobj
+      | NonConditional pobj -> pobj
       | _ -> PrimellProgrammerProblemException "not possible" |> raise
       , secondObj
 
   member private this.VisitRhs(rightContext: PrimellParser.BinaryOpWithRSContext) =
     let isConditional = rightContext.binaryOp().baseBinaryOp().conditionalOp() |> isNull |> not
+    let ignoreConditional = 
+      isConditional 
+      && rightContext.L_BRACK() |> isNull |> not 
+      &&  rightContext.termSeq().concatRtlTerm() |> Seq.exists(fun x -> x.CONCAT() |> isNull |> not)
 
-    match rightContext.atomTerm(), isConditional with
-    | null, true -> this.DrillDownTermSeqForConditonal <| rightContext.termSeq()
-    | null, false -> NonConditonal <| this.Visit(rightContext.termSeq())
-    | _ as aCtxt, true -> this.EvaluateAtomForConditional <| aCtxt
-    | _ as aCtxt, false -> NonConditonal <| this.Visit(aCtxt)
+    let result = 
+      match rightContext.atomTerm(), isConditional && not ignoreConditional with
+      | null, true -> this.DrillDownTermSeqForConditonal <| rightContext.termSeq()
+      | null, false -> NonConditional <| this.Visit(rightContext.termSeq())
+      | _ as aCtxt, true -> this.EvaluateAtomForConditional <| aCtxt
+      | _ as aCtxt, false -> NonConditional <| this.Visit(aCtxt)
+    
+    // a bit hacky to ignore the conditional then make it conditional... this is mostly so its cleanly tracked
+    // what's really conditional and not, even though functionally, i don't think there's actually a difference
+    // between an evaluated conditional and a non-conditional
+    match result, ignoreConditional with   
+    | NonConditional pobj, true -> EvaluatedConditional pobj
+    | _ -> result
 
   member private this.ApplyForEachRight(left: PObject)(right: BinaryRHS)(boCtxt: PrimellParser.BinaryOpContext) =
     
@@ -478,17 +508,19 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
     // it sort of makes sense because with the for-each-right, theres two layers of deferred evals possible
     // but there are probably more efficient ways of doing it
     match right with
-    | NonConditonal pobj ->
+    | NonConditional pobj ->
         match pobj with
         | :? PList as l ->
-            l |> Seq.map(fun x -> this.ApplyBinaryOperation left (NonConditonal x) boCtxt) |> PList :> PObject
-        | _ -> this.ApplyBinaryOperation left (NonConditonal pobj) boCtxt
+            l |> Seq.map(fun x -> this.ApplyBinaryOperation left (NonConditional x) boCtxt) |> PList :> PObject
+        | _ -> this.ApplyBinaryOperation left (NonConditional pobj) boCtxt
     | EvaluatedConditional pobj ->
         match pobj with
         | :? PList as l ->
             l |> Seq.map(fun x -> this.ApplyBinaryOperation left (EvaluatedConditional x) boCtxt) |> PList :> PObject
         | _ -> this.ApplyBinaryOperation left (EvaluatedConditional pobj) boCtxt
-    | Conditional tsCtxt ->
+    | PartialConditional _ ->
+        PrimellProgrammerProblemException "partial conditional not allowed in for-each right" |> raise
+    | DeferredConditional tsCtxt ->
         System.NotImplementedException "Conditional in right-handed foreach planned for after first-class operators" |> raise
         // Actually here, deferred eval from first-class operators implementation should work fine, as we need to
         // defer the whole list without regards to head/tail (the individual sub items are the head/tail ones)

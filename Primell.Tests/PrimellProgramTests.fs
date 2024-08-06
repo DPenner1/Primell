@@ -129,6 +129,8 @@ let ``Test Conditional``() =
   TestProgram("2+2 ?(2 3 5)", PrimellConfiguration.PrimellDefault, "3 5")
   TestProgram("2+2 ?~(2 3 5)", PrimellConfiguration.PrimellDefault, "2")
 
+  //TODO: really need a test case for conditional + ;append-all, but as I write this, I've decided that's future me's problem
+
 [<Fact>]
 let ``Test Conditional Assign``() =
   TestProgram("2?((, = 3)(, = 5))\n,", PrimellConfiguration.PrimellDefault, "3")
