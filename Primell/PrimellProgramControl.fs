@@ -9,9 +9,9 @@ type LineRecord =
     Output: string  // tracking this has so far been purely for test verification, nothing internal to Primell
   }
 
-type PrimellProgramControl(settings: PrimellConfiguration, lines: string seq) =
+type PrimellProgramControl(settings: PrimellConfiguration, lines: string seq, ?variables: Dictionary<string, PObject>) =
 
-  member val Variables = new Dictionary<string, PObject>() with get
+  member val Variables = defaultArg variables (Dictionary<string, PObject>()) with get  
   member val Settings = settings with get
 
   // TODO - can you get rid of this mutable?

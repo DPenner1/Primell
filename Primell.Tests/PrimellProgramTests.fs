@@ -97,6 +97,7 @@ let ``Test Assign``() =
 
 [<Fact>]
 let ``Test Assign + Op``()  =
+  TestProgram(", =+ 3\n,", PrimellConfiguration.PrimellDefault, "3")  // this one currently fails due to list extension not being implemented
   TestProgram(", = 2\n, =+ 3\n,", PrimellConfiguration.PrimellDefault, "5")
 
 [<Fact>]
@@ -120,6 +121,7 @@ let ``Test Branch``() =
   TestProgram(", + 5\n, = 2\n2!\\", PrimellConfiguration.PrimellDefault, "()\n7")
   TestProgram(", + 5\n(, =$ 2/2)!\\", PrimellConfiguration.PrimellDefault, "()\n6")
   TestProgram(", + 5\n(, =$ 2-2)!|", PrimellConfiguration.PrimellDefault, "()\n5")
+  TestProgram(",=2\n, =+ 5\n, =+ 7\n(2/2 2)!\\", PrimellConfiguration.PrimellDefault, "21 26")
 
 
 [<Fact>]

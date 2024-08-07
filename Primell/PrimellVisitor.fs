@@ -36,8 +36,18 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
             | Backward -> control.CurrentLine - intArg
             | Absolute -> intArg
 
-          let parser = PrimellVisitor.GetParser control.LineResults[lineIndex].Text
-          PrimellVisitor(control).VisitLine(parser.line())
+          if lineIndex >= control.LineResults.Length then 
+            PList.Empty
+          else
+            let effectiveLine = 
+              if lineIndex >= 0 then lineIndex
+              elif lineIndex % control.LineResults.Length = 0 then 0
+              else lineIndex % control.LineResults.Length + control.LineResults.Length
+
+            let newControl = PrimellProgramControl(control.Settings, control.LineResults |> Seq.map(fun x -> x.Text), control.Variables)
+            newControl.CurrentLine <- effectiveLine
+            let parser = PrimellVisitor.GetParser newControl.LineResults[effectiveLine].Text
+            PrimellVisitor(newControl).VisitLine(parser.line())
 
 
   static member GetParser (line: string) =

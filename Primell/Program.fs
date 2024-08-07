@@ -2,7 +2,7 @@
 
 let runner = PrimellRunner()
 
-//let control = runner.Run ", + 5\n, = 2\n2~!\\" PrimellConfiguration.PrimellDefault
+//let control = runner.Run ",=2\n, =+ 5\n, =+ 7\n," PrimellConfiguration.PrimellDefault
 
 runner.InteractiveMode()
 
