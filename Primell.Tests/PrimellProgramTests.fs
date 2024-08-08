@@ -121,6 +121,7 @@ let ``Test Branch``() =
   TestProgram(", + 5\n, = 2\n2!\\", PrimellConfiguration.PrimellDefault, "()\n7")
   TestProgram(", + 5\n(, =$ 2/2)!\\", PrimellConfiguration.PrimellDefault, "()\n6")
   TestProgram(", + 5\n(, =$ 2-2)!|", PrimellConfiguration.PrimellDefault, "()\n5")
+  TestProgram(", = 2\n, =+ 5\n2/2 !\\", PrimellConfiguration.PrimellDefault, "12")
   TestProgram(",=2\n, =+ 5\n, =+ 7\n(2/2 2)!\\", PrimellConfiguration.PrimellDefault, "21 26")
 
 
