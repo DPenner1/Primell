@@ -22,8 +22,8 @@ type OperationLib(control: PrimellProgramControl, external: IExternal) =
     // the test entries are for test cases so I don't inadvertently break these plans while working on other things
     
     member this.NullaryOperators: IDictionary<string, unit->PObject> =
-      dict [":\"", fun () -> this.GetStringInput()
-            ":,", fun () -> this.GetCsvInput()
+      dict ["<\"", fun () -> this.GetStringInput()
+            "<,", fun () -> this.GetCsvInput()
            ]
 
     member this.UnaryNumericOperators: IDictionary<string, PNumber->PObject> = 
@@ -42,8 +42,8 @@ type OperationLib(control: PrimellProgramControl, external: IExternal) =
             "_>", fun l -> l.Tail()        
             "_~", fun l -> l.Reverse()
             "__", fun l -> l.Flatten()
-            "_:", fun l -> this.GetCodeInput(l)
-            ":>\"", fun l -> this.OutputString(l)
+            ">_", fun l -> this.OutputCsv(l)
+            ">\"", fun l -> this.OutputString(l)
             "_test", fun l -> l.Reverse()
            ]
 
@@ -193,13 +193,13 @@ type OperationLib(control: PrimellProgramControl, external: IExternal) =
             | _ as v -> not v.IsZero
       | _ -> PrimellProgrammerProblemException("Not possible") |> raise
 
-    member this.GetCodeInput(parameters: PList): PObject =
-      System.NotImplementedException() |> raise
-
     member this.GetStringInput(): PObject =
       System.NotImplementedException() |> raise
 
     member this.GetCsvInput(): PObject =
+      System.NotImplementedException() |> raise
+
+    member this.OutputCsv(l: PList) =
       System.NotImplementedException() |> raise
 
     member private this.OutputString'(l: PList) = 
