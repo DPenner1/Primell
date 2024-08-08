@@ -5,7 +5,7 @@ open Antlr4.Runtime
 
 exception NonPrimeDectectionException of string
 
-type internal BinaryRHS =  // yes, this was a headache
+type private BinaryRHS =  // yes, this was a headache
   | NonConditional of PObject
   | EvaluatedConditional of PObject
   | PartialConditional of Evaluated: PObject * Deferred: PrimellParser.ConcatRtlTermContext seq  // for the append-in-place syntax
@@ -44,11 +44,15 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
               elif lineIndex % control.LineResults.Length = 0 then 0
               else lineIndex % control.LineResults.Length + control.LineResults.Length
 
-            let newControl = PrimellProgramControl(control.Settings, control.LineResults |> Seq.map(fun x -> x.Text), control.Variables)
-            newControl.CurrentLine <- effectiveLine
-            let parser = PrimellVisitor.GetParser newControl.LineResults[effectiveLine].Text
-            PrimellVisitor(newControl).VisitLine(parser.line())
-
+            let lineRestore = control.CurrentLine
+            control.CurrentLine <- effectiveLine
+            let parser = PrimellVisitor.GetParser control.LineResults[effectiveLine].Text
+            let result = PrimellVisitor(control).VisitLine(parser.line())
+            // restore whatever the branch may have changed
+            control.CurrentLine <- lineRestore
+            control.LastOperationWasAssignment <- false
+            control.LastOperationWasOutput <- false
+            result
 
   static member GetParser (line: string) =
     let stream = AntlrInputStream line

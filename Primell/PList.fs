@@ -9,7 +9,8 @@ type private ListLength =  // it ended up being a bit too annoying interally to 
 // Ok a bit weird to call the seq a list, but conceptually, that's how I view the Primell object, as lists
 type PrimellList(sequence: PObject seq, ?length: PNumber, ?refersTo: Reference) =
   inherit PObject(?refersTo = refersTo)
-  let main = sequence  // star
+  let main = sequence |> Seq.cache  // side effects, some expensive computations (primes)
+  // TODO - eventually you need to figure out how to dispose nested sequences
 
   // mutable for memoization, to move from Unknown to either Infinite/Finite
   let mutable length = 
