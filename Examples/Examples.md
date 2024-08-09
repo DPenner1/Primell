@@ -30,7 +30,7 @@ More difficult in Primell is to find all numbers from 1 to 100. To do so we need
 
 Let's go step by step:
 
- 1. `, = 2*2*5*5`: This is simply initializing the `,` variable to 100. Any *n* can be put here. Note that the $ sign means evaluate everything to the right of it first.
+ 1. `, = 2*2*5*5`: This is simply initializing the `,` variable to 100. Any *n* can be put here.
  2. `, =- 2`: Decrement the value of `,` by 2. We do this to avoid an off-by-2 error in step 4, which is common to make in Primell.
  3. `,, = 2/2`: Assign the `,,` variable the value 1. The `^` modifier prevents the entire list from being assigned the value 1. Note that `2/2` is the standard way of writing the number 1 in Primell. 
  4. `(,, =^ (,,_< + 3 - 2 ;,,))_< - , ?~ (2-2!/ ,,_~)`: Generate all numbers 1 to 100.
