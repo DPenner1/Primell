@@ -6,6 +6,7 @@ exception PrimellInvalidSyntaxException of string
 type OperationModifier = 
   | Power
   | Truncate
+  | Unfold
 
 module ParseLib =
 
@@ -37,20 +38,19 @@ module ParseLib =
         BigRational(ParseInteger' settings text 0 0I, 1) 
     result |> Rational |> PNumber
 
-  let rec private ParseOperationModifiers' (opModText: string) (opMods: list<OperationModifier>) =
-    if opModText.Length = 0 then 
-      opMods
-    else
-      let opMod = 
-        match opModText[0] with
-        | '^' -> Power
-        | '`' -> Truncate
-        | _ as c -> PrimellInvalidSyntaxException $"Invalid operation modifier: {c}" |> raise
-
-      ParseOperationModifiers' (opModText.Substring(1)) (opMod::opMods)
-
-
   let ParseOperationModifiers (opModText: string) =
+    let rec ParseOperationModifiers' (opModText: string) (opMods: list<OperationModifier>) =
+      if opModText.Length = 0 then 
+        opMods
+      else
+        let opMod = 
+          match opModText[0] with
+          | '^' -> Power
+          | '`' -> Truncate
+          | ':' -> Unfold
+          | _ as c -> PrimellInvalidSyntaxException $"Invalid operation modifier: {c}" |> raise
+        ParseOperationModifiers' (opModText.Substring(1)) (opMod::opMods)
+
     ParseOperationModifiers' opModText []
 
 

@@ -29,7 +29,8 @@ B_SLASH: '\\' ;
 D_QUOTE: '"' -> skip, pushMode(IN_STR) ; 
 
 OPMOD_POW : '^' ;
-OPMOD_CUT : '`' ;
+OPMOD_TRUNCATE : '`' ;
+OPMOD_UNFOLD : ':' ;
 
 OP_NULLARY : '<_' | '<"' ;
 

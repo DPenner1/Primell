@@ -38,9 +38,9 @@ public partial class PrimellParser : Parser {
 	public const int
 		INFINITY=1, RTL=2, LTR=3, CONCAT=4, ASSIGN=5, L_BRACK=6, R_BRACK=7, L_PAREN=8, 
 		R_PAREN=9, VERT_BAR=10, DOT=11, TAIL=12, PLUS=13, STAR=14, NEGATE=15, 
-		F_SLASH=16, B_SLASH=17, D_QUOTE=18, OPMOD_POW=19, OPMOD_CUT=20, OP_NULLARY=21, 
-		OP_UNARY=22, OP_USER_UNARY=23, OP_BINARY=24, OP_USER_BINARY=25, OP_COND=26, 
-		WS=27, INT_OR_ID=28, COMMENT=29, STRING=30, InStr_D_QUOTE=31;
+		F_SLASH=16, B_SLASH=17, D_QUOTE=18, OPMOD_POW=19, OPMOD_TRUNCATE=20, OPMOD_UNFOLD=21, 
+		OP_NULLARY=22, OP_UNARY=23, OP_USER_UNARY=24, OP_BINARY=25, OP_USER_BINARY=26, 
+		OP_COND=27, WS=28, INT_OR_ID=29, COMMENT=30, STRING=31, InStr_D_QUOTE=32;
 	public const int
 		RULE_line = 0, RULE_termSeq = 1, RULE_concatRtlTerm = 2, RULE_rtlTerm = 3, 
 		RULE_binaryAssign = 4, RULE_mulTerm = 5, RULE_binaryOpWithRS = 6, RULE_unaryOrBinaryOp = 7, 
@@ -62,14 +62,14 @@ public partial class PrimellParser : Parser {
 	private static readonly string[] _LiteralNames = {
 		null, "'\\u221E'", "'$'", "'\\u20AC'", "';'", "'='", "'['", "']'", "'('", 
 		"')'", "'|'", "'.'", "'>'", "'+'", "'*'", "'~'", "'/'", "'\\'", null, 
-		"'^'", "'`'", null, null, null, null, null, "'?'"
+		"'^'", "'`'", "':'", null, null, null, null, null, "'?'"
 	};
 	private static readonly string[] _SymbolicNames = {
 		null, "INFINITY", "RTL", "LTR", "CONCAT", "ASSIGN", "L_BRACK", "R_BRACK", 
 		"L_PAREN", "R_PAREN", "VERT_BAR", "DOT", "TAIL", "PLUS", "STAR", "NEGATE", 
-		"F_SLASH", "B_SLASH", "D_QUOTE", "OPMOD_POW", "OPMOD_CUT", "OP_NULLARY", 
-		"OP_UNARY", "OP_USER_UNARY", "OP_BINARY", "OP_USER_BINARY", "OP_COND", 
-		"WS", "INT_OR_ID", "COMMENT", "STRING", "InStr_D_QUOTE"
+		"F_SLASH", "B_SLASH", "D_QUOTE", "OPMOD_POW", "OPMOD_TRUNCATE", "OPMOD_UNFOLD", 
+		"OP_NULLARY", "OP_UNARY", "OP_USER_UNARY", "OP_BINARY", "OP_USER_BINARY", 
+		"OP_COND", "WS", "INT_OR_ID", "COMMENT", "STRING", "InStr_D_QUOTE"
 	};
 	public static readonly IVocabulary DefaultVocabulary = new Vocabulary(_LiteralNames, _SymbolicNames);
 
@@ -515,7 +515,7 @@ public partial class PrimellParser : Parser {
 			State = 104;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
-			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & 117665792L) != 0)) {
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & 235106304L) != 0)) {
 				{
 				State = 103;
 				binaryOp();
@@ -732,7 +732,7 @@ public partial class PrimellParser : Parser {
 					State = 124;
 					ErrorHandler.Sync(this);
 					_la = TokenStream.LA(1);
-				} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & 130281568L) != 0) );
+				} while ( (((_la) & ~0x3f) == 0 && ((1L << _la) & 260304992L) != 0) );
 				State = 126;
 				Match(R_BRACK);
 				State = 127;
@@ -1508,8 +1508,9 @@ public partial class PrimellParser : Parser {
 	}
 
 	public partial class OpModsContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPMOD_CUT() { return GetToken(PrimellParser.OPMOD_CUT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPMOD_TRUNCATE() { return GetToken(PrimellParser.OPMOD_TRUNCATE, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPMOD_POW() { return GetToken(PrimellParser.OPMOD_POW, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPMOD_UNFOLD() { return GetToken(PrimellParser.OPMOD_UNFOLD, 0); }
 		public OpModsContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -1538,7 +1539,7 @@ public partial class PrimellParser : Parser {
 				{
 				State = 208;
 				_la = TokenStream.LA(1);
-				if ( !(_la==OPMOD_POW || _la==OPMOD_CUT) ) {
+				if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & 3670016L) != 0)) ) {
 				ErrorHandler.RecoverInline(this);
 				}
 				else {
@@ -1562,8 +1563,9 @@ public partial class PrimellParser : Parser {
 	}
 
 	public partial class AssignModsContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPMOD_CUT() { return GetToken(PrimellParser.OPMOD_CUT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPMOD_TRUNCATE() { return GetToken(PrimellParser.OPMOD_TRUNCATE, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPMOD_POW() { return GetToken(PrimellParser.OPMOD_POW, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OPMOD_UNFOLD() { return GetToken(PrimellParser.OPMOD_UNFOLD, 0); }
 		public AssignModsContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -1588,11 +1590,11 @@ public partial class PrimellParser : Parser {
 			State = 212;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
-			if (_la==OPMOD_POW || _la==OPMOD_CUT) {
+			if ((((_la) & ~0x3f) == 0 && ((1L << _la) & 3670016L) != 0)) {
 				{
 				State = 211;
 				_la = TokenStream.LA(1);
-				if ( !(_la==OPMOD_POW || _la==OPMOD_CUT) ) {
+				if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & 3670016L) != 0)) ) {
 				ErrorHandler.RecoverInline(this);
 				}
 				else {
@@ -2151,7 +2153,7 @@ public partial class PrimellParser : Parser {
 	}
 
 	private static int[] _serializedATN = {
-		4,1,31,248,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,7,
+		4,1,32,248,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,7,
 		7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,2,14,7,14,
 		2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,20,7,20,2,21,7,21,
 		2,22,7,22,2,23,7,23,2,24,7,24,2,25,7,25,2,26,7,26,2,27,7,27,2,28,7,28,
@@ -2169,14 +2171,14 @@ public partial class PrimellParser : Parser {
 		1,18,3,18,219,8,18,1,18,1,18,1,18,1,19,1,19,1,19,1,20,1,20,1,20,1,21,1,
 		21,1,22,1,22,1,23,1,23,1,24,1,24,1,25,1,25,1,26,1,26,1,27,1,27,1,28,1,
 		28,1,29,1,29,1,29,0,1,10,30,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,
-		32,34,36,38,40,42,44,46,48,50,52,54,56,58,0,1,1,0,19,20,257,0,60,1,0,0,
+		32,34,36,38,40,42,44,46,48,50,52,54,56,58,0,1,1,0,19,21,257,0,60,1,0,0,
 		0,2,67,1,0,0,0,4,72,1,0,0,0,6,99,1,0,0,0,8,101,1,0,0,0,10,129,1,0,0,0,
 		12,152,1,0,0,0,14,156,1,0,0,0,16,170,1,0,0,0,18,172,1,0,0,0,20,180,1,0,
 		0,0,22,185,1,0,0,0,24,195,1,0,0,0,26,197,1,0,0,0,28,206,1,0,0,0,30,209,
 		1,0,0,0,32,212,1,0,0,0,34,214,1,0,0,0,36,218,1,0,0,0,38,223,1,0,0,0,40,
 		226,1,0,0,0,42,229,1,0,0,0,44,231,1,0,0,0,46,233,1,0,0,0,48,235,1,0,0,
 		0,50,237,1,0,0,0,52,239,1,0,0,0,54,241,1,0,0,0,56,243,1,0,0,0,58,245,1,
-		0,0,0,60,62,3,2,1,0,61,63,5,29,0,0,62,61,1,0,0,0,62,63,1,0,0,0,63,64,1,
+		0,0,0,60,62,3,2,1,0,61,63,5,30,0,0,62,61,1,0,0,0,62,63,1,0,0,0,63,64,1,
 		0,0,0,64,65,5,0,0,1,65,1,1,0,0,0,66,68,3,4,2,0,67,66,1,0,0,0,68,69,1,0,
 		0,0,69,67,1,0,0,0,69,70,1,0,0,0,70,3,1,0,0,0,71,73,5,4,0,0,72,71,1,0,0,
 		0,72,73,1,0,0,0,73,74,1,0,0,0,74,75,3,6,3,0,75,5,1,0,0,0,76,100,3,10,5,
@@ -2204,17 +2206,17 @@ public partial class PrimellParser : Parser {
 		1,0,0,0,157,15,1,0,0,0,158,171,3,18,9,0,159,171,5,1,0,0,160,171,3,34,17,
 		0,161,162,5,8,0,0,162,171,5,9,0,0,163,164,5,6,0,0,164,171,5,7,0,0,165,
 		166,5,8,0,0,166,167,3,2,1,0,167,168,5,9,0,0,168,171,1,0,0,0,169,171,5,
-		30,0,0,170,158,1,0,0,0,170,159,1,0,0,0,170,160,1,0,0,0,170,161,1,0,0,0,
+		31,0,0,170,158,1,0,0,0,170,159,1,0,0,0,170,160,1,0,0,0,170,161,1,0,0,0,
 		170,163,1,0,0,0,170,165,1,0,0,0,170,169,1,0,0,0,171,17,1,0,0,0,172,177,
-		5,28,0,0,173,174,5,11,0,0,174,176,5,28,0,0,175,173,1,0,0,0,176,179,1,0,
+		5,29,0,0,173,174,5,11,0,0,174,176,5,29,0,0,175,173,1,0,0,0,176,179,1,0,
 		0,0,177,175,1,0,0,0,177,178,1,0,0,0,178,19,1,0,0,0,179,177,1,0,0,0,180,
-		181,5,21,0,0,181,21,1,0,0,0,182,186,5,22,0,0,183,186,5,23,0,0,184,186,
+		181,5,22,0,0,181,21,1,0,0,0,182,186,5,23,0,0,183,186,5,24,0,0,184,186,
 		3,56,28,0,185,182,1,0,0,0,185,183,1,0,0,0,185,184,1,0,0,0,186,23,1,0,0,
-		0,187,196,5,24,0,0,188,196,5,25,0,0,189,196,3,52,26,0,190,196,3,48,24,
+		0,187,196,5,25,0,0,188,196,5,26,0,0,189,196,3,52,26,0,190,196,3,48,24,
 		0,191,196,3,44,22,0,192,196,3,46,23,0,193,196,3,42,21,0,194,196,3,26,13,
 		0,195,187,1,0,0,0,195,188,1,0,0,0,195,189,1,0,0,0,195,190,1,0,0,0,195,
 		191,1,0,0,0,195,192,1,0,0,0,195,193,1,0,0,0,195,194,1,0,0,0,196,25,1,0,
-		0,0,197,199,5,26,0,0,198,200,3,28,14,0,199,198,1,0,0,0,199,200,1,0,0,0,
+		0,0,197,199,5,27,0,0,198,200,3,28,14,0,199,198,1,0,0,0,199,200,1,0,0,0,
 		200,202,1,0,0,0,201,203,3,58,29,0,202,201,1,0,0,0,202,203,1,0,0,0,203,
 		27,1,0,0,0,204,207,3,50,25,0,205,207,3,54,27,0,206,204,1,0,0,0,206,205,
 		1,0,0,0,207,29,1,0,0,0,208,210,7,0,0,0,209,208,1,0,0,0,209,210,1,0,0,0,

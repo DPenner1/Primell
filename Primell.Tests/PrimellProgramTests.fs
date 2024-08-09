@@ -85,6 +85,14 @@ let ``Test OpMod Truncate``() =
   TestProgram("(2 3 5)-(2 2 2 2)", PrimellConfiguration.PrimellDefault, "0 1 3 2")
   TestProgram("(2 3 5 7)-(2 2 2)", PrimellConfiguration.PrimellDefault, "0 1 3 7")
 
+
+[<Fact>]
+let ``Test OpMod Unold``() =
+// these will generate infinite sequences, so we'll need to combine with index to select a particular value
+  TestProgram("3 +: 5 @ 3", PrimellConfiguration.PrimellDefault, "18")
+  TestProgram("(2 3 5 7 11 13 17)_>: @ 3", PrimellConfiguration.PrimellDefault, "7 11 13 17")
+
+
 [<Fact>]
 let ``Test Assign``() =
   TestProgram(", = 3\n,", PrimellConfiguration.PrimellDefault, "3")

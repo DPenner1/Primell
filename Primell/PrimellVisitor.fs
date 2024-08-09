@@ -145,7 +145,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
     ) |> PList :> PObject
   
   override this.VisitNullaryOp context =
-    operationLib.ApplyNullaryOperation (context.baseNullaryOp().GetText()) []
+    operationLib.ApplyNullaryOperation (context.baseNullaryOp().GetText()) (ParseLib.ParseOperationModifiers (context.opMods().GetText()))
           
   member private this.ApplyUnaryOperation (pobj: PObject) (context: PrimellParser.UnaryOpContext) =
     let opText = context.baseUnaryOp().GetText()
@@ -338,10 +338,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
     // Note: in case you get the bright idea to stick the control.LastOperationWasAssignment here again, lazy eval
   
   override this.VisitStdAssign context =
-    let opMods = 
-      match context.binaryAssign().assignMods() with
-      | null -> []
-      | _ as x -> ParseLib.ParseOperationModifiers (x.GetText())
+    let assignMods = ParseLib.ParseOperationModifiers (context.binaryAssign().assignMods().GetText())
 
     let right = // must execute right side first
       match context.rtlTerm() with
@@ -359,7 +356,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
             System.NotImplementedException "Conditional + assign not implemented" |> raise
 
     control.LastOperationWasAssignment <- true
-    this.PerformAssign(left, interimResult, opMods)
+    this.PerformAssign(left, interimResult, assignMods)
 
   override this.VisitForEachLeftAssign context = 
     System.NotImplementedException "Assign foreach not implemented" |> raise

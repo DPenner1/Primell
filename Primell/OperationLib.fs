@@ -157,34 +157,50 @@ type OperationLib(control: PrimellProgramControl, external: IExternal) =
     member this.ApplyNullaryOperation (opText: string) opMods =
       control.LastOperationWasAssignment <- false
       control.LastOperationWasOutput <- false
-      if this.NullaryOperators.ContainsKey opText then
-        this.NullaryOperators[opText]()
+
+      if (opMods |> List.contains Unfold) then
+        let opMods' = opMods |> List.where(fun x -> x <> Unfold)
+        Seq.initInfinite(fun _ -> this.ApplyNullaryOperation opText opMods') |> PList :> PObject
       else
-        PrimellProgrammerProblemException "Unrecognized operator" |> raise
+        if this.NullaryOperators.ContainsKey opText then
+          this.NullaryOperators[opText]()
+        else
+          PrimellProgrammerProblemException "Unrecognized operator" |> raise
 
     member this.ApplyUnaryOperation (pobj: PObject) (opText: string) opMods : PObject =
       control.LastOperationWasAssignment <- false
       control.LastOperationWasOutput <- false
-      if this.UnaryNumericOperators.ContainsKey opText then
-        this.ApplyUnaryNumericOperation pobj (this.UnaryNumericOperators[opText]) opMods
-      elif this.UnaryListOperators.ContainsKey opText then
-        this.ApplyUnaryListOperation pobj (this.UnaryListOperators[opText]) opMods
+
+      if (opMods |> List.contains Unfold) then
+        let opMods' = opMods |> List.where(fun x -> x <> Unfold)
+        pobj |> Seq.unfold(fun x -> Some (x, this.ApplyUnaryOperation x opText opMods')) |> PList :> PObject
       else
-        PrimellProgrammerProblemException "Unrecognized operator" |> raise
+        if this.UnaryNumericOperators.ContainsKey opText then
+          this.ApplyUnaryNumericOperation pobj (this.UnaryNumericOperators[opText]) opMods
+        elif this.UnaryListOperators.ContainsKey opText then
+          this.ApplyUnaryListOperation pobj (this.UnaryListOperators[opText]) opMods
+        else
+          PrimellProgrammerProblemException "Unrecognized operator" |> raise
 
     member this.ApplyBinaryOperation (left: PObject) (right: PObject) (opText: string) opMods : PObject =
       control.LastOperationWasAssignment <- false
       control.LastOperationWasOutput <- false
-      if this.BinaryListOperators.ContainsKey opText then
-        this.ApplyBinaryListOperation left right (this.BinaryListOperators[opText]) opMods
-      elif this.BinaryNumericOperators.ContainsKey opText then
-        this.ApplyBinaryNumericOperation left right (this.BinaryNumericOperators[opText]) opMods
-      elif this.ListNumericOperators.ContainsKey opText then
-        this.ApplyListNumericOperation left right (this.ListNumericOperators[opText]) opMods
-      elif this.NumericListOperators.ContainsKey opText then
-        this.ApplyNumericListOperation left right (this.NumericListOperators[opText]) opMods
+
+      if (opMods |> List.contains Unfold) then
+        let opMods' = opMods |> List.where(fun x -> x <> Unfold)
+        left |> Seq.unfold(fun x -> Some (x, this.ApplyBinaryOperation x right opText opMods')) |> PList :> PObject
       else
-        PrimellProgrammerProblemException "Unrecognized operator" |> raise
+        if this.BinaryListOperators.ContainsKey opText then
+          this.ApplyBinaryListOperation left right (this.BinaryListOperators[opText]) opMods
+        elif this.BinaryNumericOperators.ContainsKey opText then
+          this.ApplyBinaryNumericOperation left right (this.BinaryNumericOperators[opText]) opMods
+        elif this.ListNumericOperators.ContainsKey opText then
+          this.ApplyListNumericOperation left right (this.ListNumericOperators[opText]) opMods
+        elif this.NumericListOperators.ContainsKey opText then
+          this.ApplyNumericListOperation left right (this.NumericListOperators[opText]) opMods
+        else
+          PrimellProgrammerProblemException "Unrecognized operator" |> raise
+
 
     member this.IsTruth(pobj: PObject, primesAreTruth: bool, requireAllTruth: bool) =
       match pobj with

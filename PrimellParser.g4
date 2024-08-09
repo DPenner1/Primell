@@ -66,9 +66,9 @@ conditionalOp : OP_COND condLoop? cond_mod_neg? ;
 
 condLoop : cond_loop_while | cond_loop_do_while ;
 
-opMods : (OPMOD_CUT | OPMOD_POW)? ;
+opMods : (OPMOD_TRUNCATE | OPMOD_POW | OPMOD_UNFOLD)? ;
 
-assignMods : (OPMOD_CUT | OPMOD_POW)? ;
+assignMods : (OPMOD_TRUNCATE | OPMOD_POW | OPMOD_UNFOLD)? ;
 
 nullaryOp : baseNullaryOp opMods ;
 
