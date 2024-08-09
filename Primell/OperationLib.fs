@@ -23,7 +23,7 @@ type OperationLib(control: PrimellProgramControl, external: IExternal) =
     
     member this.NullaryOperators: IDictionary<string, unit->PObject> =
       dict ["<\"", fun () -> this.GetStringInput()
-            "<,", fun () -> this.GetCsvInput()
+            "<_", fun () -> this.GetListInput()
            ]
 
     member this.UnaryNumericOperators: IDictionary<string, PNumber->PObject> = 
@@ -42,7 +42,7 @@ type OperationLib(control: PrimellProgramControl, external: IExternal) =
             "_>", fun l -> l.Tail()        
             "_~", fun l -> l.Reverse()
             "__", fun l -> l.Flatten()
-            ">_", fun l -> this.OutputCsv(l)
+            ">_", fun l -> this.OutputList(l)
             ">\"", fun l -> this.OutputString(l)
             "_test", fun l -> l.Reverse()
            ]
@@ -102,9 +102,20 @@ type OperationLib(control: PrimellProgramControl, external: IExternal) =
         | (:? PList as l), (:? PNumber as n) -> 
             l |> Seq.map(fun x -> this.ApplyBinaryNumericOperation x n operator opMods) |> PList :> PObject
         | (:? PList as l1), (:? PList as l2) -> 
-            (l1, l2) ||> Seq.map2 (fun x y -> this.ApplyBinaryNumericOperation x y operator opMods) |> PList :> PObject
-            // TODO - F# truncates to the shortest list, but Primell's default is to virtually extend the shorter list with Emptys
-            // Interesting solution provided here that could be adapted: https://stackoverflow.com/a/2840062/1607043
+            if (opMods |> List.contains Truncate) then            
+              (l1, l2) ||> Seq.map2 (fun x y -> this.ApplyBinaryNumericOperation x y operator opMods) |> PList :> PObject
+            else   // Adapted from: https://stackoverflow.com/a/2840062/1607043
+              let extL1 = Seq.append (l1 |> Seq.map (fun x -> Some x)) (Seq.initInfinite (fun _ -> None))
+              let extL2 = Seq.append (l2 |> Seq.map (fun x -> Some x)) (Seq.initInfinite (fun _ -> None))
+              Seq.zip extL1 extL2
+              |> Seq.takeWhile (fun (x, y) -> Option.isSome x || Option.isSome y)
+              |> Seq.map ( function
+                  | (Some x, Some y) -> this.ApplyBinaryNumericOperation x y operator opMods
+                  | (Some x, None  ) -> x
+                  | (None  , Some y) -> y
+                  | _ -> PrimellProgrammerProblemException("Not possible") |> raise)
+              |> PList :> PObject
+            
         | _ -> PrimellProgrammerProblemException("Not possible") |> raise
 
     member private this.ApplyBinaryListOperation (left: PObject) (right: PObject) operator opMods : PObject =
@@ -196,10 +207,10 @@ type OperationLib(control: PrimellProgramControl, external: IExternal) =
     member this.GetStringInput(): PObject =
       System.NotImplementedException() |> raise
 
-    member this.GetCsvInput(): PObject =
+    member this.GetListInput(): PObject =
       System.NotImplementedException() |> raise
 
-    member this.OutputCsv(l: PList) =
+    member this.OutputList(l: PList) =
       System.NotImplementedException() |> raise
 
     member private this.OutputString'(l: PList) = 

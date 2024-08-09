@@ -77,6 +77,15 @@ let ``Test Index``() =
 
 
 [<Fact>]
+let ``Test OpMod Truncate``() =
+  TestProgram("(2 3 5)-`(2 2 2 2)", PrimellConfiguration.PrimellDefault, "0 1 3")
+  TestProgram("(2 3 5 7)-`(2 2 2)", PrimellConfiguration.PrimellDefault, "0 1 3")
+  
+  // non truncated versions
+  TestProgram("(2 3 5)-(2 2 2 2)", PrimellConfiguration.PrimellDefault, "0 1 3 2")
+  TestProgram("(2 3 5 7)-(2 2 2)", PrimellConfiguration.PrimellDefault, "0 1 3 7")
+
+[<Fact>]
 let ``Test Assign``() =
   TestProgram(", = 3\n,", PrimellConfiguration.PrimellDefault, "3")
   TestProgram(", = 3\n, = 5\n,", PrimellConfiguration.PrimellDefault, "5")

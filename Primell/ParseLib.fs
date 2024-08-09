@@ -5,7 +5,7 @@ exception PrimellInvalidSyntaxException of string
 // TODO - this is probably better as an enum (if that exists in F#)
 type OperationModifier = 
   | Power
-  | Cut
+  | Truncate
 
 module ParseLib =
 
@@ -44,7 +44,7 @@ module ParseLib =
       let opMod = 
         match opModText[0] with
         | '^' -> Power
-        | '`' -> Cut
+        | '`' -> Truncate
         | _ as c -> PrimellInvalidSyntaxException $"Invalid operation modifier: {c}" |> raise
 
       ParseOperationModifiers' (opModText.Substring(1)) (opMod::opMods)

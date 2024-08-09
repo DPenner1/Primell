@@ -409,7 +409,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
     let opText = context.baseBinaryOp().GetText()
     match right with
     | NonConditional pobj -> 
-        let retval = operationLib.ApplyBinaryOperation left pobj opText []
+        let retval = operationLib.ApplyBinaryOperation left pobj opText (ParseLib.ParseOperationModifiers (context.opMods().GetText()))
         if opText = "@" then  // index needs special handling for the whole reference-assign
           retval.WithReference(Reference(left, pobj))
         else 
