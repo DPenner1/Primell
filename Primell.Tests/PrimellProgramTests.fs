@@ -87,7 +87,7 @@ let ``Test OpMod Truncate``() =
 
 
 [<Fact>]
-let ``Test OpMod Unold``() =
+let ``Test OpMod Unfold``() =
 // these will generate infinite sequences, so we'll need to combine with index to select a particular value
   TestProgram("3 +: 5 @ 3", PrimellConfiguration.PrimellDefault, "18")
   TestProgram("(2 3 5 7 11 13 17)_>: @ 3", PrimellConfiguration.PrimellDefault, "7 11 13 17")
