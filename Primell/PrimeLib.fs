@@ -105,7 +105,7 @@ module PrimeLib =
   let PrimeFactors (n: bigint) = 
     if n.Sign = -1 then  // i guess since bigint allows negative we'll handle it here
       PrimeFactors' -n (Seq.singleton -1I)
-    elif n.IsZero then // would trigger infinite recursion (1 is handled correctly though)
-      Seq.empty
+    elif n.IsZero then
+      2I |> Seq.unfold(fun x -> Some (x, NextPrime x))  // all primes divide zero
     else
       PrimeFactors' n (Seq.empty)
