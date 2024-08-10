@@ -121,7 +121,7 @@ Input not starting with `?` are taken to be code and executed immediately on the
 
 Don't look at it. It's painful. If you choose not to heed that warning, read on. Though I guess that was implicit.
 
-- Solution is .NET 8, with main code in F# and ANTLR generated C#.
+- Solution is .NET 8, with main code in F# and [ANTLR](https://www.antlr.org/) generated C#.
 - This was originally coded around 2017 in a C# solution. Seven years later, I came back to it and ported it to F#, mainly for better infinite sequence support and to bring Primell in a more functional direction (though the assignment function in Primell proved far more challenging than anticipated). F# was new to me, I selected it over other functional languages so I still had familiar territory with .NET and ANTLR's C# target.
   - For the most part I was able to remove mutability while porting from C# to F# with exception of memoization and program state. On program state, I think leaving it mutable for Primell's variables better reflects the underlying intent (as Primell uses mutable variables), but I should probably try to make the rest immutable (eg. it keeps track of what the last operation was for purposes of default output)
 - I was speed learning F#, I opted to glaze over access modifiers for the most part, I couldn't usually remember what the default access modifier was for a given context. Partially for that reason, I stuck to C# naming and casing conventions, but also I wasn't initially sure if the entire implementation would be F# or just the data structures. 
