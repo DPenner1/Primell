@@ -28,7 +28,7 @@ type OperationLib(control: PrimellProgramControl, external: IExternal) =
 
     member this.UnaryNumericOperators: IDictionary<string, PNumber->PObject> = 
       dict ["~",   fun n -> ExtendedBigRational.(~-) n.Value |> PNumber :> PObject
-            "#/",  fun n -> ExtendedBigRational.Reciprocal n.Value |> PNumber :> PObject
+            "*~",  fun n -> ExtendedBigRational.Reciprocal n.Value |> PNumber :> PObject
             "/*",  fun n -> PPrimeLib.PrimeFactorization n
             "++",  fun n -> if control.Settings.UsePrimeOperators then PPrimeLib.NextPrime n else n.Value + ExtendedBigRational.One |> PNumber :> PObject
             "--",  fun n -> if control.Settings.UsePrimeOperators then PPrimeLib.PrevPrime n else n.Value - ExtendedBigRational.One |> PNumber :> PObject
@@ -276,6 +276,7 @@ type OperationLib(control: PrimellProgramControl, external: IExternal) =
       control.LastOperationWasOutput <- true
       l   // i guess?  probably makes sense to not modify the object "on the stack"
 
+    // These are needed separately from regular Head/List due to language conditional feature
     member this.Head(pobj: PObject) =
       match pobj with
       | :? PList as l -> l.Head()
