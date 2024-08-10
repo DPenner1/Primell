@@ -252,6 +252,18 @@ public interface IPrimellParserVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitBinaryOp([NotNull] PrimellParser.BinaryOpContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="PrimellParser.concat"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitConcat([NotNull] PrimellParser.ConcatContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="PrimellParser.opmod_fold"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitOpmod_fold([NotNull] PrimellParser.Opmod_foldContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="PrimellParser.op_list_diff"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

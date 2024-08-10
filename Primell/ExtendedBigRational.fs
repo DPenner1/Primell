@@ -119,6 +119,27 @@ type ExtendedBigRational =
 
         static member (/) (left, right) = left * ExtendedBigRational.Reciprocal right
 
+        static member Pow (``base``, exponent) =
+          match ``base``, exponent with
+          | NaN, _ | _, NaN -> NaN
+          | Infinity Positive, Infinity Positive -> Infinity Positive
+          | Infinity Positive, Infinity Negative -> NaN
+          | Infinity Positive, Rational r when r.IsZero -> NaN
+          | Infinity Positive, Rational _ -> Infinity Positive
+          | Infinity Negative, Infinity Positive -> NaN                    // because we can't know the sign
+          | Infinity Negative, Infinity Negative -> NaN
+          | Infinity Negative, Rational r when r.IsZero -> NaN
+          | Infinity Negative, Rational r when r.Denominator.IsEven -> NaN  // even root of negative sign
+          | Infinity Negative, Rational _ -> Infinity Negative
+          | Rational r, Infinity _ when r < -BigRational.One -> NaN // because we can't know the sign
+          | Rational r, Infinity Positive when r < BigRational.One -> ExtendedBigRational.Zero  // r between (-1, 1)
+          | Rational r, Infinity Negative when r < BigRational.One -> Infinity Positive         // r between (-1, 1)
+          | Rational r, Infinity _ when r = BigRational.One -> NaN  // the indeterminate form that you have to think about
+          | Rational _, Infinity Positive -> Infinity Positive          // r > 1
+          | Rational _, Infinity Negative -> ExtendedBigRational.Zero   // r > 1
+          | Rational b, Rational e -> BigRational.Pow(b, e) |> Rational
+
+    
         static member Abs x = 
           match x with
           | NaN -> NaN
@@ -182,13 +203,14 @@ type ExtendedBigRational =
         static member Min (left, right) =
           if left < right then left else right
         
-        // for now, hard coded lower-bound inclusive, upper-bound exclusive
-        static member Range(left, right, ?step): seq<ExtendedBigRational> =
+        static member Range(left, right, ?step, ?leftInclusive, ?rightInclusive): seq<ExtendedBigRational> =
           let step = defaultArg step (if left <= right then ExtendedBigRational.One else ExtendedBigRational.MinusOne)
+          let includeLeft = defaultArg leftInclusive true
+          let includeRight = defaultArg rightInclusive false
 
           // a lot of judgment calls here
           match step with
-          | NaN -> Seq.singleton left
+          | NaN -> if includeLeft then Seq.singleton left else Seq.empty
           | Infinity _ as inf -> System.NotImplementedException "my head hurts" |> raise
           | Rational step' ->
             match left, right with
@@ -197,14 +219,6 @@ type ExtendedBigRational =
             | Infinity _ as inf, _ -> 
                 seq { while true do yield inf }
             | Rational _', Infinity _ -> 
-                Seq.initInfinite(fun i -> left + step * (BigRational(i,1) |> Rational))
+                Seq.initInfinite(fun i -> left + step * ((if includeLeft then i else i + 1) |> BigRational |> Rational))
             | Rational left', Rational right' ->  // Is the cast more functional? In C# i'd go with a covariant (contra?) generic
-                BigRational.Range(left', right', step', true, false) |> Seq.map(fun r -> r |> Rational)
-
-// TODO - if we generate a range from +inf..1 it infinitely returns +inf...
-        //        but if we reverse that range, then we would actually want it to start generating from 1
-        //        so, you'll effectively need to return a "ReversibleRange" object with two possible ranges
-        //        or we leave it to the caller to call both Range left right and Range right left
-        //        also a Length property that doesn't hang on infinite sequences would be good...
-//and ReversibleInfiniteSeq<'T> =
-//  inherit seq<'T>
+                BigRational.Range(left', right', step', includeLeft, includeRight) |> Seq.map(fun r -> r |> Rational)

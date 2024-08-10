@@ -28,6 +28,8 @@ type OperationLib(control: PrimellProgramControl, external: IExternal) =
 
     member this.UnaryNumericOperators: IDictionary<string, PNumber->PObject> = 
       dict ["~",   fun n -> ExtendedBigRational.(~-) n.Value |> PNumber :> PObject
+            "#/",  fun n -> ExtendedBigRational.Reciprocal n.Value |> PNumber :> PObject
+            "/*",  fun n -> PPrimeLib.PrimeFactorization n
             "++",  fun n -> if control.Settings.UsePrimeOperators then PPrimeLib.NextPrime n else n.Value + ExtendedBigRational.One |> PNumber :> PObject
             "--",  fun n -> if control.Settings.UsePrimeOperators then PPrimeLib.PrevPrime n else n.Value - ExtendedBigRational.One |> PNumber :> PObject
             "+-",  fun n -> if control.Settings.UsePrimeOperators then PPrimeLib.NearestPrime n else round n.Value |> PNumber :> PObject
@@ -54,11 +56,17 @@ type OperationLib(control: PrimellProgramControl, external: IExternal) =
             "/",  fun (left, right) -> ExtendedBigRational.( / )(left.Value, right.Value) |> PNumber :> PObject
             ">",  fun (left, right) -> ExtendedBigRational.Max(left.Value, right.Value) |> PNumber :> PObject
             "<",  fun (left, right) -> ExtendedBigRational.Min(left.Value, right.Value) |> PNumber :> PObject
+            "**", fun (left, right) -> ExtendedBigRational.Pow(left.Value, right.Value) |> PNumber :> PObject
             "..", fun (left, right) -> 
                     if control.Settings.UsePrimeOperators then 
                       PPrimeLib.PrimeRange left.Value right.Value :> PObject
                     else 
                       ExtendedBigRational.Range(left.Value, right.Value) |> Seq.map(fun x -> x |> PNumber :> PObject) |> PList :> PObject
+            "...",fun (left, right) -> 
+                    if control.Settings.UsePrimeOperators then 
+                      System.NotImplementedException "inclusive prime range not implemented" |> raise
+                    else 
+                      ExtendedBigRational.Range(left.Value, right.Value, rightInclusive = true) |> Seq.map(fun x -> x |> PNumber :> PObject) |> PList :> PObject
             "#test#", fun (left, right) -> ExtendedBigRational.(-)(left.Value, right.Value) |> PNumber :> PObject // copied subtract 
            ]
     
@@ -200,6 +208,12 @@ type OperationLib(control: PrimellProgramControl, external: IExternal) =
           this.ApplyNumericListOperation left right (this.NumericListOperators[opText]) opMods
         else
           PrimellProgrammerProblemException "Unrecognized operator" |> raise
+
+    member this.ApplyFoldOperation (pobj: PObject) (opText: string) opMods : PObject =
+      match pobj with
+      | :? PList as l ->
+          l |> Seq.reduce(fun x y -> this.ApplyBinaryOperation x y opText opMods)
+      | _ -> pobj
 
 
     member this.IsTruth(pobj: PObject, primesAreTruth: bool, requireAllTruth: bool) =

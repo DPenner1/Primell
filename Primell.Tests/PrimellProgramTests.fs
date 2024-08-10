@@ -94,6 +94,12 @@ let ``Test OpMod Unfold``() =
 
 
 [<Fact>]
+let ``Test OpMod Fold``() =
+  TestProgram("(2 3 5 7)+;", PrimellConfiguration.PrimellDefault, "17")
+  TestProgram("(2 3 5 7)>;", PrimellConfiguration.PrimellDefault, "7")
+
+
+[<Fact>]
 let ``Test Assign``() =
   TestProgram(", = 3\n,", PrimellConfiguration.PrimellDefault, "3")
   TestProgram(", = 3\n, = 5\n,", PrimellConfiguration.PrimellDefault, "5")

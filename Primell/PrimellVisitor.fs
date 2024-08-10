@@ -82,7 +82,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
     (Seq.empty, rtlTermSeq) ||> Seq.fold(fun retval concatRtlTerm ->
       control.LastOperationWasAssignment <- false   // putting this here is either genius or deranged
       control.LastOperationWasOutput <- false      // continued genius / derangement
-      match concatRtlTerm.CONCAT(), this.Visit(concatRtlTerm.rtlTerm()) with
+      match concatRtlTerm.concat(), this.Visit(concatRtlTerm.rtlTerm()) with
       | null, (_ as pobj) ->
           Seq.append retval (Seq.singleton pobj)
       | _, (:? PAtom as a) -> 
@@ -98,7 +98,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
     if Seq.isEmpty rtlTermSeq then
       PList.Empty
     else 
-      match (Seq.head rtlTermSeq).CONCAT() with
+      match (Seq.head rtlTermSeq).concat() with
       | null -> this.Visit(Seq.head rtlTermSeq)
       | _ -> PrimellProgrammerProblemException "You done wrong" |> raise
 
@@ -106,7 +106,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
     if Seq.isEmpty rtlTermSeq then
       PList.Empty
     else 
-      match (Seq.head rtlTermSeq).CONCAT() with
+      match (Seq.head rtlTermSeq).concat() with
       | null -> this.VisitConcatRtlTermSeq(Seq.tail rtlTermSeq)
       | _ -> PrimellProgrammerProblemException "Shouldn't have done that" |> raise
     
@@ -148,10 +148,9 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
     operationLib.ApplyNullaryOperation (context.baseNullaryOp().GetText()) (ParseLib.ParseOperationModifiers (context.opMods().GetText()))
           
   member private this.ApplyUnaryOperation (pobj: PObject) (context: PrimellParser.UnaryOpContext) =
-    let opText = context.baseUnaryOp().GetText()
-    let opMods = ParseLib.ParseOperationModifiers (context.opMods().GetText())
-
-    operationLib.ApplyUnaryOperation pobj opText opMods
+    match context.baseUnaryOp() with
+    | null -> operationLib.ApplyFoldOperation pobj (context.baseBinaryOp().GetText()) [] 
+    | _ as x -> operationLib.ApplyUnaryOperation pobj (x.GetText()) (ParseLib.ParseOperationModifiers (context.opMods().GetText()))
   
   override this.VisitUnaryOperation context =
     let originalValue = this.Visit(context.mulTerm())
@@ -425,7 +424,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
     
   member private this.DrillDownTermSeqForConditonal(termSeqCtxt: PrimellParser.TermSeqContext) =
     let rtlTermSeq = termSeqCtxt.concatRtlTerm()
-    match (Seq.head rtlTermSeq).CONCAT() with  // per grammar always at least one concatRtlTerm
+    match (Seq.head rtlTermSeq).concat() with  // per grammar always at least one concatRtlTerm
     | null -> 
         if termSeqCtxt.concatRtlTerm().Length = 1 then // it could be a "fake" atom (redundant nested parentheses)
           match (Seq.head rtlTermSeq).rtlTerm() with
@@ -438,13 +437,13 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
         else DeferredConditional <| rtlTermSeq
     | _ -> 
         // note we're not actually evaluating the whole sequence, Seqs are lazy
-        let indexedResults =  // basically evaluate ;CONCAT terms until they stop being ;CONCAT or stop being empty
+        let indexedResults =  // basically evaluate ;concat terms until they stop being ;concat or stop being empty
           termSeqCtxt.concatRtlTerm() 
-          |> Seq.takeWhile(fun x -> x.CONCAT() |> isNull |> not) 
+          |> Seq.takeWhile(fun x -> x.concat() |> isNull |> not) 
           |> Seq.map(fun x -> this.Visit(x)) 
           |> Seq.indexed  
         match indexedResults |> Seq.tryFind(fun x -> PList.Empty.Equals x |> not) with
-        | None -> DeferredConditional (rtlTermSeq |> Seq.skip (Seq.length indexedResults)) // all CONCAT terms evaluated empty, skip them
+        | None -> DeferredConditional (rtlTermSeq |> Seq.skip (Seq.length indexedResults)) // all concat terms evaluated empty, skip them
         | Some result -> PartialConditional (snd result, rtlTermSeq |> Seq.skip((fst result) + 1))
 
   
@@ -466,7 +465,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
      2. I anticipate the real difficulty in conditionals is more the selectively evaluating the head or tail part,
           and that would be the case regardless of a better deferred evaluation being available
      3. My first idea for generalized deferred eval is hacky, and I don't want the conditional to be hacky
-     4. After i wrote the above, the ;append (CONCAT) functionality may prove this approach definitely correct
+     4. After i wrote the above, the ;append (concat) functionality may prove this approach definitely correct
   *)
     let isRtl = rightContext.RTL() |> isNull |> not
 
@@ -497,7 +496,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
     let ignoreConditional = 
       isConditional 
       && rightContext.L_BRACK() |> isNull |> not 
-      &&  rightContext.termSeq().concatRtlTerm() |> Seq.exists(fun x -> x.CONCAT() |> isNull |> not)
+      &&  rightContext.termSeq().concatRtlTerm() |> Seq.exists(fun x -> x.concat() |> isNull |> not)
 
     let result = 
       match rightContext.atomTerm(), isConditional && not ignoreConditional with

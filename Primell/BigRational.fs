@@ -31,6 +31,8 @@ type BigRational =
 
   static member Zero = BigRational(0, 1, 1)
 
+  static member One = BigRational(1, 1, 1)
+
   member this.IsInteger = this.Denominator = 1I || this.Denominator = -1I
 
   member this.IsZero = this.Numerator.IsZero
@@ -58,6 +60,13 @@ type BigRational =
   static member ( / ) (left: BigRational, right: BigRational) = left * BigRational.Reciprocal right
 
   static member Abs (r: BigRational) = BigRational(r.Numerator, bigint.Abs r.Denominator, 1)
+
+  static member Pow (``base``: BigRational, exponent: BigRational) = 
+    if ``base``.IsInteger && exponent.IsInteger then
+      bigint.Pow(``base``.Numerator, int exponent.Numerator) |> BigRational
+    else
+      System.NotImplementedException "non-integer Power not implmented, cause it's hard yo" |> raise 
+      
 
   static member Ceiling (r: BigRational) =
     if r.IsInteger then r 

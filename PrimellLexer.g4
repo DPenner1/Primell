@@ -5,7 +5,7 @@ INFINITY : '∞' ;
 RTL : '$' ;
 LTR : '€' ;
 
-CONCAT : ';' ;
+S_COLON : ';' ;
 
 ASSIGN : '=' ;
 
@@ -35,12 +35,12 @@ OPMOD_UNFOLD : ':' ;
 OP_NULLARY : '<_' | '<"' ;
 
 OP_UNARY :  '_:' | '_<' | '_>' | '_*' | '__' | '_?' | '_~' | '_@' | '>"' | '>_'  // list unary
-         | '++' | '--' | '+-' | '`~' | '!|' | '!\\' | '!/' // numeric unary
+         | '++' | '--' | '+-' | '`~' | '!|' | '!\\' | '!/' | '#/' | '/*'  // numeric unary
          ;
 
 OP_USER_UNARY : '_' INT_OR_ID | '#' INT_OR_ID ;
 
-OP_BINARY : '-' |'%' | '**' | '//' | '…' | '..' | '<' | '`&' | '`|'  | '`^' // numeric binary
+OP_BINARY : '-' |'%' | '**' | '//' | '…' | '..' | '...' | '<' | '`&' | '`|'  | '`^' // numeric binary
           | '<::>' | '*?' | '*?~' | '&' | '@_'     // list binary
           | '@' | '::>'// list-numeric
           | '<::'  //numeric-list

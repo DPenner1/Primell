@@ -11,7 +11,7 @@ line : termSeq COMMENT? EOF
 
 termSeq : concatRtlTerm+ ;
 
-concatRtlTerm : CONCAT? rtlTerm ;
+concatRtlTerm : concat? rtlTerm ;
 
 rtlTerm : mulTerm                                                                   #passThroughRtl
         | mulTerm binaryAssign (rtlTerm | RTL termSeq)                              #stdAssign
@@ -26,8 +26,8 @@ mulTerm : atomTerm                                                  #passThrough
         | mulTerm binaryOpWithRS                                    #binaryOperation
         | L_BRACK termSeq R_BRACK unaryOp                           #forEachUnary
         | L_BRACK termSeq R_BRACK binaryOpWithRS                    #forEachLeftBinary
-        | L_BRACK termSeq VERT_BAR unaryOrBinaryOp+ R_BRACK opMods  #forEachChain 
-        ;     // not sure I want opMods here, but I want to know if i accidentally break this
+        | L_BRACK termSeq VERT_BAR unaryOrBinaryOp+ R_BRACK         #forEachChain 
+        ;
 
 binaryOpWithRS : binaryOp atomTerm
                | binaryOp RTL termSeq
@@ -72,7 +72,9 @@ assignMods : (OPMOD_TRUNCATE | OPMOD_POW | OPMOD_UNFOLD)? ;
 
 nullaryOp : baseNullaryOp opMods ;
 
-unaryOp : unaryAssign? baseUnaryOp opMods ;
+unaryOp : unaryAssign? baseUnaryOp opMods 
+        | unaryAssign? baseBinaryOp opmod_fold opMods  // at the moment, not allowing binary mods for simplicity
+        ;
 
 unaryAssign : ASSIGN assignMods ;   
 
@@ -81,6 +83,9 @@ binaryOp : baseBinaryOp opMods ;
 
 // a few symbols get used (or probably will) in different contexts so need to be distinguished by parser (or lexer mode, but that seemed tougher)
 // (I've used underscores instead of camelCase for these parser rules that are basically just tokens)
+
+concat : S_COLON;
+opmod_fold : S_COLON;
 
 op_list_diff : B_SLASH ;
 
