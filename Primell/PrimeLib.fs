@@ -2,7 +2,7 @@ namespace dpenner1.Primell
 
 open System.Collections.Generic
 
-type private LucasParameters = { U: bigint; V: bigint; Q: bigint; k: bigint }
+type private LucasParameters = { U: bigint; V: bigint; Q: bigint; k: bigint }  // k not explicitly needed, but helps with debugging
 
 // Really, an external library probably exists for this, but this was for fun and learning F#
 module PrimeLib =
@@ -118,65 +118,71 @@ module PrimeLib =
 
   // https://en.wikipedia.org/wiki/Lucas_pseudoprime
   // also  https://arxiv.org/pdf/2006.14425  section 2.4
-  let LucasTest(n: bigint, p:bigint, q: bigint, D: bigint) =
-    let getUVQkDouble(uvqk: LucasParameters) =
-      { U = uvqk.U * uvqk.V % n
-        V = (bigint.Pow(uvqk.V, 2) - 2I * uvqk.Q) % n
-        Q = bigint.ModPow(uvqk.Q, 2, n)
-        k = uvqk.k * 2I
+  let StrongLucasTest(n: bigint, p:bigint, q: bigint, jacobiD: bigint) =
+    // helper functions for computing Lucas sequences
+    let getUVQkDouble(n: bigint, lucasParams: LucasParameters) =
+      { U = lucasParams.U * lucasParams.V % n
+        V = (bigint.Pow(lucasParams.V, 2) - 2I * lucasParams.Q) % n
+        Q = bigint.ModPow(lucasParams.Q, 2, n)
+        k = lucasParams.k * 2I
       }
+    let getUVQkPlus1(n:bigint, lucasParams: LucasParameters, jacobiD: bigint, lucasP: bigint, lucasQ: bigint) =
+      { U = let temp = lucasP * lucasParams.U + lucasParams.V
+            (if temp.IsEven then temp else temp + n) / 2I % n
+        V = let temp = jacobiD * lucasParams.U + lucasP * lucasParams.V
+            let temp2 = (if temp.IsEven then temp else temp + n) / 2I % n  
+            if temp2.Sign = -1 then temp2 + n else temp2  //negative modulo again...
+        Q = lucasParams.Q * lucasQ % n
+        k = lucasParams.k + 1I
+      }
+    let rec checkVZeroCongruence(n: bigint, lucasParams: LucasParameters, sCounter: bigint) =
+      if lucasParams.V.IsZero then true
+      elif sCounter.IsZero then false // (can't be true as we just checked for V = 0)
+      else checkVZeroCongruence(n, getUVQkDouble(n, lucasParams), sCounter - 1I)
 
-    let mutable d, s = FactorPowersOfTwo(n + 1I, 0I)
-    let bitArray = System.Collections.BitArray(d.ToByteArray(true, false)) 
+    // main Lucas test code
+    let d, s = FactorPowersOfTwo(n + 1I, 0I)  // s is at least one, as n is odd (and if not, you really messed up the calling code)
+    let bitSeq = System.Collections.BitArray(d.ToByteArray(true, false)) 
                    |> Seq.cast 
                    |> Seq.rev 
                    |> Seq.skipWhile (fun x -> not x)  // remove leading zeroes
                    |> Seq.skip 1  // skip the initial leading bit which is handled specially through UVQk initialization
-    let mutable lucasParams = { U = 1I; V = p; Q = q; k = 1I }  // not sure k is explicitly needed, but should help with debugging
-    for bit in bitArray do
-      lucasParams <- getUVQkDouble lucasParams
-      if bit then
-        lucasParams <- { U = let temp = p * lucasParams.U + lucasParams.V
-                             (if temp.IsEven then temp else temp + n) / 2I % n
-                         V = let temp = D * lucasParams.U + p * lucasParams.V
-                             let temp2 = (if temp.IsEven then temp else temp + n) / 2I % n  
-                             if temp2.Sign = -1 then temp2 + n else temp2  //negative modulo again...
-                         Q = lucasParams.Q * q % n
-                         k = lucasParams.k + 1I
-                       }
+    
+    let lucasParams = ({ U = 1I; V = p; Q = q; k = 1I }, bitSeq) ||> Seq.fold(fun lparams bit ->
+      let lucasDouble = getUVQkDouble(n, lparams) 
+      if bit then getUVQkPlus1(n, lucasDouble, jacobiD, p, q) 
+      else lucasDouble)
 
     // we're now done the d bits (s bits are all 0)
     if lucasParams.U.IsZero then true
-    else
-      while (not lucasParams.V.IsZero) && s > 1I do  // one less than s because congruence is V_(d * 2^(s - 1))
-        lucasParams <- getUVQkDouble lucasParams
-        s <- s - 1I
-        
-      lucasParams.V.IsZero
-      // paper has 2 new follow-up tests added to the original BPSW to further strengthen the primality test
-      // I'm not implementing that because (a) that's work (b) it would actually be cool to stumble upon a BPSW counter-example
+    else checkVZeroCongruence(n, lucasParams, s - 1I) // one less than s because congruence is up to V_(d * 2^(s - 1))
+
+    // the paper has 2 new follow-up tests added to the original BPSW to further strengthen the primality test
+    // I'm not implementing that because (a) that's work (b) it would actually be cool to stumble upon a BPSW counter-example
 
   // basically following allong this paper: https://arxiv.org/pdf/2006.14425
   let BpswTest(n: bigint) = 
     let rec getJacobiD(n: bigint, d: bigint) =
       match JacobiSymbol(d, n) with
-      | -1 -> Undetermined d
-      | 0 when (bigint.Abs d < n) || (d % n <> 0I) -> Composite  // 0 allows for possible early abort
+      | -1 -> 
+          Undetermined d
+      | 0 when (bigint.Abs d < n) || (d % n <> 0I) ->  // 0 allows for possible early abort 
+          Composite
       | _ -> 
-          getJacobiD(n, -1I * (d + bigint (d.Sign * 2)))
+          getJacobiD(n, -(d + bigint (d.Sign * 2)))
 
     let d, s = FactorPowersOfTwo(n - 1I, 0I)
     match MillerRabinRound(n, 2I, s, d) with
     | Composite -> false
     | _ -> // carry on my wayward son
-        // paper actually suggests trying Jacobi step a few times first, but my test cases have checking this upfront executing faster 
+        // paper actually suggests trying Jacobi step a few times first, but my test cases have checking for squares upfront executing faster 
         // (yes, the paper is by smarter ppl who would know whats asymptotically faster, but I'm interested in what's practically faster for my use case)
-        // I can't figure out why its faster in my case, but im guessing it's branch prediction gone wrong with stopping Jacobi search after some iterations
+        // I can't figure out why it's faster in my case, but im guessing it's branch prediction gone wrong with pausing Jacobi search after some iterations
         if IsSquare n then false  
         else
           match getJacobiD(n, 5I) with
-          | Undetermined d when d = 5I -> LucasTest(n, 5I, 5I, 5I)
-          | Undetermined d -> LucasTest(n, 1I, (1I - d)/4I, d)
+          | Undetermined d when d = 5I -> StrongLucasTest(n, 5I, 5I, 5I)
+          | Undetermined d -> StrongLucasTest(n, 1I, (1I - d)/4I, d)
           | Composite -> false
     
   let IsPrime n =
