@@ -99,11 +99,10 @@ module PrimeLib =
     // it shouldn't be possible to have more than 2-period oscillation... i hope
     let rec newton(n: bigint, guess: bigint, lastGuess: bigint, lastLastGuess: bigint) =
       if guess = lastLastGuess then false  // oscillation (which per MSE comments means n+1 is square)
-      elif guess = lastGuess then  // steady state
-        n = bigint.Pow(guess, 2)
-      else
+      else 
         let square = bigint.Pow(guess, 2)
         if square = n then true
+        elif guess = lastGuess then false  // steady state
         else newton(n, (square + n)/(2I * guess), guess, lastGuess)
 
     newton(n, initialGuess, -1I, -2I)
