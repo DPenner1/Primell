@@ -107,11 +107,17 @@ type OperationLib(control: PrimellProgramControl, external: IExternal) =
         | (:? PNumber as n1), (:? PNumber as n2) -> 
             operator(n1, n2)
         | (:? PNumber as n), (:? PList as l) -> 
-            l |> Seq.map(fun x -> this.ApplyBinaryNumericOperation n x operator opMods) |> PList :> PObject
+            if l.IsEmpty && opMods |> List.contains Truncate |> not then
+              n
+            else
+              l |> Seq.map(fun x -> this.ApplyBinaryNumericOperation n x operator opMods) |> PList :> PObject
         | (:? PList as l), (:? PNumber as n) -> 
-            l |> Seq.map(fun x -> this.ApplyBinaryNumericOperation x n operator opMods) |> PList :> PObject
+            if l.IsEmpty && opMods |> List.contains Truncate |> not then
+              n
+            else
+              l |> Seq.map(fun x -> this.ApplyBinaryNumericOperation x n operator opMods) |> PList :> PObject
         | (:? PList as l1), (:? PList as l2) -> 
-            if (opMods |> List.contains Truncate) then            
+            if opMods |> List.contains Truncate then            
               (l1, l2) ||> Seq.map2 (fun x y -> this.ApplyBinaryNumericOperation x y operator opMods) |> PList :> PObject
             else   // Adapted from: https://stackoverflow.com/a/2840062/1607043
               let extL1 = Seq.append (l1 |> Seq.map (fun x -> Some x)) (Seq.initInfinite (fun _ -> None))

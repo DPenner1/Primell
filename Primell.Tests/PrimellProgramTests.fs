@@ -89,10 +89,14 @@ let ``Test Index``() =
 let ``Test OpMod Truncate``() =
   TestProgram("(2 3 5)-`(2 2 2 2)", PrimellConfiguration.PrimellDefault, "0 1 3")
   TestProgram("(2 3 5 7)-`(2 2 2)", PrimellConfiguration.PrimellDefault, "0 1 3")
+  TestProgram("2-`()", PrimellConfiguration.PrimellDefault, "()")
+  TestProgram("()-`2", PrimellConfiguration.PrimellDefault, "()")
   
   // non truncated versions
   TestProgram("(2 3 5)-(2 2 2 2)", PrimellConfiguration.PrimellDefault, "0 1 3 2")
   TestProgram("(2 3 5 7)-(2 2 2)", PrimellConfiguration.PrimellDefault, "0 1 3 7")
+  TestProgram("2-()", PrimellConfiguration.PrimellDefault, "2")
+  TestProgram("()-2", PrimellConfiguration.PrimellDefault, "2")
 
 
 [<Fact>]
@@ -150,9 +154,9 @@ let ``Test Index + Assign``() =
   
 [<Fact>]
 let ``Test Branch``() =
-  TestProgram(", + 5\n, = 2\n2!\\", PrimellConfiguration.PrimellDefault, "()\n7")
-  TestProgram(", + 5\n(, =$ 2/2)!\\", PrimellConfiguration.PrimellDefault, "()\n6")
-  TestProgram(", + 5\n(, =$ 2-2)!|", PrimellConfiguration.PrimellDefault, "()\n5")
+  TestProgram(", + 5\n, = 2\n2!\\", PrimellConfiguration.PrimellDefault, "5\n7")
+  TestProgram(", + 5\n(, =$ 2/2)!\\", PrimellConfiguration.PrimellDefault, "5\n6")
+  TestProgram(", + 5\n(, =$ 2-2)!|", PrimellConfiguration.PrimellDefault, "5\n5")
   TestProgram(", = 2\n, =+ 5\n2/2 !\\", PrimellConfiguration.PrimellDefault, "12")
   TestProgram(",=2\n, =+ 5\n, =+ 7\n(2/2 2)!\\", PrimellConfiguration.PrimellDefault, "21 26")
 
