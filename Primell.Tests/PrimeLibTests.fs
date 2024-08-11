@@ -53,3 +53,11 @@ let ``Test PrimeFactorization``() =
     [BigRational -1; BigRational 5] 
     |> Seq.map(fun r -> r |> Rational |> PNumber :> PObject) |> PList :> PObject
   Assert.Equal(expected, calculated)
+
+
+[<Fact>]
+let ``Test IsSquare``() = 
+  let squares = [1I..400I] |> List.map(fun x -> x*x)
+  for i in 1I..160000I do
+    Assert.Equal(squares |> List.contains i, PrimeLib.IsSquare i)  
+  

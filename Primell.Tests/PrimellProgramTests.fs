@@ -44,8 +44,7 @@ let ``Test Euler Examples``() =
   TestProgramFromFile("../../../../Examples/Euler Project/Euler3.pll", PrimellConfiguration.PrimellDefault, "6857")
   TestProgramFromFile("../../../../Examples/Euler Project/Euler6.lll", PrimellConfiguration.Listell, "25164150")
   TestProgramFromFile("../../../../Examples/Euler Project/Euler7.pll", PrimellConfiguration.PrimellDefault, "104743")
-  // This one takes a couple minutes, try it again when BPSW primality test is implemented
-  //TestProgramFromFile("../../../../Examples/Euler Project/Euler10.pll", PrimellConfiguration.PrimellDefault, "142913828922")
+  TestProgramFromFile("../../../../Examples/Euler Project/Euler10.pll", PrimellConfiguration.PrimellDefault, "142913828922")
   
 [<Fact>]
 let ``Test Concat``() =

@@ -44,6 +44,7 @@ type OperationLib(control: PrimellProgramControl, external: IExternal) =
             "_>", fun l -> l.Tail()        
             "_~", fun l -> l.Reverse()
             "__", fun l -> l.Flatten()
+            "_#", fun l -> l.Length
             ">_", fun l -> this.OutputList(l)
             ">\"", fun l -> this.OutputString(l)
             "_test", fun l -> l.Reverse()

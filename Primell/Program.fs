@@ -4,10 +4,14 @@ let runner = PrimellRunner()
 
 //let control = runner.Run ",=2\n, =+ 5\n, =+ 7\n(2/2 2)!\\" PrimellConfiguration.PrimellDefault
 //let control = runner.Run ",=2\n, =+ 5\n, =+ 7\n2!\\" PrimellConfiguration.PrimellDefault
+//printfn "%A" [PrimeLib.IsPrime 999953I;PrimeLib.IsPrime 999959I;PrimeLib.IsPrime 999961I; PrimeLib.IsPrime 999979I; PrimeLib.IsPrime 999983I]
+
+//let test2 = PrimeLib.IsSquare 4294967296I
+//let test3 = PrimeLib.IsSquare 340282366920938463463374607431768211456I
+//printfn "%s" <| result.ToString()
 
 runner.InteractiveMode()
-
-//let control = runner.RunFromFile { PrimellConfiguration.PrimellDefault with SourceFilePath = "./../../../../Examples/NumbersTo100.pll" }
+//let control = runner.RunFromFile { PrimellConfiguration.PrimellDefault with SourceFilePath = "../../../../Examples/Euler Project/Euler10.pll" }
 //let control = runner.Run "5/0" PrimellConfiguration.Listell
 
 //printfn "%s" <| runner.GetResultString (List.last results |> fst) control
