@@ -2,7 +2,7 @@ namespace dpenner1.Primell
 
 open System.Collections.Generic
 
-type private UVQk = { U: bigint; V: bigint; Q: bigint; k: bigint }
+type private LucasParameters = { U: bigint; V: bigint; Q: bigint; k: bigint }
 
 // Really, an external library probably exists for this, but this was for fun and learning F#
 module PrimeLib =
@@ -119,7 +119,7 @@ module PrimeLib =
   // https://en.wikipedia.org/wiki/Lucas_pseudoprime
   // also  https://arxiv.org/pdf/2006.14425  section 2.4
   let LucasTest(n: bigint, p:bigint, q: bigint, D: bigint) =
-    let getUVQkDouble(uvqk: UVQk) =
+    let getUVQkDouble(uvqk: LucasParameters) =
       { U = uvqk.U * uvqk.V % n
         V = (bigint.Pow(uvqk.V, 2) - 2I * uvqk.Q) % n
         Q = bigint.ModPow(uvqk.Q, 2, n)
@@ -127,33 +127,32 @@ module PrimeLib =
       }
 
     let mutable d, s = FactorPowersOfTwo(n + 1I, 0I)
-    let bitArray = System.Collections.BitArray(d.ToByteArray(true, false)) |> Seq.cast |> Seq.rev |> List.ofSeq
-    let mutable startBitHit = false
-    let mutable UVQk = { U = 0I; V = 2I; Q = 1I; k = 0I }  // not sure k is explicitly needed, but should help with debugging
+    let bitArray = System.Collections.BitArray(d.ToByteArray(true, false)) 
+                   |> Seq.cast 
+                   |> Seq.rev 
+                   |> Seq.skipWhile (fun x -> not x)  // remove leading zeroes
+                   |> Seq.skip 1  // skip the initial leading bit which is handled specially through UVQk initialization
+    let mutable lucasParams = { U = 1I; V = p; Q = q; k = 1I }  // not sure k is explicitly needed, but should help with debugging
     for bit in bitArray do
-      if (not startBitHit) && bit then
-        startBitHit <- true
-        UVQk <- { U = 1I; V = p; Q = q; k = 1I }
-      elif startBitHit then
-        UVQk <- getUVQkDouble UVQk
-        if bit then
-          UVQk <- { U = let temp = p * UVQk.U + UVQk.V
-                        (if temp.IsEven then temp else temp + n) / 2I % n
-                    V = let temp = D * UVQk.U + p * UVQk.V
-                        let temp2 = (if temp.IsEven then temp else temp + n) / 2I % n  
-                        if temp2.Sign = -1 then temp2 + n else temp2  //negative modulo again...
-                    Q = UVQk.Q * q % n
-                    k = UVQk.k + 1I
-                  }
+      lucasParams <- getUVQkDouble lucasParams
+      if bit then
+        lucasParams <- { U = let temp = p * lucasParams.U + lucasParams.V
+                             (if temp.IsEven then temp else temp + n) / 2I % n
+                         V = let temp = D * lucasParams.U + p * lucasParams.V
+                             let temp2 = (if temp.IsEven then temp else temp + n) / 2I % n  
+                             if temp2.Sign = -1 then temp2 + n else temp2  //negative modulo again...
+                         Q = lucasParams.Q * q % n
+                         k = lucasParams.k + 1I
+                       }
 
     // we're now done the d bits (s bits are all 0)
-    if UVQk.U.IsZero then true
+    if lucasParams.U.IsZero then true
     else
-      while (not UVQk.V.IsZero) && s > 1I do  // one less than s because congruence is V_(d * 2^(s - 1))
-        UVQk <- getUVQkDouble UVQk
+      while (not lucasParams.V.IsZero) && s > 1I do  // one less than s because congruence is V_(d * 2^(s - 1))
+        lucasParams <- getUVQkDouble lucasParams
         s <- s - 1I
         
-      UVQk.V.IsZero
+      lucasParams.V.IsZero
       // paper has 2 new follow-up tests added to the original BPSW to further strengthen the primality test
       // I'm not implementing that because (a) that's work (b) it would actually be cool to stumble upon a BPSW counter-example
 
