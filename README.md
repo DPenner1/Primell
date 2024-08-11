@@ -61,6 +61,10 @@ Step by step, it reverses each list `(5 3 2) (13 11 7)`, takes the tail of each 
 
 This kind of functionality is of course not unique to Primell, but I was particularly happy with how concise yet readable (in my opinion) the general syntax turned out.
 
+### 3. BPSW primality testing
+
+Not a language feature, but a back-end feature. Because I'm a nerd, I implemented the [BPSW primality test](https://en.wikipedia.org/wiki/Baillie%E2%80%93PSW_primality_test) as part of this project. It might be the first F# implementation, I wasn't able to find others anyway (though currently the code is very procedural and not F# idiomatic).
+
 ## Data types
 
 Primell has but two data types:
