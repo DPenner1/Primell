@@ -93,9 +93,10 @@ module PrimeLib =
     if n'.IsOne then t
     else 0
 
+  // https://math.stackexchange.com/a/41355/60690
   let private IsSquareWithSeed(n: bigint, initialGuess: bigint) =
     // lastLastGuess is my silly way of detecting 2-period oscillation...based on my reading of the MSE Q&A, 
-     // it shouldn't be possible to have more than 2-period oscillation... i hope
+    // it shouldn't be possible to have more than 2-period oscillation... i hope
     let rec newton(n: bigint, guess: bigint, lastGuess: bigint, lastLastGuess: bigint) =
       if guess = lastLastGuess then false  // oscillation (which per MSE comments means n+1 is square)
       elif guess = lastGuess then  // steady state
@@ -105,11 +106,9 @@ module PrimeLib =
         if square = n then true
         else newton(n, (square + n)/(2I * guess), guess, lastGuess)
 
-    newton(n, initialGuess, 0I, -1I)
+    newton(n, initialGuess, -1I, -2I)
 
-  // https://math.stackexchange.com/a/41355/60690
   // technically not really a PrimeLib function, but it's either that or BigRational in this project, neither is a perfect fit
-  // DO NOT CALL WITH 0. It doesn't work. I could put a check, but since PrimeLib does not call with 0, that's useless computation
   let IsSquare(n: bigint) =
     // https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Binary_estimates
     // basically just computing the 2^n portion (maybe with off-by-one error), without fussing with the a value (because that's annoying)

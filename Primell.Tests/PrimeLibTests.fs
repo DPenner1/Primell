@@ -57,7 +57,7 @@ let ``Test PrimeFactorization``() =
 
 [<Fact>]
 let ``Test IsSquare``() = 
-  let squares = [1I..400I] |> List.map(fun x -> x*x)
-  for i in 1I..160000I do
+  let squares = [0I..400I] |> List.map(fun x -> x*x)
+  for i in 0I..160000I do
     Assert.Equal(squares |> List.contains i, PrimeLib.IsSquare i)  
   
