@@ -68,16 +68,15 @@ module PrimeLib =
     compositeFactors.ContainsKey n
 
   // basic algorithm from https://en.wikipedia.org/wiki/Jacobi_symbol but rearranged to fit functional immutable style
+  // in particular, noticed that t was basically just a boolean toggle until the output, so I implemented it as such
+  // Note: since Jacobi is logarithmic time, not going to memoize (as memory would be quadratic, a*n)
   let JacobiSymbol(a: bigint, n:bigint) =
-    // Since Jacobi is logarithmic time, not going to memoize (as memory would be quadratic, a*n)
-    let rec reduceA(a': bigint, n': bigint, t:int) =
+    let rec reduceA(a': bigint, n': bigint, t:bool) =
       if a'.IsZero then (a', n', t)
       else
         let d, s = FactorPowersOfTwo a'
-        let newT = 
-          t *         // looks like n' % 8 is computed twice, but compiler will probably optimize since n' is immutable
-          (if (not s.IsEven) && (n' % 8I = 3I || n' % 8I = 5I) then -1 else 1) *
-          (if d % 4I = 3I && n' % 4I = 3I then -1 else 1)
+        let newT =  // looks like n' % 8 is computed twice, but compiler will probably optimize since n' is immutable
+          t <> ((not s.IsEven) && (n' % 8I = 3I || n' % 8I = 5I)) <> (d % 4I = 3I && n' % 4I = 3I)
 
         reduceA(n' % d, d, newT)
 
@@ -85,9 +84,11 @@ module PrimeLib =
       System.ArgumentException "invalid Jacobi args" |> raise
 
     let a' = a % n + (if a.Sign = -1 then n else 0I) // dealing with negative modulo...
-    let (_, n', t) = reduceA(a', n, 1)
+    let (_, n', t) = reduceA(a', n, true)
     
-    if n'.IsOne then t else 0
+    if n'.IsOne then 
+      if t then 1 else -1 
+    else 0
 
   // https://math.stackexchange.com/a/41355/60690
   let private IsSquareWithSeed(n: bigint, initialGuess: bigint) =
@@ -176,7 +177,7 @@ module PrimeLib =
         if IsSquare n then false  
         else
           match getJacobiD(n, 5I) with
-          | Undetermined d when d = 5I -> StrongLucasTest(n, 5I, 5I, 5I)
+          | Undetermined d when d = 5I -> StrongLucasTest(n, d, d, d)
           | Undetermined d -> StrongLucasTest(n, 1I, (1I - d)/4I, d)
           | Composite -> false
     
