@@ -1,5 +1,7 @@
 namespace dpenner1.Primell
 
+open dpenner1.Math
+
 type private ListLength =  // it ended up being a bit too annoying interally to co-opt ExtenedBigRational for this
   | Unknown
   | Infinite

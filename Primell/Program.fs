@@ -2,7 +2,6 @@
 
 let runner = PrimellRunner()
 
-let control = runner.Run ", =+ 3\n," PrimellConfiguration.PrimellDefault
 //let control = runner.Run ",=2\n, =+ 5\n, =+ 7\n2!\\" PrimellConfiguration.PrimellDefault
 //printfn "%A" [PrimeLib.IsPrime 999953I;PrimeLib.IsPrime 999959I;PrimeLib.IsPrime 999961I; PrimeLib.IsPrime 999979I; PrimeLib.IsPrime 999983I]
 
@@ -11,6 +10,7 @@ let control = runner.Run ", =+ 3\n," PrimellConfiguration.PrimellDefault
 //printfn "%s" <| result.ToString()
 
 runner.InteractiveMode()
+
 //let control = runner.RunFromFile { PrimellConfiguration.PrimellDefault with SourceFilePath = "../../../../Examples/Euler Project/Euler10.pll" }
 //let control = runner.Run "5/0" PrimellConfiguration.Listell
 

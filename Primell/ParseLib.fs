@@ -1,5 +1,7 @@
 namespace dpenner1.Primell
 
+open dpenner1.Math
+
 exception PrimellInvalidSyntaxException of string
 
 // TODO - this is probably better as an enum (if that exists in F#)

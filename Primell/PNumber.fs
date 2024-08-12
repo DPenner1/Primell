@@ -1,5 +1,7 @@
 namespace dpenner1.Primell
 
+open dpenner1.Math
+
 // really, a Record type would work great here, but due to all the nested typing, 
 // I just want the ability for a single-value constructor for easy piping |>
 type PrimellNumber(value: ExtendedBigRational, ?refersTo: Reference) =

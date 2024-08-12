@@ -19,6 +19,7 @@
 // Ambiguous reference in cref attribute
 #pragma warning disable 419
 
+namespace dpenner1.Primell.Antlr4Generated {
 using System;
 using System.IO;
 using System.Text;
@@ -205,3 +206,4 @@ public partial class PrimellLexer : Lexer {
 
 
 }
+} // namespace dpenner1.Primell.Antlr4Generated

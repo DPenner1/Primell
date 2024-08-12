@@ -1,5 +1,6 @@
 namespace dpenner1.Primell
 
+open dpenner1.Math
 // adapt the more Primell-neutral PrimeLib to PNumber
 module PPrimeLib =
 

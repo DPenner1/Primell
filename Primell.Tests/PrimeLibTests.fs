@@ -1,8 +1,9 @@
-// note: Tests not entirely comprehensive
+// note: Tests not entirely comprehensive (I couldn't find all the primes)
 module PPrimeLibTests
 
 open Xunit
 open dpenner1.Primell
+open dpenner1.Math
 
 let AssertEqualSequences<'T>(expected: seq<'T>, actual: seq<'T>) =
   Assert.Equal(Seq.length expected, Seq.length actual)

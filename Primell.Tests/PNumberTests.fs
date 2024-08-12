@@ -2,6 +2,7 @@ module PNumberTests
 
 open Xunit
 open dpenner1.Primell
+open dpenner1.Math
 
 [<Fact>]
 let ``Test NaN Equality``() =

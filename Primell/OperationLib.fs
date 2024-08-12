@@ -2,6 +2,7 @@ namespace dpenner1.Primell
 
 open System.Collections.Generic
 open System.Text
+open dpenner1.Math
 
 type BranchMode =
   | Forward

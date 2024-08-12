@@ -1,5 +1,5 @@
-namespace dpenner1.Primell
-// Note: this was designed to work independently of Primell, so namespace may change
+namespace dpenner1.Math
+// Note: this was designed to work independently of Primell, so different namespace
 
 // warning about the comparison operators...
 // I *think* this is due to the semantics around IEEE754 comparisons vs "normal" IComparable comparisons, 

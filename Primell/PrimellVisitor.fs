@@ -1,6 +1,8 @@
 namespace dpenner1.Primell
 
 open System.Collections.Generic
+open dpenner1.Primell.Antlr4Generated
+open dpenner1.Math
 open Antlr4.Runtime
 
 exception NonPrimeDectectionException of string

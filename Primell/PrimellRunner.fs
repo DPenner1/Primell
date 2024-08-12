@@ -1,7 +1,7 @@
 namespace dpenner1.Primell
 
 open System
-
+open dpenner1.Math
 
 type ConsoleCommand = { Key: string; ArgumentDescription: string; Description: string }
 

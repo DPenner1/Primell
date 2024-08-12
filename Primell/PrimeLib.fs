@@ -1,4 +1,5 @@
-namespace dpenner1.Primell
+namespace dpenner1.Math
+// Note: this was designed to work independently of Primell, so different namespace
 
 open System.Collections.Generic
 
