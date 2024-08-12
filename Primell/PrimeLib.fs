@@ -88,7 +88,8 @@ module PrimeLib =
     if n.IsEven || n.Sign = -1 then
       System.ArgumentException "invalid Jacobi args" |> raise
 
-    let a' = a % n + (if a.Sign = -1 then n else 0I) // dealing with negative modulo...
+    let modulo = a % n 
+    let a' = (if modulo.Sign = -1 then modulo + n else modulo) // dealing with negative modulo...
     let (_, n', t) = reduceA(a', n, true)
     
     if n'.IsOne then 

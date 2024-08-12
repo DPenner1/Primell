@@ -225,7 +225,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
         match round cValueIndex.Value with
         | NaN | Infinity Negative -> l
         | Infinity Positive -> PList(Seq.initInfinite(fun _ -> PList.Empty), Infinity Positive |> PNumber)
-        | _ as n when n < ExtendedBigRational.Zero -> System.NotImplementedException("negative index") |> raise
+        | _ as n when n < ExtendedBigRational.Zero -> PList.Empty
         | _ as n when n = ExtendedBigRational.Zero -> newValue
         | _ as n ->
             Seq.init (GetPositiveInt cValueIndex) (fun _ -> PList.Empty) 

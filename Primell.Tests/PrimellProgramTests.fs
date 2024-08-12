@@ -131,6 +131,14 @@ let ``Test Assign``() =
   TestProgram(", = (2 3 5)\n, = (7 11)\n,", PrimellConfiguration.PrimellDefault, "7 11 5")
   TestProgram(", = (2 3)\n, = (5 7 11)\n,", PrimellConfiguration.PrimellDefault, "5 7")  // spec might change in future
 
+  // assign to negative index
+  TestProgram(", = (2 3 5 7)\n,@(2~) = 11\n,", PrimellConfiguration.PrimellDefault, "2 3 11 7")
+  TestProgram(", = (2 3 5 7)\n,@(5~) = 11\n,", PrimellConfiguration.PrimellDefault, "2 3 5 11")
+
+  // implicit filling with empties
+  TestProgram(", = (2 3)\n,@3 = 7\n,", PrimellConfiguration.PrimellDefault, "2 3 () 7")
+  TestProgram(",@2 = 5\n,", PrimellConfiguration.PrimellDefault, "() () 5")
+
 [<Fact>]
 let ``Test Assign + Op``()  =
   TestProgram(", =+ 3\n,", PrimellConfiguration.PrimellDefault, "3")  // this one currently fails due to list extension not being implemented
@@ -151,6 +159,9 @@ let ``Test Index + Assign``() =
   TestProgram(",@2 = 5\n,", PrimellConfiguration.PrimellDefault, "() () 5")
   TestProgram(", = 2\n,@2 = 5\n,", PrimellConfiguration.PrimellDefault, "2 () 5")
   TestProgram(",@(2 3) = (5 7)\n,", PrimellConfiguration.PrimellDefault, "() () 5 7")
+
+  // simultaneous assign to indexes belonging to different variables
+  TestProgram(", = (2 3 5 7)\n,, = (11 13 17 19)\n(,@2 ,,@3)=(23 29)\n,\n,,", PrimellConfiguration.PrimellDefault, "2 3 23 7\n11 13 17 29")
   
 [<Fact>]
 let ``Test Branch``() =
