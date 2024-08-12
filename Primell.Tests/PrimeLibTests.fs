@@ -59,5 +59,14 @@ let ``Test PrimeFactorization``() =
 let ``Test IsSquare``() = 
   let squares = [0I..400I] |> List.map(fun x -> x*x)
   for i in 0I..160000I do
-    Assert.Equal(squares |> List.contains i, PrimeLib.IsSquare i)  
+    Assert.Equal(squares |> List.contains i, PrimeLib.IsSquare i)
+
+
+[<Fact>]
+let ``Test IsSquare Big, like really big``() = 
+  // Test case from: https://math.stackexchange.com/a/563654/60690
+  let bigSquare = bigint.Pow(bigint.Pow(10I, 499) + 345674632452435I, 2)
+  Assert.True(PrimeLib.IsSquare bigSquare)
+  Assert.False(PrimeLib.IsSquare (bigSquare + 1I))
+  Assert.False(PrimeLib.IsSquare (bigSquare - 1I))
   
