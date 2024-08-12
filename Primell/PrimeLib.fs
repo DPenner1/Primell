@@ -17,6 +17,11 @@ module PrimeLib =
   let private smallPrimes = [2I;3I;5I;7I;11I;13I;17I;19I;23I;29I;31I;37I;41I;43I;47I;53I;59I;61I;67I;71I;73I;79I;83I;89I;97I]
   smallPrimes |> List.iter (fun x -> primes.Add x |> ignore) 
  
+  let private quadraticResiduesMod256 = set [0uy;1uy;4uy;9uy;16uy;17uy;25uy;33uy;36uy;41uy;49uy;57uy;64uy;
+                                             65uy;68uy;73uy;81uy;89uy;97uy;100uy;105uy;113uy;121uy;
+                                             129uy;132uy;137uy;144uy;145uy;153uy;161uy;164uy;169uy;177uy;185uy;
+                                             193uy;196uy;201uy;209uy;217uy;225uy;228uy;233uy;241uy;249uy]
+                                             
   // a little hacky, but the algos often need an integer result coming out of possible prime state
   type private IntermedateResult = 
     | Undetermined of bigint
@@ -106,11 +111,12 @@ module PrimeLib =
 
   // technically not really a PrimeLib function, but it's either that or BigRational in this project, neither is a perfect fit
   let IsSquare(n: bigint) =
-    // https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Binary_estimates
-    // basically just computing the 2^n portion (maybe with off-by-one error), without fussing with the a value (because that's annoying)
-    let seedGuess = 1I <<< (int (n.GetBitLength() >>> 1))
-
-    IsSquareWithSeed(n, seedGuess)
+    if quadraticResiduesMod256 |> Set.contains (byte(n % 256I)) |> not then false  // screen cases of definitely not squares before newton's method
+    else
+      // https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Binary_estimates
+      // basically just computing the 2^n portion (maybe with off-by-one error), without fussing with the a value (because that's annoying)
+      let seedGuess = 1I <<< (int (n.GetBitLength() >>> 1)) 
+      IsSquareWithSeed(n, seedGuess)
 
   // https://en.wikipedia.org/wiki/Lucas_pseudoprime
   // also  https://arxiv.org/pdf/2006.14425  section 2.4
