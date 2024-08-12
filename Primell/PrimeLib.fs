@@ -21,9 +21,12 @@ module PrimeLib =
     | Undetermined of bigint
     | Composite
   
-  let rec private FactorPowersOfTwo(n: bigint, power: bigint) = 
-    if n.IsEven then FactorPowersOfTwo(n/2I, power+1I)
-    else (n, power)
+  let private FactorPowersOfTwo(n: bigint) = 
+    let rec factor(n: bigint, power:bigint) = 
+      if n.IsEven then factor(n/2I, power+1I)
+      else (n, power)   // returns (odd d, power), where n = d * 2^power
+    
+    factor(n, 0I)
 
   // Variables match those from https://en.wikipedia.org/wiki/Miller%E2%80%93Rabin_primality_test
   let private MillerRabinRound(n: bigint, a: bigint, s: bigint, d: bigint) =
@@ -53,7 +56,7 @@ module PrimeLib =
        But because its float, I'm using ceil instead of floor, to be safe in case of rounding error in the float. 
        Miller was temporary until BPSW is implemented, so I'm OK with the slight rough edges here *)
 
-    let d, s = FactorPowersOfTwo(n - 1I, 0I) // we aren't calling Miller with even numbers
+    let d, s = FactorPowersOfTwo(n - 1I) // we aren't calling Miller with even numbers
 
     seq { 2I..(bigint limit) }
     |> Seq.exists (fun a -> MillerRabinRound(n, a, s, d) = Composite)
@@ -63,35 +66,27 @@ module PrimeLib =
   let private IsKnownComposite n =
     compositeFactors.ContainsKey n
 
-  // algorithm from https://en.wikipedia.org/wiki/Jacobi_symbol
+  // basic algorithm from https://en.wikipedia.org/wiki/Jacobi_symbol but rearranged to fit functional immutable style
   let JacobiSymbol(a: bigint, n:bigint) =
     // Since Jacobi is logarithmic time, not going to memoize (as memory would be quadratic, a*n)
-    if n <= 0I || n.IsEven then
+    let rec reduceA(a': bigint, n': bigint, t:int) =
+      if a'.IsZero then (a', n', t)
+      else
+        let d, s = FactorPowersOfTwo a'
+        let newT = 
+          t *         // looks like n' % 8 is computed twice, but compiler will probably optimize since n' is immutable
+          (if (not s.IsEven) && (n' % 8I = 3I || n' % 8I = 5I) then -1 else 1) *
+          (if d % 4I = 3I && n' % 4I = 3I then -1 else 1)
+
+        reduceA(n' % d, d, newT)
+
+    if n.IsEven || n.Sign = -1 then
       System.ArgumentException "invalid Jacobi args" |> raise
 
-    let temp = a % n  // dealing with negative modulo...
-    let mutable a' = if temp.Sign = -1 then temp + n else temp
-    let mutable n' = n
-    let mutable t = 1
-    let mutable r = 0I
-
-    while a'.IsZero |> not do
-      while a'.IsEven do
-        a' <- a'/2I
-        r <- n' % 8I
-        if (r = 3I || r = 5I) then
-          t <- -t
-
-      r <- n'
-      n' <- a'
-      a' <- r
-      if (a' % 4I = 3I && n' % 4I = 3I) then
-        t <- -t
-
-      a' <- a' % n'
+    let a' = a % n + (if a.Sign = -1 then n else 0I) // dealing with negative modulo...
+    let (_, n', t) = reduceA(a', n, 1)
     
-    if n'.IsOne then t
-    else 0
+    if n'.IsOne then t else 0
 
   // https://math.stackexchange.com/a/41355/60690
   let private IsSquareWithSeed(n: bigint, initialGuess: bigint) =
@@ -140,7 +135,7 @@ module PrimeLib =
       else checkVZeroCongruence(n, getUVQkDouble(n, lucasParams), sCounter - 1I)
 
     // main Lucas test code
-    let d, s = FactorPowersOfTwo(n + 1I, 0I)  // s is at least one, as n is odd (and if not, you really messed up the calling code)
+    let d, s = FactorPowersOfTwo(n + 1I)  // s is at least one, as n is odd (and if not, you really messed up the calling code)
     let bitSeq = System.Collections.BitArray(d.ToByteArray(true, false)) 
                    |> Seq.cast 
                    |> Seq.rev 
@@ -170,7 +165,7 @@ module PrimeLib =
       | _ -> 
           getJacobiD(n, -(d + bigint (d.Sign * 2)))
 
-    let d, s = FactorPowersOfTwo(n - 1I, 0I)
+    let d, s = FactorPowersOfTwo(n - 1I)
     match MillerRabinRound(n, 2I, s, d) with
     | Composite -> false
     | _ -> // carry on my wayward son

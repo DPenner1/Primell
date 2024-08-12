@@ -63,7 +63,7 @@ This kind of functionality is of course not unique to Primell, but I was particu
 
 ### 3. BPSW primality testing
 
-Not a language feature, but a back-end feature. Because I'm a nerd, I implemented the [BPSW primality test](https://en.wikipedia.org/wiki/Baillie%E2%80%93PSW_primality_test) as part of this project. It might be the first F# implementation, I wasn't able to find others anyway (though currently the code for computing a Jacobi Symbol is very procedural and not F# idiomatic).
+Not a language feature, but a back-end feature. Because I'm a nerd, I implemented the [BPSW primality test](https://en.wikipedia.org/wiki/Baillie%E2%80%93PSW_primality_test) as part of this project. It might be the first F# implementation, I wasn't able to find others anyway.
 
 ## Data types
 
