@@ -322,15 +322,17 @@ type OperationLib(control: PrimellProgramControl, external: IExternal) =
             getBaseDigits(q, []) 
               |> Seq.ofList 
               |> Seq.map(fun x -> x |> BigRational |> Rational |> PNumber :> PObject)
-              |> PList :> PObject
+              |> PList 
+              |> this.Normalize
           let fractionalDigits = 
               getFractionalDigits(bigint.Abs r.Denominator, rem, Map.empty, Seq.empty)
               |> Seq.map(fun x -> x |> BigRational |> Rational |> PNumber :> PObject)
-              |> PList :> PObject
-              
-          seq { wholeDigits; fractionalDigits } |> PList |> this.Normalize
+              |> PList 
+              |> this.Normalize
+
+          seq { wholeDigits; fractionalDigits } |> PList :> PObject
     
-    member this.Normalize (pobj: PObject) =
+    member this.Normalize (pobj: PObject): PObject =
       match pobj with   // couldn't use when Seq.length = 1 as that potentially hangs on infinite sequence
       | :? PList as l when not(l.IsEmpty) && Seq.isEmpty(Seq.tail l) -> 
           Seq.head l |> this.Normalize
