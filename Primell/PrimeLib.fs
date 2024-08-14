@@ -76,25 +76,26 @@ module PrimeLib =
   // in particular, noticed that t was basically just a boolean toggle until the output, so I implemented it as such
   // Note: since Jacobi is logarithmic time, not going to memoize (as memory would be quadratic, a*n)
   let JacobiSymbol(a: bigint, n:bigint) =
-    let rec reduceA(a': bigint, n': bigint, t:bool) =
-      if a'.IsZero then (a', n', t)
+    let rec runJacobi(a': bigint, n': bigint, t:bool) =
+      if a'.IsZero then
+        if n'.IsOne then 
+          if t then 1 else -1 
+        else 0
       else
         let d, s = FactorPowersOfTwo a'
-        let newT =  // looks like n' % 8 is computed twice, but compiler will probably optimize since n' is immutable
+        let t' =  // looks like n' % 8 is computed twice, but compiler will probably optimize since n' is immutable
           t <> ((not s.IsEven) && (n' % 8I = 3I || n' % 8I = 5I)) <> (d % 4I = 3I && n' % 4I = 3I)
 
-        reduceA(n' % d, d, newT)
+        runJacobi(n' % d, d, t')
 
     if n.IsEven || n.Sign = -1 then
       System.ArgumentException "invalid Jacobi args" |> raise
 
     let modulo = a % n 
     let a' = (if modulo.Sign = -1 then modulo + n else modulo) // dealing with negative modulo...
-    let (_, n', t) = reduceA(a', n, true)
+    runJacobi(a', n, true)
     
-    if n'.IsOne then 
-      if t then 1 else -1 
-    else 0
+    
 
   // https://math.stackexchange.com/a/41355/60690
   let private IsSquareWithSeed(n: bigint, initialGuess: bigint) =
@@ -112,6 +113,7 @@ module PrimeLib =
 
   // technically not really a PrimeLib function, but it's either that or BigRational in this project, neither is a perfect fit
   let IsSquare(n: bigint) =
+  
     if quadraticResiduesMod256 |> Set.contains (byte(n % 256I)) |> not then false  // screen cases of definitely not squares before newton's method
     else
       // https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Binary_estimates

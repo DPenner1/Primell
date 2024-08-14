@@ -30,7 +30,8 @@ type OperationLib(control: PrimellProgramControl, external: IExternal) =
     member this.UnaryNumericOperators: IDictionary<string, PNumber->PObject> = 
       dict ["~",   fun n -> ExtendedBigRational.(~-) n.Value |> PNumber :> PObject
             "*~",  fun n -> ExtendedBigRational.Reciprocal n.Value |> PNumber :> PObject
-            "/*",  fun n -> PPrimeLib.PrimeFactorization n
+            "/*",  fun n -> if control.Settings.UsePrimeOperators then PPrimeLib.PrimeFactorization n else System.NotImplementedException "factors not done" |> raise
+            "/#",  fun n -> this.GetDigits(n, control.Settings.SourceBase)
             "++",  fun n -> if control.Settings.UsePrimeOperators then PPrimeLib.NextPrime n else n.Value + ExtendedBigRational.One |> PNumber :> PObject
             "--",  fun n -> if control.Settings.UsePrimeOperators then PPrimeLib.PrevPrime n else n.Value - ExtendedBigRational.One |> PNumber :> PObject
             "+-",  fun n -> if control.Settings.UsePrimeOperators then PPrimeLib.NearestPrime n else round n.Value |> PNumber :> PObject
@@ -294,3 +295,43 @@ type OperationLib(control: PrimellProgramControl, external: IExternal) =
       match pobj with
       | :? PList as l -> l.Tail()
       | _ -> PList.Empty  // atom has no tail
+
+    member this.GetDigits(n: PNumber, ``base``: bigint) =
+      let rec getBaseDigits(n': bigint, digitsSoFar: bigint list) =
+        let q, rem = bigint.DivRem(n', ``base``)
+        let newList = rem::digitsSoFar
+        if q.IsZero then newList
+        else getBaseDigits(q, newList)
+      // remainders seen: map remainder to position in digit sequence, for possible repeated decimal
+      let rec getFractionalDigits(divisor: bigint, rem: bigint, remaindersSeen: Map<bigint, int>, digits: bigint seq) =
+        if rem.IsZero then digits   // terminating decimal expansion
+        elif remaindersSeen |> Map.containsKey rem then   // repeated decimal
+          let repeatStartIndex = remaindersSeen[rem]
+          Seq.append (digits |> Seq.take repeatStartIndex) (seq {while true do yield! (Seq.skip repeatStartIndex digits)})
+        else
+          let q, rem' = bigint.DivRem(rem * ``base``, divisor)
+          let newDigits = getBaseDigits(q, [])
+          getFractionalDigits(divisor, rem', remaindersSeen |> Map.add rem (Seq.length digits), Seq.append digits newDigits)
+
+      match n.Value with
+      | NaN -> PList.Empty
+      | Infinity _ -> seq { PList.Infinite(NaN |> PNumber) :> PObject; PList.Infinite(NaN |> PNumber) :> PObject} |> PList :> PObject
+      | Rational r -> 
+          let q, rem = bigint.DivRem(r.Numerator, bigint.Abs r.Denominator)
+          let wholeDigits = 
+            getBaseDigits(q, []) 
+              |> Seq.ofList 
+              |> Seq.map(fun x -> x |> BigRational |> Rational |> PNumber :> PObject)
+              |> PList :> PObject
+          let fractionalDigits = 
+              getFractionalDigits(bigint.Abs r.Denominator, rem, Map.empty, Seq.empty)
+              |> Seq.map(fun x -> x |> BigRational |> Rational |> PNumber :> PObject)
+              |> PList :> PObject
+              
+          seq { wholeDigits; fractionalDigits } |> PList |> this.Normalize
+    
+    member this.Normalize (pobj: PObject) =
+      match pobj with   // couldn't use when Seq.length = 1 as that potentially hangs on infinite sequence
+      | :? PList as l when not(l.IsEmpty) && Seq.isEmpty(Seq.tail l) -> 
+          Seq.head l |> this.Normalize
+      | _ -> pobj    

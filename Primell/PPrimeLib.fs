@@ -60,7 +60,7 @@ module PPrimeLib =
     | NaN, _ | _, NaN -> 
         Seq.empty |> PList
     | Infinity Positive, _ -> 
-        PList(seq { while true do yield Infinity Positive |> PNumber}, ?length = Some(Infinity Positive |> PNumber))
+        PList.Infinite(Infinity Positive |> PNumber)
     | Infinity Negative, Infinity Positive ->
         PrimeConvert(ExtendedBigRational.Range(ExtendedBigRational.Two, Infinity Positive), Some(Infinity Positive |> PNumber))
     | Rational _ as left', Infinity Positive -> 
@@ -85,10 +85,10 @@ module PPrimeLib =
   let PrimeFactorization (x: PNumber) =
     match x.Value with
     | NaN -> PList.Empty
-    | Infinity Positive -> Seq.initInfinite(fun _ -> ExtendedBigRational.Two |> PNumber :> PObject) |> PList :> PObject
+    | Infinity Positive -> PList.Infinite(NaN |> PNumber)
            // for infinity, there's an infinite number of factors, but you won't get past all those 2s!
-    | Infinity Negative -> Seq.append [ExtendedBigRational.MinusOne |> PNumber :> PObject] 
-                                      (Seq.initInfinite(fun _ -> ExtendedBigRational.Two |> PNumber :> PObject)) |> PList :> PObject
+    | Infinity Negative -> Seq.append [ExtendedBigRational.MinusOne |> PNumber :> PObject] (PList.Infinite(NaN |> PNumber)) 
+                           |> PList :> PObject
     | Rational r ->
         let denominatorPrimes = // since PrimeLib gives ordered primes, we need to reverse the denom ones (and deal with -1)
           PrimeLib.PrimeFactors(bigint.Abs r.Denominator) 

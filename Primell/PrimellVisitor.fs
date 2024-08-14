@@ -65,11 +65,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
     parser.ErrorHandler <- BailErrorStrategy()
     parser
     
-  static member private Normalize (pobj: PObject) =
-    match pobj with   // couldn't use when Seq.length = 1 as that potentially hangs on infinite sequence
-    | :? PList as l when not(l.IsEmpty) && Seq.isEmpty(Seq.tail l) -> 
-        Seq.head l |> PrimellVisitor.Normalize
-    | _ -> pobj    
+  
 
   override this.VisitLine context = 
     let result = this.Visit(context.termSeq())
@@ -94,7 +90,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
       | _ -> PrimellProgrammerProblemException "not possible" |> raise
     ) 
     |> PList 
-    |> PrimellVisitor.Normalize
+    |> operationLib.Normalize
 
   member private this.VisitRtlTermSeqHead(rtlTermSeq: PrimellParser.ConcatRtlTermContext seq) =
     if Seq.isEmpty rtlTermSeq then

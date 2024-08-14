@@ -40,9 +40,12 @@ type PrimellList(sequence: PObject seq, ?length: PNumber, ?refersTo: Reference) 
     member this.GetEnumerator() = main.GetEnumerator()
     member this.GetEnumerator() = main.GetEnumerator() :> System.Collections.IEnumerator   // why didn't they get rid of this with .NET core?
   
+  // upcast for convenience, as most code needs an empty PObject, the detail of its occurence as a list is usually annoying 
   static member Empty = PrimellList(Seq.empty, Finite 0I) :> PObject  
-  // upcast for convenience, as most code needs an "empty object", the detail of its implementation as an empty list is usually annoying 
-  
+
+  // funny enough, the upcast logic didn't apply the the infinite list which other code benefits from being a seq<PObject>
+  static member Infinite(pobj: PObject) = PrimellList(Seq.initInfinite(fun _ -> pobj), Infinite)
+
   member private this.EvaluatedLength() =
     match length with 
     | Unknown ->   // calculate the finite length when requested (infinite will just hang)
