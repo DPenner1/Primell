@@ -210,9 +210,8 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
     | :? PAtom ->
         match round cValueIndex.Value with
         | NaN | Infinity Negative -> cValue
-        | Infinity Positive -> PList(Seq.append (Seq.singleton cValue) (Seq.initInfinite(fun _ -> PList.Empty)), Infinity Positive |> PNumber)
-        | _ as n when n < ExtendedBigRational.Zero -> System.NotImplementedException("negative index") |> raise
-        | _ as n when n = ExtendedBigRational.Zero -> newValue
+        | Infinity Positive -> Seq.append (Seq.singleton cValue) (PList.Infinite(PList.Empty)) |> PList :> PObject 
+        | _ as n when n <= ExtendedBigRational.Zero -> newValue
         | _ as n ->
             Seq.append (Seq.singleton cValue) (Seq.init((GetPositiveInt cValueIndex) - 1) (fun _ -> PList.Empty)) 
             |> Seq.insertAt (GetPositiveInt cValueIndex) newValue
@@ -220,7 +219,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
     | :? PList as l when l.IsEmpty ->
         match round cValueIndex.Value with
         | NaN | Infinity Negative -> l
-        | Infinity Positive -> PList(Seq.initInfinite(fun _ -> PList.Empty), Infinity Positive |> PNumber)
+        | Infinity Positive -> PList.Infinite(PList.Empty)
         | _ as n when n < ExtendedBigRational.Zero -> PList.Empty
         | _ as n when n = ExtendedBigRational.Zero -> newValue
         | _ as n ->
@@ -229,8 +228,8 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
             |> PList :> PObject
     | :? PList as l ->
         l |> Seq.mapi (fun i x -> 
-            match round cValueIndex.Value with
-            | Rational _ -> if i = GetPositiveInt cValueIndex then newValue else x
+            match cValueIndex.Value with
+            | Rational _ -> if i = l.GetEffectiveIndex cValueIndex then newValue else x
             | _ -> x
         )
           |> PList :> PObject

@@ -3,7 +3,7 @@ open dpenner1.Math
 
 let runner = PrimellRunner()
 
-//let control = runner.Run ",=2\n, =+ 5\n, =+ 7\n2!\\" PrimellConfiguration.PrimellDefault
+let control = runner.Run ", = (2 3 5 7)\n,@(5~) = 11\n," PrimellConfiguration.PrimellDefault
 //printfn "%A" [PrimeLib.IsPrime 999953I;PrimeLib.IsPrime 999959I;PrimeLib.IsPrime 999961I; PrimeLib.IsPrime 999979I; PrimeLib.IsPrime 999983I]
 
 //let test2 = PrimeLib.IsSquare 4294967296I

@@ -125,6 +125,32 @@ type PrimellList(sequence: PObject seq, ?length: PNumber, ?refersTo: Reference) 
     | _ -> 
         this.Append pobj
 
+  // only call with rationals, don't index from end of infinite list
+  // TODO - consider not raising exception and returning -1 (raising is my default, but it seems to be a nice use in this case) 
+  member internal this.GetEffectiveIndex(n: PNumber) = 
+    match n.Value with
+    | Rational r ->  
+      let index = BigRational.ToBigInt r
+
+      if index.Sign = -1 then  // index from end     
+          match length with
+          | Infinite -> 
+              PrimellProgrammerProblemException "Dont call this with negative index and infinite list" |> raise
+          | _ ->               
+              if this.IsEmpty then 0
+              else 
+                // at this point, because we're returning a specific object in a sequence,
+                // i believe it's impossible to avoid evaluating a possibly infinite length
+                match this.EvaluatedLength() with
+                | Finite x -> 
+                    let modulo = (index % x) 
+                    (if modulo.IsZero then modulo else modulo + x) |> int  // i really hate negative modulo, why is this a thing
+                | _ -> PrimellProgrammerProblemException "impossible, unless you actually reached the end of an infinite list" |> raise
+      else
+        int index
+    | _ -> PrimellProgrammerProblemException "Dont call this with non-rational" |> raise
+
+
   member this.Index(n: PNumber) =
     match n.Value with
     | NaN ->
@@ -134,24 +160,13 @@ type PrimellList(sequence: PObject seq, ?length: PNumber, ?refersTo: Reference) 
     | Rational r ->
         let index = BigRational.ToBigInt r
 
-        if index.Sign = -1 then  // index from end     
-            match length with
-            | Infinite -> 
-                PrimellList.Empty  // index from end of list
-            | _ ->               
-                if this.IsEmpty then PrimellList.Empty
-                else 
-                  // at this point, because we're returning a specific object in a sequence,
-                  // i believe it's impossible to avoid evaluating a possibly infinite length
-                  match this.EvaluatedLength() with
-                  | Finite x -> 
-                      let modulo = (index % x) // i really hate negative modulo, why is this a thing
-                      main |> Seq.item ((if modulo.IsZero then modulo else modulo + x) |> int)
-                  | _ -> PrimellProgrammerProblemException "impossible, unless you actually reached the end of an infinite list" |> raise
-        else
-          match Seq.tryItem (int index) main with
+        match length, index.Sign with
+        | Infinite, -1 -> PrimellList.Empty
+        | _ -> 
+          match Seq.tryItem (this.GetEffectiveIndex n) main with
           | None -> PrimellList.Empty 
           | Some x -> x
+
 
   static member private AllIndexesOf' (pObj: PObject)(searchSeq: PObject seq)(retval: PrimellList)(indexAdjust: int) = 
     match searchSeq |> Seq.tryFindIndex(fun x -> x.NaNAwareEquals pObj) with
