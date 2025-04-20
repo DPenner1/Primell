@@ -11,6 +11,9 @@ type BranchMode =
 
 type IExternal =  // Some operations need to interact with the outside world  TODO need better name
   abstract member Branch: BranchMode -> PNumber -> PObject
+  abstract member OutputToDefault: string -> unit
+  abstract member FlushDefaultOutput: unit -> unit
+  abstract member ReadLineFromDefault: unit -> string
 
 // note: as part of trying to get references to work, OperationLib was converted from module to class type
 //       This may have the later benefit of being able to swap out operations dependent on control.UsePrimeOperators
@@ -244,7 +247,13 @@ type OperationLib(control: PrimellProgramControl, external: IExternal) =
       | _ -> PrimellProgrammerProblemException("Not possible") |> raise
 
     member this.GetStringInput(): PObject =
-      System.NotImplementedException() |> raise
+      external.ReadLineFromDefault().ToCharArray() 
+      |> Array.toList 
+      |> List.map(fun c -> System.Convert.ToInt32 c |> BigRational |> Rational |> PNumber :> PObject) 
+      |> PList
+      :> PObject
+      // TODO - this is just UTF-16 for simplicity right now
+      
 
     member this.GetListInput(): PObject =
       System.NotImplementedException() |> raise
@@ -276,12 +285,13 @@ type OperationLib(control: PrimellProgramControl, external: IExternal) =
                 let c = Encoding.UTF32.GetString(bytes)
                 control.LineResults[control.CurrentLine] <- 
                   { control.LineResults[control.CurrentLine] with Output = control.LineResults[control.CurrentLine].Output + c}
-                printf "%s" c
+                external.OutputToDefault c
         | _ -> System.NotImplementedException() |> raise
       )
 
     member this.OutputString(l: PList) = 
       this.OutputString' l
+      external.FlushDefaultOutput()
       control.LastOperationWasOutput <- true
       l   // i guess?  probably makes sense to not modify the object "on the stack"
 

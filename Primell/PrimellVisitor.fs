@@ -56,6 +56,15 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
             control.LastOperationWasOutput <- false
             result
 
+    member this.OutputToDefault (str: string): unit = 
+        System.Console.Write str
+
+    member this.FlushDefaultOutput (): unit = 
+        System.Console.Out.Flush()
+
+    member this.ReadLineFromDefault (): string = 
+        System.Console.ReadLine()
+
   static member GetParser (line: string) =
     let stream = AntlrInputStream line
     let lexer = PrimellLexer stream
