@@ -10,7 +10,7 @@ let AssertEqualSequences<'T>(expected: seq<'T>, actual: seq<'T>) =
   Seq.zip expected actual |> Seq.iter(fun pair -> Assert.Equal(fst pair, snd pair))
 
 let TestRange(range, knownPrimes) =
-  let calculatedPrimes = range |> Seq.filter (fun x -> PPrimeLib.IsPrime(BigRational(x, 1I) |> Rational |> PNumber))  
+  let calculatedPrimes = range |> Seq.filter (fun x -> PPrimeLib.IsPrime(BigRational(x, 1I) |> Rational))  
   AssertEqualSequences(knownPrimes, calculatedPrimes)
 
 [<Fact>]
@@ -27,32 +27,32 @@ let ``Test Is Prime 999950-1000000`` () =
 
 [<Fact>]
 let ``Test Is Prime Special Cases`` () =
-  Assert.False <| PPrimeLib.IsPrime(NaN |> PNumber)
-  Assert.False <| PPrimeLib.IsPrime(Infinity Positive |> PNumber)
-  Assert.False <| PPrimeLib.IsPrime(Infinity Negative |> PNumber)
+  Assert.False <| PPrimeLib.IsPrime NaN
+  Assert.False <| PPrimeLib.IsPrime(Infinity Positive)
+  Assert.False <| PPrimeLib.IsPrime(Infinity Negative)
   
-  Assert.False <| PPrimeLib.IsPrime(BigRational(1, -1) |> Rational |> PNumber)
-  Assert.False <| PPrimeLib.IsPrime(BigRational(0, 1) |> Rational |> PNumber)
-  Assert.False <| PPrimeLib.IsPrime(BigRational(1, 1) |> Rational |> PNumber)
+  Assert.False <| PPrimeLib.IsPrime(BigRational(1, -1) |> Rational)
+  Assert.False <| PPrimeLib.IsPrime(BigRational(0, 1) |> Rational)
+  Assert.False <| PPrimeLib.IsPrime(BigRational(1, 1) |> Rational)
 
-  Assert.True <| PPrimeLib.IsPrime(BigRational(2, 1) |> Rational |> PNumber)
+  Assert.True <| PPrimeLib.IsPrime(BigRational(2, 1) |> Rational)
 
-  Assert.False <| PPrimeLib.IsPrime(BigRational(5, 2) |> Rational |> PNumber)
-  Assert.False <| PPrimeLib.IsPrime(BigRational(5, -2) |> Rational |> PNumber)
+  Assert.False <| PPrimeLib.IsPrime(BigRational(5, 2) |> Rational)
+  Assert.False <| PPrimeLib.IsPrime(BigRational(5, -2) |> Rational)
 
 
 [<Fact>]
 let ``Test PrimeFactorization``() = 
-  let calculated = PPrimeLib.PrimeFactorization(BigRational(-20, 77) |> Rational |> PNumber)
+  let calculated = PPrimeLib.PrimeFactorization(BigRational(-20, 77) |> Rational)
   let expected = 
     [BigRational -1; BigRational(1, 11); BigRational(1, 7); BigRational 2; BigRational 2; BigRational 5] 
-    |> Seq.map(fun r -> r |> Rational |> PNumber :> PObject) |> PList :> PObject
+    |> Seq.map(fun r -> r |> Rational |> Number |> PObject) |> PObject.FromSeq
   Assert.Equal(expected, calculated)
 
-  let calculated = PPrimeLib.PrimeFactorization(BigRational -5 |> Rational |> PNumber)
+  let calculated = PPrimeLib.PrimeFactorization(BigRational -5 |> Rational)
   let expected = 
     [BigRational -1; BigRational 5] 
-    |> Seq.map(fun r -> r |> Rational |> PNumber :> PObject) |> PList :> PObject
+    |> Seq.map(fun r -> r |> Rational |> Number |> PObject) |> PObject.FromSeq
   Assert.Equal(expected, calculated)
 
 

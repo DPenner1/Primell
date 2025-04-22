@@ -21,15 +21,15 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
   let operationLib = new OperationLib(control, self)
 
   // TODO - get rid of this
-  let GetPositiveInt(n: PNumber) = 
-    match n.Value with
+  let GetPositiveInt(n: ExtendedBigRational) = 
+    match n with
     | Rational r when r >= BigRational.Zero -> (round r).Numerator |> int
     | _ -> PrimellProgrammerProblemException("Get Int should only be called with positive rational") |> raise
 
   interface IExternal with
     member this.Branch mode branchValue =
-      match branchValue.Value with
-      | NaN | Infinity _ -> PList.Empty
+      match branchValue with
+      | NaN | Infinity _ -> PObject.Empty
       | Rational r ->
           let intArg = BigRational.ToInt r
           let lineIndex = 
@@ -39,7 +39,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
             | Absolute -> intArg
 
           if lineIndex >= control.LineResults.Length then 
-            PList.Empty
+            PObject.Empty
           else
             let effectiveLine = 
               if lineIndex >= 0 then lineIndex
@@ -82,28 +82,30 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
 
   override this.VisitParens context = this.Visit(context.termSeq())
 
-  override this.VisitEmptyList context = PList.Empty
+  override this.VisitEmptyList context = PObject.Empty
 
   member private this.VisitConcatRtlTermSeq(rtlTermSeq: PrimellParser.ConcatRtlTermContext seq) =
 
     (Seq.empty, rtlTermSeq) ||> Seq.fold(fun retval concatRtlTerm ->
       control.LastOperationWasAssignment <- false   // putting this here is either genius or deranged
       control.LastOperationWasOutput <- false      // continued genius / derangement
-      match concatRtlTerm.concat(), this.Visit(concatRtlTerm.rtlTerm()) with
-      | null, (_ as pobj) ->
-          Seq.append retval (Seq.singleton pobj)
-      | _, (:? PAtom as a) -> 
-          Seq.append retval (Seq.singleton a)
-      | _, (:? PList as l) ->
+      let left = concatRtlTerm.concat()
+      let right = this.Visit(concatRtlTerm.rtlTerm())
+      match left, right.Value with
+      | null, _ ->
+          Seq.append retval (Seq.singleton right)
+      | _, Sequence l ->
           Seq.append retval l
-      | _ -> PrimellProgrammerProblemException "not possible" |> raise
+      | _, Empty ->
+          retval
+      | _ -> 
+          Seq.append retval (Seq.singleton right)
     ) 
-    |> PList 
-    |> operationLib.Normalize
+    |> PObject.FromSeq
 
   member private this.VisitRtlTermSeqHead(rtlTermSeq: PrimellParser.ConcatRtlTermContext seq) =
     if Seq.isEmpty rtlTermSeq then
-      PList.Empty
+      PObject.Empty
     else 
       match (Seq.head rtlTermSeq).concat() with
       | null -> this.Visit(Seq.head rtlTermSeq)
@@ -111,7 +113,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
 
   member private this.VisitRtlTermSeqTail(rtlTermSeq: PrimellParser.ConcatRtlTermContext seq) =
     if Seq.isEmpty rtlTermSeq then
-      PList.Empty
+      PObject.Empty
     else 
       match (Seq.head rtlTermSeq).concat() with
       | null -> this.VisitConcatRtlTermSeq(Seq.tail rtlTermSeq)
@@ -131,7 +133,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
     | Some n ->
         if control.Settings.RestrictedSource && not(PPrimeLib.IsPrime n) then
           NonPrimeDectectionException (n.ToString()) |> raise
-        n
+        n |> Number |> PObject
     | None -> // implicitly an identifier
         if control.Settings.RestrictedSource then  // TODO - temporary, too euro-centric, need to block way more chars
           let regex = System.Text.RegularExpressions.Regex($"[0-9a-zA-Z{control.Settings.Character63}{control.Settings.Character64}]")
@@ -140,16 +142,16 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
 
         control.GetVariable(text)
 
-  override this.VisitInfinity context = Infinity Positive |> PNumber :> PObject
+  override this.VisitInfinity context = Infinity Positive |> Number |> PObject
 
   override this.VisitString context = // TODO, just hardcoding UTF-32
     let runeEnumerable = seq { let mutable i = context.STRING().GetText().EnumerateRunes() in while i.MoveNext() do yield i.Current }
     runeEnumerable |> Seq.map(fun f -> 
-      let value = f.Value |> BigRational |> Rational |> PNumber
+      let value = f.Value |> BigRational |> Rational
       if control.Settings.RestrictedSource && not (PPrimeLib.IsPrime value) then
         NonPrimeDectectionException (f.ToString() + ": " + value.ToString()) |> raise
-      value :> PObject
-    ) |> PList :> PObject
+      value |> Number |> PObject
+    ) |> PObject.FromSeq
   
   override this.VisitNullaryOp context =
     operationLib.ApplyNullaryOperation (context.baseNullaryOp().GetText()) (ParseLib.ParseOperationModifiers (context.opMods().GetText()))
@@ -185,75 +187,79 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
   member private this.GetReplacementObjectWithListIndex(cValue: PObject)(cListIndex: PList)(newValue: PObject) =
     // at least in the base case, cListIndex.Length >= length of newValue (which itself should at least be 2 items)
     // but yes, the recursion step on this one scares me
-    match cValue with 
-    | (:? PAtom) -> 
-        this.GetReplacementObjectWithListIndex (Seq.singleton cValue |> PList) cListIndex newValue
-    | (:? PList as cList) ->
-        match newValue with
-        | :? PAtom ->
-            PrimellProgrammerProblemException "surely not" |> raise
-        | :? PList as newList ->
+    match cValue.Value with 
+    | Number _ -> 
+        this.GetReplacementObjectWithListIndex (cValue |> PObject.Box) cListIndex newValue
+    | Empty -> 
+        this.GetReplacementObjectWithListIndex (Seq.empty |> PList |> Sequence |> PObject) cListIndex newValue
+    | Sequence cList ->
+        match newValue.Value with
+        | Sequence newList ->
             let ivZip = Seq.zip cListIndex newList  // im 99% sure this is correct in base case
           
             (cList, ivZip) ||> Seq.fold(fun accList ivPair -> 
-                match round (fst ivPair :?> PNumber).Value with // not dealing with nested list index yet
-                | NaN | Infinity Negative -> accList
-                | Infinity Positive -> PList(Seq.append accList (Seq.initInfinite(fun _ -> PList.Empty)), Infinity Positive |> PNumber)
-                | Rational r when r < BigRational.Zero -> System.NotImplementedException("negative index") |> raise
-                | Rational r ->
-                    let index = int r.Numerator
-                    if index >= GetPositiveInt accList.Length then // extend list with empties
-                        Seq.append accList (Seq.init (index - (GetPositiveInt accList.Length)) (fun _ -> PList.Empty)) 
-                        |> Seq.insertAt index (snd ivPair) 
-                        |> PList
-                    else 
-                        accList |> Seq.updateAt index (snd ivPair) |> PList
-                )
+                match (fst ivPair).Value with
+                | Number index ->
+                    match round index with 
+                    | NaN | Infinity Negative -> accList
+                    | Infinity Positive -> PList(Seq.append accList (Seq.initInfinite(fun _ -> PObject.Empty)), Infinity Positive)
+                    | Rational r when r < BigRational.Zero -> System.NotImplementedException "negative index" |> raise
+                    | Rational r ->
+                        let index = int r.Numerator
+                        if index >= GetPositiveInt accList.Length then // extend list with empties
+                            Seq.append accList (Seq.init (index - (GetPositiveInt accList.Length)) (fun _ -> PObject.Empty)) 
+                            |> Seq.insertAt index (snd ivPair) 
+                            |> PList
+                        else 
+                            accList |> Seq.updateAt index (snd ivPair) |> PList
+                | _ -> System.NotImplementedException "Nested list index not yet supported" |> raise
+            )
         | _ ->
             PrimellProgrammerProblemException "this isn't possible either right?" |> raise
     | _ -> System.NotImplementedException "nested ref/var" |> raise
     
 
-  member private this.GetReplacementObjectWithNumericIndex(cValue: PObject)(cValueIndex: PNumber)(newValue: PObject) =
-    match cValue with
-    | :? PAtom ->
-        match round cValueIndex.Value with
+  member private this.GetReplacementObjectWithNumericIndex(cValue: PObject)(cValueIndex: ExtendedBigRational)(newValue: PObject) =
+    match cValue.Value with
+    | Number _ ->
+        match round cValueIndex with
         | NaN | Infinity Negative -> cValue
-        | Infinity Positive -> Seq.append (Seq.singleton cValue) (PList.Infinite(PList.Empty)) |> PList :> PObject 
+        | Infinity Positive -> (Seq.singleton cValue |> PList).AppendAll (PObject.Infinite PObject.Empty) |> PList |> Sequence |> PObject  //TODO TAG
         | _ as n when n <= ExtendedBigRational.Zero -> newValue
         | _ as n ->
-            Seq.append (Seq.singleton cValue) (Seq.init((GetPositiveInt cValueIndex) - 1) (fun _ -> PList.Empty)) 
+            Seq.append (Seq.singleton cValue) (Seq.init((GetPositiveInt cValueIndex) - 1) (fun _ -> PObject.Empty)) 
             |> Seq.insertAt (GetPositiveInt cValueIndex) newValue
-            |> PList :> PObject
-    | :? PList as l when l.IsEmpty ->
-        match round cValueIndex.Value with
-        | NaN | Infinity Negative -> l
-        | Infinity Positive -> PList.Infinite(PList.Empty)
-        | _ as n when n < ExtendedBigRational.Zero -> PList.Empty
+            |> PList |> Sequence |> PObject
+    | Empty ->
+        match round cValueIndex with
+        | NaN | Infinity Negative -> PObject.Empty
+        | Infinity Positive -> PObject.Infinite PObject.Empty
+        | _ as n when n < ExtendedBigRational.Zero -> PObject.Empty
         | _ as n when n = ExtendedBigRational.Zero -> newValue
         | _ as n ->
-            Seq.init (GetPositiveInt cValueIndex) (fun _ -> PList.Empty) 
+            Seq.init (GetPositiveInt cValueIndex) (fun _ -> PObject.Empty) 
             |> Seq.insertAt (GetPositiveInt cValueIndex) newValue
-            |> PList :> PObject
-    | :? PList as l ->
+            |> PList |> Sequence |> PObject
+    | Sequence l ->
         l |> Seq.mapi (fun i x -> 
-            match cValueIndex.Value with
+            match cValueIndex with
             | Rational _ -> if i = l.GetEffectiveIndex cValueIndex then newValue else x
             | _ -> x
         )
-          |> PList :> PObject
+          |> PList |> Sequence |> PObject
     | _ -> System.NotImplementedException "nested ref/var" |> raise
 
   member private this.GetReplacementObject(cValue: PObject)(cValueIndex: PObject)(newValue: PObject) =
-    match cValueIndex with
-    | :? PNumber as n -> this.GetReplacementObjectWithNumericIndex cValue n newValue
-    | :? PList as l ->  this.GetReplacementObjectWithListIndex cValue l newValue
-    | _ -> PrimellProgrammerProblemException "not yet possible" |> raise
+    match cValueIndex.Value with
+    | Number n -> this.GetReplacementObjectWithNumericIndex cValue n newValue
+    | Sequence l ->  this.GetReplacementObjectWithListIndex cValue l newValue |> PObject.FromSeq
+    | Empty -> this.GetReplacementObjectWithListIndex cValue (Seq.empty |> PList) newValue |> PObject.FromSeq
+    | _ -> System.NotImplementedException "Replacement object with operator not yet implemented" |> raise
   
   member private this.ReplaceReference (refObj: PObject) (refIndex: PObject) (newValue: PObject) =
     // the high level thing for base case is referencedObject@referenceIndex = newValue
     // at least in non-recursive case, assign mechanics is such that length of newValue does not exceed length of referenceIndex
-    match refObj.Reference with
+    match refObj.Metadata.Reference with
     | Variable name ->
         let replacementValue = this.GetReplacementObject refObj refIndex newValue
         if control.TrySetVariable(name, refObj, replacementValue) then
@@ -266,7 +272,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
 
   // called when left is either PAtom, empty list, or manually per operation modifier
   member private this.PerformAtomicAssign (left: PObject, right: PObject) =
-    match left.Reference with
+    match left.Metadata.Reference with
     | Void -> right // no action needed
     | Variable name -> 
         if control.TrySetVariable(name, left, right) then
@@ -275,32 +281,34 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
           right
     | Reference (refObj, refIndex) -> this.ReplaceReference refObj refIndex right
 
-  member private this.PerformListAssign (left: PList, right: PObject, assignMods: OperationModifier list) =
-    let newValue = 
-      match right with
-      | :? PAtom ->
-            let newLvalue = left |> Seq.map(fun x -> this.PerformAssign(x, right, assignMods))
-            newLvalue |> PList :> PObject   
-      | :? PList as l when l.IsEmpty ->  
-          let newLvalue = left |> Seq.map(fun x -> this.PerformAssign(x, right, assignMods))
-          newLvalue |> PList :> PObject   
-      | :? PList as l ->
-          let temp = (left, l) ||> Seq.zip |> Seq.map(fun x -> this.PerformAssign(fst x, snd x, assignMods))
-          let real =  // TODO - more problems with infinite lists
-            if left.Length.Value > l.Length.Value then 
-              Seq.append temp (left |> Seq.skip (Seq.length l))
-            else temp
-          real |> PList :> PObject 
-      | _ -> PrimellProgrammerProblemException "not possible" |> raise
-    
-    match left.Reference with
-    | Void -> newValue // no action needed
-    | Variable name -> 
-        if control.TrySetVariable(name, left, newValue) then
-          control.GetVariable name
-        else
-          newValue
-    | Reference (refObj, refIndex) -> this.ReplaceReference refObj refIndex newValue
+  member private this.PerformListAssign (leftList: PObject, right: PObject, assignMods: OperationModifier list) =
+    match leftList.Value with
+    | Sequence left ->
+        let newValue = 
+          match right.Value with
+          | Empty ->  
+              let newLvalue = left |> Seq.map(fun x -> this.PerformAssign(x, right, assignMods))
+              newLvalue |> PList |> Sequence |> PObject   
+          | Sequence l ->
+              let temp = (left, l) ||> Seq.zip |> Seq.map(fun x -> this.PerformAssign(fst x, snd x, assignMods))
+              let real =  // TODO - more problems with infinite lists
+                if left.Length > l.Length then 
+                  Seq.append temp (left |> Seq.skip (Seq.length l))
+                else temp
+              real |> PList |> Sequence |> PObject
+          | _ ->
+                let newLvalue = left |> Seq.map(fun x -> this.PerformAssign(x, right, assignMods))
+                newLvalue |> PList |> Sequence |> PObject
+        
+        match leftList.Metadata.Reference with
+        | Void -> newValue // no action needed
+        | Variable name -> 
+            if control.TrySetVariable(name, leftList, newValue) then
+              control.GetVariable name
+            else
+              newValue
+        | Reference (refObj, refIndex) -> this.ReplaceReference refObj refIndex newValue
+    | _ -> PrimellProgrammerProblemException "Cannot call list assign with non-list" |> raise
 
   member private this.PerformAssign  (left: PObject, right: PObject, assignMods: OperationModifier list): PObject =
     (* logic from original mutable C# version:
@@ -332,14 +340,13 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
     // now this is absolutely horrid recursion, because you need recurse down the data structure (normal for operators in Primell)
     // but once values are assigned, you need to make those assignments stick (in C# mutable, they would just be modified in place)
     // In F# immutable Primell, we need to recurse up the reference chain (which isn't the same as the nested list data structure!)
-    match left, (assignMods |> List.contains Power) with
-    | _, true | :? PAtom, _ ->
+    match left.Value, (assignMods |> List.contains Power) with
+    | _, true ->
         this.PerformAtomicAssign(left, right)
-    | :? PList as l, _ when l.IsEmpty ->
+    | Sequence _, _ ->
+        this.PerformListAssign(left, right, assignMods)
+    | _ -> 
         this.PerformAtomicAssign(left, right)
-    | :? PList as l, _ ->
-        this.PerformListAssign(l, right, assignMods)
-    | _ -> PrimellProgrammerProblemException("not possible") |> raise
     // Note: in case you get the bright idea to stick the control.LastOperationWasAssignment here again, lazy eval
   
   override this.VisitStdAssign context =
@@ -379,10 +386,10 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
     | PartialConditional (pobj, _), true -> operationLib.Head pobj
     | PartialConditional (pobj, rest), false -> 
         let start =
-          match operationLib.Tail pobj with
-          | :? PList as l -> l
+          match (operationLib.Tail pobj).Value with
+          | Sequence l -> l
           | _ -> Seq.singleton pobj |> PList
-        start.AppendAll (this.VisitConcatRtlTermSeq rest)
+        start.AppendAll (this.VisitConcatRtlTermSeq rest) |> PObject.FromSeq
     | _ -> PrimellProgrammerProblemException "non-conditional in conditional code" |> raise
 
   member private this.Conditional (left: PObject) (right: BinaryRHS) (condContext: PrimellParser.ConditionalOpContext) =
@@ -448,7 +455,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
           |> Seq.takeWhile(fun x -> x.concat() |> isNull |> not) 
           |> Seq.map(fun x -> this.Visit(x)) 
           |> Seq.indexed  
-        match indexedResults |> Seq.tryFind(fun x -> PList.Empty.Equals x |> not) with
+        match indexedResults |> Seq.tryFind(fun x -> PObject.Empty.Equals x |> not) with
         | None -> DeferredConditional (rtlTermSeq |> Seq.skip (Seq.length indexedResults)) // all concat terms evaluated empty, skip them
         | Some result -> PartialConditional (snd result, rtlTermSeq |> Seq.skip((fst result) + 1))
 
@@ -525,14 +532,16 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
     // but there are probably more efficient ways of doing it
     match right with
     | NonConditional pobj ->
-        match pobj with
-        | :? PList as l ->
-            l |> Seq.map(fun x -> this.ApplyBinaryOperation left (NonConditional x) boCtxt) |> PList :> PObject
+        match pobj.Value with
+        | Sequence l ->
+            l |> Seq.map(fun x -> this.ApplyBinaryOperation left (NonConditional x) boCtxt) |> PObject.FromSeq
+        | Empty -> System.NotImplementedException "gah" |> raise
         | _ -> this.ApplyBinaryOperation left (NonConditional pobj) boCtxt
     | EvaluatedConditional pobj ->
-        match pobj with
-        | :? PList as l ->
-            l |> Seq.map(fun x -> this.ApplyBinaryOperation left (EvaluatedConditional x) boCtxt) |> PList :> PObject
+        match pobj.Value with
+        | Sequence l ->
+            l |> Seq.map(fun x -> this.ApplyBinaryOperation left (EvaluatedConditional x) boCtxt) |> PObject.FromSeq
+        | Empty -> System.NotImplementedException "gah" |> raise
         | _ -> this.ApplyBinaryOperation left (EvaluatedConditional pobj) boCtxt
     | PartialConditional _ ->
         PrimellProgrammerProblemException "partial conditional not allowed in for-each right" |> raise
@@ -554,20 +563,20 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
         this.ApplyForEachRight left right (rhsCtxt.binaryOp())
 
   override this.VisitForEachUnary context =
-    match this.Visit(context.termSeq()) with
-    | :? PAtom as a ->
-        this.ApplyUnaryOperation a (context.unaryOp())
-    | :? PList as l ->
-        l |> Seq.map(fun pobj -> this.ApplyUnaryOperation pobj (context.unaryOp())) |> PList :> PObject
-    | _ -> PrimellProgrammerProblemException "not possible" |> raise
+    let pObj = this.Visit(context.termSeq())
+    match pObj.Value with
+    | Sequence l ->
+        l |> Seq.map(fun pobj -> this.ApplyUnaryOperation pobj (context.unaryOp())) |> PObject.FromSeq
+    | _ ->
+        this.ApplyUnaryOperation pObj (context.unaryOp())
 
   override this.VisitForEachLeftBinary context =
     let rhsCtxt = context.binaryOpWithRS()
     let left, right = this.GetLeftRightBinaryOperands (context.termSeq()) rhsCtxt
 
-    match left with
-    | :? PList as l -> 
-        l |> Seq.map(fun pobj -> this.ApplyBinaryOperation pobj right (rhsCtxt.binaryOp())) |> PList :> PObject 
+    match left.Value with
+    | Sequence l -> 
+        l |> Seq.map(fun pobj -> this.ApplyBinaryOperation pobj right (rhsCtxt.binaryOp())) |> PObject.FromSeq 
     | _ ->
         this.ApplyBinaryOperation left right (rhsCtxt.binaryOp())
 
@@ -587,8 +596,8 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
 
   override this.VisitForEachChain context =
     let left = this.Visit(context.termSeq())
-    match left with
-    | :? PList as l -> l |> Seq.map(fun x -> this.OpChain x (context.unaryOrBinaryOp())) |> PList :> PObject
+    match left.Value with
+    | Sequence l -> l |> Seq.map(fun x -> this.OpChain x (context.unaryOrBinaryOp())) |> PObject.FromSeq
     | _ -> this.OpChain left (context.unaryOrBinaryOp())
      
 

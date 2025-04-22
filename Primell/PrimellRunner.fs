@@ -38,8 +38,8 @@ type PrimellRunner() =
     let temp =
       result.ToString()
 
-    match result with
-    | :? PList as l when not l.IsEmpty -> temp.Substring(1, temp.Length - 2)  // trim off outer parentheses
+    match result.Value with
+    | Sequence _ -> temp.Substring(1, temp.Length - 2)  // trim off outer parentheses
     | _ -> temp
   
 
@@ -55,8 +55,8 @@ type PrimellRunner() =
     runnerVariables |> Seq.iter(fun kvp -> control.Variables[kvp.Key] <- kvp.Value)  // add in saved variables
 
     // pre-initialized variables
-    control.TrySetVariable(",,,", PList.Empty, PList.Infinite(PList.Empty)) |> ignore
-    control.TrySetVariable(",,,,,", PList.Empty, PList.Infinite(ExtendedBigRational.Zero |> PNumber)) |> ignore
+    control.TrySetVariable(",,,", PObject.Empty, PObject.Infinite PObject.Empty) |> ignore
+    control.TrySetVariable(",,,,,", PObject.Empty, PObject.Infinite(ExtendedBigRational.Zero |> Number |> PObject)) |> ignore
 
     // also this has just been cobbled together over time, this could definitely be cleaner
     for i in 0..(control.LineResults.Length - 1) do

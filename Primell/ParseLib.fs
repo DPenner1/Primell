@@ -38,7 +38,7 @@ module ParseLib =
         BigRational(text.Length, 1)
       else
         BigRational(ParseInteger' settings text 0 0I, 1) 
-    result |> Rational |> PNumber
+    result |> Rational
 
   let ParseOperationModifiers (opModText: string) =
     let rec ParseOperationModifiers' (opModText: string) (opMods: list<OperationModifier>) =

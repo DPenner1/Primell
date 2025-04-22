@@ -7,36 +7,36 @@ open dpenner1.Math
 
 [<Fact>]
 let ``Test Index Special``() =
-    let testList = seq {ExtendedBigRational.Zero |> PNumber :> PObject; ExtendedBigRational.One |> PNumber :> PObject; ExtendedBigRational.Two |> PNumber :> PObject} |> PList
+    let testList = seq {ExtendedBigRational.Zero |> Number |> PObject; ExtendedBigRational.One |> Number |> PObject; ExtendedBigRational.Two |> Number |> PObject} |> PList
     
-    Assert.Equal(PList.Empty, testList.Index(NaN |> PNumber))    
-    Assert.Equal(PList.Empty, testList.Index(Infinity Positive |> PNumber))
-    Assert.Equal(PList.Empty, testList.Index(Infinity Negative |> PNumber))
+    Assert.Equal(PObject.Empty, testList.Index NaN)    
+    Assert.Equal(PObject.Empty, testList.Index(Infinity Positive))
+    Assert.Equal(PObject.Empty, testList.Index(Infinity Negative))
 
 [<Fact>]
 let ``Test Index``() =
-    let testList = seq {ExtendedBigRational.Zero |> PNumber :> PObject; ExtendedBigRational.One |> PNumber :> PObject; ExtendedBigRational.Two |> PNumber :> PObject} |> PList
+    let testList = seq {ExtendedBigRational.Zero |> Number |> PObject; ExtendedBigRational.One |> Number |> PObject; ExtendedBigRational.Two |> Number |> PObject} |> PList
     
-    Assert.Equal(ExtendedBigRational.Zero |> PNumber :> PObject, testList.Index(0 |> BigRational |> Rational |> PNumber))    
-    Assert.Equal(ExtendedBigRational.One |> PNumber :> PObject, testList.Index(1 |> BigRational |> Rational |> PNumber))    
-    Assert.Equal(ExtendedBigRational.Two |> PNumber :> PObject, testList.Index(2 |> BigRational |> Rational |> PNumber)) 
-    Assert.Equal(PList.Empty, testList.Index(3 |> BigRational |> Rational |> PNumber))
+    Assert.Equal(ExtendedBigRational.Zero |> Number |> PObject, testList.Index(0 |> BigRational |> Rational))    
+    Assert.Equal(ExtendedBigRational.One |> Number |> PObject, testList.Index(1 |> BigRational |> Rational))    
+    Assert.Equal(ExtendedBigRational.Two |> Number |> PObject, testList.Index(2 |> BigRational |> Rational)) 
+    Assert.Equal(PObject.Empty, testList.Index(3 |> BigRational |> Rational))
 
-    Assert.Equal(ExtendedBigRational.Two |> PNumber :> PObject, testList.Index(-1 |> BigRational |> Rational |> PNumber))    
-    Assert.Equal(ExtendedBigRational.One |> PNumber :> PObject, testList.Index(-2 |> BigRational |> Rational |> PNumber))    
-    Assert.Equal(ExtendedBigRational.Zero |> PNumber :> PObject, testList.Index(-3 |> BigRational |> Rational |> PNumber)) 
-    Assert.Equal(ExtendedBigRational.Two |> PNumber :> PObject, testList.Index(-4 |> BigRational |> Rational |> PNumber)) 
+    Assert.Equal(ExtendedBigRational.Two |> Number |> PObject, testList.Index(-1 |> BigRational |> Rational))    
+    Assert.Equal(ExtendedBigRational.One |> Number |> PObject, testList.Index(-2 |> BigRational |> Rational))    
+    Assert.Equal(ExtendedBigRational.Zero |> Number |> PObject, testList.Index(-3 |> BigRational |> Rational)) 
+    Assert.Equal(ExtendedBigRational.Two |> Number |> PObject, testList.Index(-4 |> BigRational |> Rational)) 
 
 
 [<Fact>]
 let ``Test AllIndexesOf``() =
-  let testList = seq {ExtendedBigRational.Zero |> PNumber :> PObject
-                      ExtendedBigRational.One |> PNumber :> PObject
-                      ExtendedBigRational.Two |> PNumber :> PObject
-                      NaN |> PNumber :> PObject
-                      ExtendedBigRational.One |> PNumber :> PObject
+  let testList = seq {ExtendedBigRational.Zero |> Number |> PObject
+                      ExtendedBigRational.One |> Number |> PObject
+                      ExtendedBigRational.Two |> Number |> PObject
+                      NaN |> Number |> PObject
+                      ExtendedBigRational.One |> Number |> PObject
                      } |> PList
 
-  Assert.Equal(PList.Empty, testList.AllIndexesOf(NaN |> PNumber :> PObject))
-  Assert.Equal(seq { 1 |> BigRational |> Rational |> PNumber :> PObject; 4 |> BigRational |> Rational |> PNumber :> PObject } |> PList :> PObject, 
-               testList.AllIndexesOf(ExtendedBigRational.One |> PNumber :> PObject))
+  Assert.Equal(PObject.Empty, testList.AllIndexesOf(NaN |> Number |> PObject))
+  Assert.Equal(seq { 1 |> BigRational |> Rational |> Number |> PObject; 4 |> BigRational |> Rational |> Number |> PObject } |> PObject.FromSeq, 
+               testList.AllIndexesOf(ExtendedBigRational.One |> Number |> PObject))

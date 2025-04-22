@@ -27,7 +27,7 @@ type PrimellProgramControl(settings: PrimellConfiguration, lines: string seq, ?v
 
   member this.GetVariable(name: string) = 
     if not <| this.Variables.ContainsKey(name) then
-      this.Variables.Add(name, PList.Empty.WithReference(Variable name)) |> ignore
+      this.Variables.Add(name, PObject.Empty.WithReference(Variable name)) |> ignore
     this.Variables[name]
 
   // hopefully this works, but the idea is that with so much recursion potentially going on
