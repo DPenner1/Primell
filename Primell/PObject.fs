@@ -2,12 +2,15 @@ namespace dpenner1.Primell
 
 open dpenner1.Math
 
-exception PrimellProgrammerProblemException of string
+ // used in instances where branches should be not be called
+exception PrimellProgrammerProblemException of string 
 
 type private ListLength =  // it ended up being a bit too annoying interally to co-opt ExtenedBigRational for this
   | Unknown
   | Infinite
   | Finite of bigint
+
+// Note: Primell Object types are interdependent, so all of them had to be declared at once in this single file.
 
 [<Sealed>]
 // Ok a bit weird to call the seq a list, but conceptually, that's how I view the Primell object, as lists
@@ -97,7 +100,7 @@ type PrimellList(sequence: PObject seq, ?length: ExtendedBigRational, ?refersTo:
     | _ ->
       PrimellList(Seq.rev main, length)
 
-  // TODO - i think the Seq.singleton causes some incorrect boxing thats masked by a later Normalize
+  // TODO - i think the Seq.singleton causes some incorrect boxing thats masked by a later PObject.FromSeq
   member this.Append (pobj: PObject) = 
     let newLength = 
       match length with 
