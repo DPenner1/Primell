@@ -224,12 +224,12 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
     | Number _ ->
         match round cValueIndex with
         | NaN | Infinity Negative -> cValue
-        | Infinity Positive -> (Seq.singleton cValue |> PList).AppendAll (PObject.Infinite PObject.Empty) |> PList |> Sequence |> PObject  //TODO TAG
+        | Infinity Positive -> (Seq.singleton cValue |> PList).AppendAll (PObject.Infinite PObject.Empty) |> PObject.FromSeq  //TODO TAG
         | _ as n when n <= ExtendedBigRational.Zero -> newValue
         | _ as n ->
             Seq.append (Seq.singleton cValue) (Seq.init((GetPositiveInt cValueIndex) - 1) (fun _ -> PObject.Empty)) 
             |> Seq.insertAt (GetPositiveInt cValueIndex) newValue
-            |> PList |> Sequence |> PObject
+            |> PObject.FromSeq
     | Empty ->
         match round cValueIndex with
         | NaN | Infinity Negative -> PObject.Empty
@@ -239,14 +239,14 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
         | _ as n ->
             Seq.init (GetPositiveInt cValueIndex) (fun _ -> PObject.Empty) 
             |> Seq.insertAt (GetPositiveInt cValueIndex) newValue
-            |> PList |> Sequence |> PObject
+            |> PObject.FromSeq
     | Sequence l ->
         l |> Seq.mapi (fun i x -> 
             match cValueIndex with
             | Rational _ -> if i = l.GetEffectiveIndex cValueIndex then newValue else x
             | _ -> x
         )
-          |> PList |> Sequence |> PObject
+          |> PObject.FromSeq
     | _ -> System.NotImplementedException "nested ref/var" |> raise
 
   member private this.GetReplacementObject(cValue: PObject)(cValueIndex: PObject)(newValue: PObject) =
@@ -288,17 +288,17 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
           match right.Value with
           | Empty ->  
               let newLvalue = left |> Seq.map(fun x -> this.PerformAssign(x, right, assignMods))
-              newLvalue |> PList |> Sequence |> PObject   
+              newLvalue |> PObject.FromSeq
           | Sequence l ->
               let temp = (left, l) ||> Seq.zip |> Seq.map(fun x -> this.PerformAssign(fst x, snd x, assignMods))
               let real =  // TODO - more problems with infinite lists
                 if left.Length > l.Length then 
                   Seq.append temp (left |> Seq.skip (Seq.length l))
                 else temp
-              real |> PList |> Sequence |> PObject
+              real |> PObject.FromSeq
           | _ ->
                 let newLvalue = left |> Seq.map(fun x -> this.PerformAssign(x, right, assignMods))
-                newLvalue |> PList |> Sequence |> PObject
+                newLvalue |> PObject.FromSeq
         
         match leftList.Metadata.Reference with
         | Void -> newValue // no action needed

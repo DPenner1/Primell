@@ -98,7 +98,7 @@ type OperationLib(control: PrimellProgramControl, external: IExternal) =
         match pobj.Value with
         | Number n -> operator n
         | Empty -> PObject.Empty
-        | Sequence l -> l |> Seq.map(fun x -> this.ApplyUnaryNumericOperation x operator opMods) |> PObject.FromSeq
+        | Sequence l -> l |> Seq.map(fun x -> this.ApplyUnaryNumericOperation x operator opMods) |> Seq.cache |> PObject.FromSeq
         | _ -> PrimellProgrammerProblemException "Not possible"  |> raise
         
     // TODO - make this private when the references in Visitor are removed
@@ -114,19 +114,25 @@ type OperationLib(control: PrimellProgramControl, external: IExternal) =
         | Number n1, Number n2 -> 
             operator(n1, n2)
         | Number _, Empty ->
-            left
-        | Empty, Number _ ->
-            right
-        | Number _, Sequence l -> 
-            if opMods |> List.contains Truncate |> not then
-              left
-            else
-              l |> Seq.map(fun x -> this.ApplyBinaryNumericOperation left x operator opMods) |> PObject.FromSeq
-        | Sequence l, Number _ -> 
-            if opMods |> List.contains Truncate |> not then
+            if opMods |> List.contains Truncate then
               right
             else
-              l |> Seq.map(fun x -> this.ApplyBinaryNumericOperation x right operator opMods) |> PObject.FromSeq
+              left
+        | Empty, Number _ ->
+            if opMods |> List.contains Truncate then
+              left
+            else
+              right
+        | Number _, Sequence l -> 
+            if opMods |> List.contains Truncate then
+              left
+            else
+              l |> Seq.map(fun x -> this.ApplyBinaryNumericOperation left x operator opMods) |> Seq.cache |> PObject.FromSeq
+        | Sequence l, Number _ -> 
+            if opMods |> List.contains Truncate then
+              right
+            else
+              l |> Seq.map(fun x -> this.ApplyBinaryNumericOperation x right operator opMods) |> Seq.cache |> PObject.FromSeq
         | Sequence l1, Sequence l2 -> 
             if opMods |> List.contains Truncate then            
               (l1, l2) ||> Seq.map2 (fun x y -> this.ApplyBinaryNumericOperation x y operator opMods) |> PObject.FromSeq
@@ -140,6 +146,7 @@ type OperationLib(control: PrimellProgramControl, external: IExternal) =
                   | (Some x, None  ) -> x
                   | (None  , Some y) -> y
                   | _ -> PrimellProgrammerProblemException "Not possible" |> raise)
+              |> Seq.cache
               |> PObject.FromSeq
             
         | _ -> System.NotImplementedException "First-class operators not yet implemented" |> raise
@@ -165,7 +172,7 @@ type OperationLib(control: PrimellProgramControl, external: IExternal) =
         | Empty, _ ->
             PObject.Empty
         | Sequence l, __ -> 
-            l |> Seq.map(fun x -> this.ApplyNumericListOperation x pList operator opMods) |> PObject.FromSeq
+            l |> Seq.map(fun x -> this.ApplyNumericListOperation x pList operator opMods) |> Seq.cache |> PObject.FromSeq
         | _, Number _ ->
             this.ApplyNumericListOperation pNumber (pList |> Seq.singleton |> PList |> Sequence |> PObject) operator opMods
         | _, Empty ->
@@ -183,7 +190,7 @@ type OperationLib(control: PrimellProgramControl, external: IExternal) =
         | _, Empty ->
             PObject.Empty
         | _, Sequence l -> 
-            l |> Seq.map(fun x -> this.ApplyListNumericOperation pList x operator opMods) |> PObject.FromSeq
+            l |> Seq.map(fun x -> this.ApplyListNumericOperation pList x operator opMods) |> Seq.cache |> PObject.FromSeq
         | _ -> System.NotImplementedException "First-class operators not yet implemented" |> raise
 
     member this.ApplyNullaryOperation (opText: string) opMods =
