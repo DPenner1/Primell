@@ -166,7 +166,7 @@ type PrimellList(sequence: PObject seq, ?length: ExtendedBigRational, ?refersTo:
   static member private AllIndexesOf' (pObj: PObject)(searchSeq: PObject seq)(retval: PrimellList)(indexAdjust: int) = 
     match searchSeq |> Seq.tryFindIndex(fun x -> x.NaNAwareEquals pObj) with
     | None -> retval |> PObject.FromSeq
-    | Some n -> PrimellList.AllIndexesOf' pObj (searchSeq |> Seq.skip (n + 1)) (retval.Append (n + indexAdjust |> BigRational |> Rational |> Number |> PObject)) (n + 1)
+    | Some n -> PrimellList.AllIndexesOf' pObj (searchSeq |> Seq.skip (n + 1)) (retval.Append (n + indexAdjust |> BigRational |> Rational |> PNumber |> Atom |> PObject)) (n + 1)
 
   member this.AllIndexesOf(pObj: PObject) =
     PrimellList.AllIndexesOf' pObj main (Seq.empty |> PrimellList) 0
@@ -227,10 +227,15 @@ type PrimellList(sequence: PObject seq, ?length: ExtendedBigRational, ?refersTo:
 
 and PList = PrimellList  // abbreviation for sanity
 
-and PrimellValue =
+and PrimellAtom =
+  | PNumber of ExtendedBigRational
+  | POperator of string // placeholder, design for this will probably change
+
+// In theory, this this type could not exist and be implemented as a simple sequence,
+// but in Primell, Atoms and occasionally Emptys have different execution semantics than sequences of 2+ items 
+and PrimellValue =  
   | Sequence of PList
-  | Number of ExtendedBigRational
-  | Operator of string  // temp, I'm thinking the operator will reference the operator library
+  | Atom of PrimellAtom
   | Empty
 
 and Reference =  // TODO - naming, not sure i like type and one of the options being named the same
@@ -249,6 +254,7 @@ and PrimellObject (value: PrimellValue, ?metadata: PrimellMetaData) =
   member val Metadata = defaultArg metadata PrimellMetaData.Default with get
   static member Empty with get() = Empty |> PrimellObject
 
+  // creates a valid PrimellObject from a sequence (reducing to Atom or Empty with 1 or 0 items respectively)
   static member FromSeq(pSeq: PrimellObject seq) =
     match Seq.isEmpty pSeq with
     | true -> PObject.Empty
@@ -267,39 +273,47 @@ and PrimellObject (value: PrimellValue, ?metadata: PrimellMetaData) =
 
   override this.ToString (): string = 
       match this.Value with
-      | Number n -> n.ToString()
+      | Atom a -> 
+          match a with
+          | PNumber n -> n.ToString()
+          | POperator o -> o.ToString()
       | Sequence l -> l.ToString()
       | Empty -> "()"
-      | Operator _ -> System.NotImplementedException "first class operators not yet implemented" |> raise
 
   override this.GetHashCode (): int = 
       match this.Value with
-      | Number n -> n.GetHashCode()
+      | Atom a -> 
+          match a with
+          | PNumber n -> n.GetHashCode()
+          | POperator o -> o.GetHashCode()
       | Sequence l -> l.GetHashCode()
       | Empty -> 123456789
-      | Operator _ -> System.NotImplementedException "first class operators not yet implemented" |> raise
 
   override this.Equals (obj: obj): bool = 
       match obj with
       | :? PObject as pObj ->
           match this.Value, pObj.Value with
-          | Number n1, Number n2  -> n1.Equals n2
+          | Atom a1, Atom a2 -> 
+              match a1, a2 with
+              | PNumber n1, PNumber n2  -> n1.Equals n2
+              | POperator o1, POperator o2 -> o1.Equals o2
+              | _ -> false
           | Sequence l1, Sequence l2 -> l1.Equals l2
           | Empty, Empty -> true
-          | Operator o1, Operator o2 -> o1.Equals o2
           | _ -> false
       | _ -> false
-        
-      
 
   member this.NaNAwareEquals (pobj: PrimellObject) =
     match this.Value, pobj.Value with
     | Empty, Empty -> true
-    | Operator o1, Operator o2 -> o1.Equals o2
-    | Number n1, Number n2 ->
-        match n1, n2 with
-        | NaN, _ | _, NaN -> false // always false
-        | _ -> n1.Equals n2
+    | Atom a1, Atom a2->
+        match a1, a2 with
+        | POperator o1, POperator o2 -> o1.Equals o2
+        | PNumber n1, PNumber n2 ->
+            match n1, n2 with
+            | NaN, _ | _, NaN -> false // always false
+            | _ -> n1.Equals n2
+        | _ -> false
     | Sequence s1, Sequence s2 -> s1.NaNAwareEquals s2
     | _ -> false
 

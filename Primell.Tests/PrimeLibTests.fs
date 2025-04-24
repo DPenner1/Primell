@@ -46,13 +46,13 @@ let ``Test PrimeFactorization``() =
   let calculated = PPrimeLib.PrimeFactorization(BigRational(-20, 77) |> Rational)
   let expected = 
     [BigRational -1; BigRational(1, 11); BigRational(1, 7); BigRational 2; BigRational 2; BigRational 5] 
-    |> Seq.map(fun r -> r |> Rational |> Number |> PObject) |> PObject.FromSeq
+    |> Seq.map(fun r -> r |> Rational |> PNumber |> Atom |> PObject) |> PObject.FromSeq
   Assert.Equal(expected, calculated)
 
   let calculated = PPrimeLib.PrimeFactorization(BigRational -5 |> Rational)
   let expected = 
     [BigRational -1; BigRational 5] 
-    |> Seq.map(fun r -> r |> Rational |> Number |> PObject) |> PObject.FromSeq
+    |> Seq.map(fun r -> r |> Rational |> PNumber |> Atom |> PObject) |> PObject.FromSeq
   Assert.Equal(expected, calculated)
 
 

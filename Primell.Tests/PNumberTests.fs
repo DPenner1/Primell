@@ -6,11 +6,11 @@ open dpenner1.Math
 
 [<Fact>]
 let ``Test NaN Equality``() =
-  Assert.False((NaN |> Number |> PObject).NaNAwareEquals(NaN |> Number |> PObject))
-  Assert.False((NaN |> Number |> PObject).NaNAwareEquals(Infinity Positive |> Number |> PObject))
-  Assert.False((Infinity Negative |> Number |> PObject).NaNAwareEquals(NaN |> Number |> PObject))
-  Assert.False((Infinity Negative |> Number |> PObject).NaNAwareEquals(Infinity Positive |> Number |> PObject))
-  Assert.True((Infinity Positive |> Number |> PObject).NaNAwareEquals(Infinity Positive |> Number |> PObject))
+  Assert.False((NaN |> PNumber |> Atom |> PObject).NaNAwareEquals(NaN |> PNumber |> Atom |> PObject))
+  Assert.False((NaN |> PNumber |> Atom |> PObject).NaNAwareEquals(Infinity Positive |> PNumber |> Atom |> PObject))
+  Assert.False((Infinity Negative |> PNumber |> Atom |> PObject).NaNAwareEquals(NaN |> PNumber |> Atom |> PObject))
+  Assert.False((Infinity Negative |> PNumber |> Atom |> PObject).NaNAwareEquals(Infinity Positive |> PNumber |> Atom |> PObject))
+  Assert.True((Infinity Positive |> PNumber |> Atom |> PObject).NaNAwareEquals(Infinity Positive |> PNumber |> Atom |> PObject))
 
 [<Fact>]
 let ``Test Regular Equality``() =  // make sure the framework Equals is respected (so NaN = NaN)

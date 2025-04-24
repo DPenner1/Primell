@@ -133,7 +133,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
     | Some n ->
         if control.Settings.RestrictedSource && not(PPrimeLib.IsPrime n) then
           NonPrimeDectectionException (n.ToString()) |> raise
-        n |> Number |> PObject
+        n |> PNumber |> Atom |> PObject
     | None -> // implicitly an identifier
         if control.Settings.RestrictedSource then  // TODO - temporary, too euro-centric, need to block way more chars
           let regex = System.Text.RegularExpressions.Regex($"[0-9a-zA-Z{control.Settings.Character63}{control.Settings.Character64}]")
@@ -142,7 +142,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
 
         control.GetVariable(text)
 
-  override this.VisitInfinity context = Infinity Positive |> Number |> PObject
+  override this.VisitInfinity context = Infinity Positive |> PNumber |> Atom |> PObject
 
   override this.VisitString context = // TODO, just hardcoding UTF-32
     let runeEnumerable = seq { let mutable i = context.STRING().GetText().EnumerateRunes() in while i.MoveNext() do yield i.Current }
@@ -150,7 +150,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
       let value = f.Value |> BigRational |> Rational
       if control.Settings.RestrictedSource && not (PPrimeLib.IsPrime value) then
         NonPrimeDectectionException (f.ToString() + ": " + value.ToString()) |> raise
-      value |> Number |> PObject
+      value |> PNumber |> Atom |> PObject
     ) |> PObject.FromSeq
   
   override this.VisitNullaryOp context =
@@ -188,7 +188,7 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
     // at least in the base case, cListIndex.Length >= length of newValue (which itself should at least be 2 items)
     // but yes, the recursion step on this one scares me
     match cValue.Value with 
-    | Number _ -> 
+    | Atom _ -> 
         this.GetReplacementObjectWithListIndex (cValue |> PObject.Box) cListIndex newValue
     | Empty -> 
         this.GetReplacementObjectWithListIndex (Seq.empty |> PList |> Sequence |> PObject) cListIndex newValue
@@ -199,37 +199,41 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
           
             (cList, ivZip) ||> Seq.fold(fun accList ivPair -> 
                 match (fst ivPair).Value with
-                | Number index ->
-                    match round index with 
-                    | NaN | Infinity Negative -> accList
-                    | Infinity Positive -> PList(Seq.append accList (Seq.initInfinite(fun _ -> PObject.Empty)), Infinity Positive)
-                    | Rational r when r < BigRational.Zero -> System.NotImplementedException "negative index" |> raise
-                    | Rational r ->
-                        let index = int r.Numerator
-                        if index >= GetPositiveInt accList.Length then // extend list with empties
-                            Seq.append accList (Seq.init (index - (GetPositiveInt accList.Length)) (fun _ -> PObject.Empty)) 
-                            |> Seq.insertAt index (snd ivPair) 
-                            |> PList
-                        else 
-                            accList |> Seq.updateAt index (snd ivPair) |> PList
+                | Atom a ->
+                    match a with
+                    | PNumber index ->
+                        match round index with 
+                        | NaN | Infinity Negative -> accList
+                        | Infinity Positive -> PList(Seq.append accList (Seq.initInfinite(fun _ -> PObject.Empty)), Infinity Positive)
+                        | Rational r when r < BigRational.Zero -> System.NotImplementedException "negative index" |> raise
+                        | Rational r ->
+                            let index = int r.Numerator
+                            if index >= GetPositiveInt accList.Length then // extend list with empties
+                                Seq.append accList (Seq.init (index - (GetPositiveInt accList.Length)) (fun _ -> PObject.Empty)) 
+                                |> Seq.insertAt index (snd ivPair) 
+                                |> PList
+                            else 
+                                accList |> Seq.updateAt index (snd ivPair) |> PList
+                    | _ -> System.NotImplementedException "First-class operators not yet implemented" |> raise
                 | _ -> System.NotImplementedException "Nested list index not yet supported" |> raise
             )
         | _ ->
             PrimellProgrammerProblemException "this isn't possible either right?" |> raise
-    | _ -> System.NotImplementedException "nested ref/var" |> raise
     
-
   member private this.GetReplacementObjectWithNumericIndex(cValue: PObject)(cValueIndex: ExtendedBigRational)(newValue: PObject) =
     match cValue.Value with
-    | Number _ ->
-        match round cValueIndex with
-        | NaN | Infinity Negative -> cValue
-        | Infinity Positive -> (Seq.singleton cValue |> PList).AppendAll (PObject.Infinite PObject.Empty) |> PObject.FromSeq  //TODO TAG
-        | _ as n when n <= ExtendedBigRational.Zero -> newValue
-        | _ as n ->
-            Seq.append (Seq.singleton cValue) (Seq.init((GetPositiveInt cValueIndex) - 1) (fun _ -> PObject.Empty)) 
-            |> Seq.insertAt (GetPositiveInt cValueIndex) newValue
-            |> PObject.FromSeq
+    | Atom a ->
+        match a with
+        | PNumber _ ->
+            match round cValueIndex with
+            | NaN | Infinity Negative -> cValue
+            | Infinity Positive -> (Seq.singleton cValue |> PList).AppendAll (PObject.Infinite PObject.Empty) |> PObject.FromSeq  //TODO TAG
+            | _ as n when n <= ExtendedBigRational.Zero -> newValue
+            | _ as n ->
+                Seq.append (Seq.singleton cValue) (Seq.init((GetPositiveInt cValueIndex) - 1) (fun _ -> PObject.Empty)) 
+                |> Seq.insertAt (GetPositiveInt cValueIndex) newValue
+                |> PObject.FromSeq
+        | _ -> System.NotImplementedException "First-class operators not yet implemented" |> raise
     | Empty ->
         match round cValueIndex with
         | NaN | Infinity Negative -> PObject.Empty
@@ -247,14 +251,15 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
             | _ -> x
         )
           |> PObject.FromSeq
-    | _ -> System.NotImplementedException "nested ref/var" |> raise
 
   member private this.GetReplacementObject(cValue: PObject)(cValueIndex: PObject)(newValue: PObject) =
     match cValueIndex.Value with
-    | Number n -> this.GetReplacementObjectWithNumericIndex cValue n newValue
+    | Atom a ->
+        match a with
+        | PNumber n -> this.GetReplacementObjectWithNumericIndex cValue n newValue
+        | _ -> System.NotImplementedException "First-class operators not yet implemented" |> raise
     | Sequence l ->  this.GetReplacementObjectWithListIndex cValue l newValue |> PObject.FromSeq
     | Empty -> this.GetReplacementObjectWithListIndex cValue (Seq.empty |> PList) newValue |> PObject.FromSeq
-    | _ -> System.NotImplementedException "Replacement object with operator not yet implemented" |> raise
   
   member private this.ReplaceReference (refObj: PObject) (refIndex: PObject) (newValue: PObject) =
     // the high level thing for base case is referencedObject@referenceIndex = newValue
@@ -535,13 +540,13 @@ type PrimellVisitor(control: PrimellProgramControl) as self =
         match pobj.Value with
         | Sequence l ->
             l |> Seq.map(fun x -> this.ApplyBinaryOperation left (NonConditional x) boCtxt) |> PObject.FromSeq
-        | Empty -> System.NotImplementedException "gah" |> raise
+        | Empty -> System.NotImplementedException "Empty objects in conditionals not fully implemented" |> raise  // TODO
         | _ -> this.ApplyBinaryOperation left (NonConditional pobj) boCtxt
     | EvaluatedConditional pobj ->
         match pobj.Value with
         | Sequence l ->
             l |> Seq.map(fun x -> this.ApplyBinaryOperation left (EvaluatedConditional x) boCtxt) |> PObject.FromSeq
-        | Empty -> System.NotImplementedException "gah" |> raise
+        | Empty -> System.NotImplementedException "Empty objects in conditionals not fully implemented" |> raise  // TODO
         | _ -> this.ApplyBinaryOperation left (EvaluatedConditional pobj) boCtxt
     | PartialConditional _ ->
         PrimellProgrammerProblemException "partial conditional not allowed in for-each right" |> raise

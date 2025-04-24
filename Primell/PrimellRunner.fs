@@ -56,7 +56,7 @@ type PrimellRunner() =
 
     // pre-initialized variables
     control.TrySetVariable(",,,", PObject.Empty, PObject.Infinite PObject.Empty) |> ignore
-    control.TrySetVariable(",,,,,", PObject.Empty, PObject.Infinite(ExtendedBigRational.Zero |> Number |> PObject)) |> ignore
+    control.TrySetVariable(",,,,,", PObject.Empty, PObject.Infinite(ExtendedBigRational.Zero |> PNumber |> Atom |> PObject)) |> ignore
 
     // also this has just been cobbled together over time, this could definitely be cleaner
     for i in 0..(control.LineResults.Length - 1) do

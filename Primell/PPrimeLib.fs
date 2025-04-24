@@ -48,7 +48,7 @@ module PPrimeLib =
   let private PrimeConvert(s: ExtendedBigRational seq, length: ExtendedBigRational option) =
     let result = 
       s |> Seq.filter(fun x -> IsPrime x)
-        |> Seq.map(fun x -> x |> Number |> PObject) 
+        |> Seq.map(fun x -> x |> PNumber |> Atom |> PObject) 
     PList(result, ?length=length) |> PObject.FromSeq
     
   let PrimeRange left right = 
@@ -56,7 +56,7 @@ module PPrimeLib =
     | NaN, _ | _, NaN -> 
         PObject.Empty
     | Infinity Positive, _ -> 
-        PObject.Infinite(Infinity Positive |> Number |> PObject)
+        PObject.Infinite(Infinity Positive |> PNumber |> Atom |> PObject)
     | Infinity Negative, Infinity Positive ->
         PrimeConvert(ExtendedBigRational.Range(ExtendedBigRational.Two, Infinity Positive), Some(Infinity Positive))
     | Rational _ as left', Infinity Positive -> 
@@ -64,7 +64,7 @@ module PPrimeLib =
     | Rational _ as left', Infinity Negative when left' < ExtendedBigRational.Two ->
         PObject.Empty
     | Rational _ as left', Infinity Negative when left' = ExtendedBigRational.Two ->  // TODO can merge this case with below when inclusive range is implemented
-        ExtendedBigRational.Two |> Number |> PObject 
+        ExtendedBigRational.Two |> PNumber |> Atom |> PObject 
     | Rational _ as left', Infinity Negative when left' > ExtendedBigRational.Two ->
         PrimeConvert(ExtendedBigRational.Range(left', ExtendedBigRational.Two), Some ExtendedBigRational.One)
     | Rational _ as left', (Rational _ as right') when left' < ExtendedBigRational.Two && right' <= ExtendedBigRational.Two ->
@@ -81,17 +81,17 @@ module PPrimeLib =
   let PrimeFactorization (x: ExtendedBigRational) =
     match x with
     | NaN -> PObject.Empty
-    | Infinity Positive -> PObject.Infinite(NaN |> Number |> PObject)
+    | Infinity Positive -> PObject.Infinite(NaN |> PNumber |> Atom |> PObject)
            // for infinity, there's an infinite number of factors, but you won't get past all those 2s!
-    | Infinity Negative -> (Seq.singleton (ExtendedBigRational.MinusOne |> Number |> PObject) |> PList).AppendAll (PObject.Infinite(NaN |> Number |> PObject)) 
+    | Infinity Negative -> (Seq.singleton (ExtendedBigRational.MinusOne |> PNumber |> Atom |> PObject) |> PList).AppendAll (PObject.Infinite(NaN |> PNumber |> Atom |> PObject)) 
                            |> PList |> Sequence |> PObject
     | Rational r ->
         let denominatorPrimes = // since PrimeLib gives ordered primes, we need to reverse the denom ones (and deal with -1)
           PrimeLib.PrimeFactors(bigint.Abs r.Denominator) 
           |> Seq.rev
-          |> Seq.map(fun p -> p |> BigRational |> BigRational.Reciprocal |> Rational |> Number |> PObject)
-        let signSeq = if r.Sign = -1 then Seq.singleton (ExtendedBigRational.MinusOne |> Number |> PObject) else Seq.empty
-        let numeratorPrimes = PrimeLib.PrimeFactors(r.Numerator) |> Seq.map (fun p -> p |> BigRational |> Rational |> Number |> PObject)
+          |> Seq.map(fun p -> p |> BigRational |> BigRational.Reciprocal |> Rational |> PNumber |> Atom |> PObject)
+        let signSeq = if r.Sign = -1 then Seq.singleton (ExtendedBigRational.MinusOne |> PNumber |> Atom |> PObject) else Seq.empty
+        let numeratorPrimes = PrimeLib.PrimeFactors(r.Numerator) |> Seq.map (fun p -> p |> BigRational |> Rational |> PNumber |> Atom |> PObject)
         
         numeratorPrimes |> Seq.append denominatorPrimes |> Seq.append signSeq |> PList |> Sequence |> PObject
     
