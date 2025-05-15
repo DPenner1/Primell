@@ -230,9 +230,32 @@ type PrimellList(sequence: PObject seq, ?length: ExtendedBigRational, ?refersTo:
 
 and PList = PrimellList  // abbreviation for sanity
 
+// trying a record type for now, since i expect only one of the sub-operators to change at a time, 
+// and the with syntax would be convenient for this
+and PrimellOperator = 
+  {
+    UnaryNumeric : ExtendedBigRational -> PObject
+    UnaryList: PrimellList -> PObject
+    BinaryNumeric: ExtendedBigRational -> ExtendedBigRational -> PObject
+    BinaryList: PrimellList -> PrimellList -> PObject
+    ListNumeric: PrimellList -> ExtendedBigRational -> PObject
+    NumericList: ExtendedBigRational -> PrimellList -> PObject
+  }
+
+  static member Default with get() =
+    {
+      UnaryNumeric = fun _ -> PObject.Empty
+      UnaryList = fun _ -> PObject.Empty
+      BinaryNumeric = fun _ -> fun _ -> PObject.Empty
+      BinaryList = fun _ -> fun _ -> PObject.Empty
+      ListNumeric = fun _ -> fun _ -> PObject.Empty
+      NumericList = fun _ -> fun _ -> PObject.Empty
+    }
+
+
 and PrimellAtom =
   | PNumber of ExtendedBigRational
-  | POperator of string // placeholder, design for this will probably change
+  | POperator of PrimellOperator // placeholder, design for this will probably change
 
 // In theory, this this type could not exist and be implemented as a simple sequence,
 // but in Primell, Atoms and occasionally Emptys have different execution semantics than sequences of 2+ items 
@@ -252,7 +275,7 @@ and Reference =  // TODO - naming, not sure i like type and one of the options b
 and PrimellMetaData =
   { Reference : Reference } 
 
-  static member Default = { Reference = Void }
+  static member Default with get() = { Reference = Void }
 
 and PrimellObject (value: PrimellValue, ?metadata: PrimellMetaData) =
 
@@ -291,7 +314,7 @@ and PrimellObject (value: PrimellValue, ?metadata: PrimellMetaData) =
       | Atom a -> 
           match a with
           | PNumber n -> n.GetHashCode()
-          | POperator o -> o.GetHashCode()
+          | POperator o -> 987654321 // TODO - need to do this one better
       | Sequence l -> l.GetHashCode()
       | Empty -> 123456789
 
@@ -302,7 +325,7 @@ and PrimellObject (value: PrimellValue, ?metadata: PrimellMetaData) =
           | Atom a1, Atom a2 -> 
               match a1, a2 with
               | PNumber n1, PNumber n2  -> n1.Equals n2
-              | POperator o1, POperator o2 -> o1.Equals o2
+              | POperator o1, POperator o2 -> System.Object.ReferenceEquals(o1, o2)
               | _ -> false
           | Sequence l1, Sequence l2 -> l1.Equals l2
           | Empty, Empty -> true
@@ -314,7 +337,7 @@ and PrimellObject (value: PrimellValue, ?metadata: PrimellMetaData) =
     | Empty, Empty -> true
     | Atom a1, Atom a2->
         match a1, a2 with
-        | POperator o1, POperator o2 -> o1.Equals o2
+        | POperator o1, POperator o2 -> System.Object.ReferenceEquals(o1, o2)
         | PNumber n1, PNumber n2 ->
             match n1, n2 with
             | NaN, _ | _, NaN -> false // always false
